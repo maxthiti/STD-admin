@@ -1,30 +1,52 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "../stores/auth";
 
-import RegisterMember from "../views/Login.vue";
-import ResidentCar from "../views/Resident/ResidentCar.vue";
-import Visitor from "../views/Visitor/Visitor.vue";
-import History from "../views/Historylog/Historylog.vue";
-import HomeLayout from "../views/Home.vue";
+const Login = () => import("../views/Login.vue");
+const AdminLayout = () => import("../layouts/AdminLayout.vue");
+const Home = () => import("../views/Admin/Home.vue");
+const Teacher = () => import("../views/Admin/Teacher.vue");
+const Student = () => import("../views/Admin/Student.vue");
+const Account = () => import("../views/Admin/Account.vue");
+const Department = () => import("../views/Admin/Department.vue");
+const Position = () => import("../views/Admin/Position.vue");
 
 const routes = [
-  {
-    path: "/",
-    component: RegisterMember,
-  },
+  { path: "/", name: "login", component: Login },
   {
     path: "/home",
-    component: HomeLayout,
-    redirect: "/resident-car",
-    meta: { requiresAuth: true },
+    name: "AdminHome",
+    component: AdminLayout,
+    redirect: "/home/dashboard",
     children: [
       {
-        path: "/resident-car",
-        component: ResidentCar,
-        meta: { requiresAuth: true },
+        path: "dashboard",
+        name: "Dashboard",
+        component: Home,
       },
-      { path: "/visitor", component: Visitor, meta: { requiresAuth: true } },
-      { path: "/history", component: History, meta: { requiresAuth: true } },
+      {
+        path: "teacher",
+        name: "Teacher",
+        component: Teacher,
+      },
+      {
+        path: "student",
+        name: "Student",
+        component: Student,
+      },
+      {
+        path: "account",
+        name: "Account",
+        component: Account,
+      },
+      {
+        path: "department",
+        name: "Department",
+        component: Department,
+      },
+      {
+        path: "position",
+        name: "Position",
+        component: Position,
+      },
     ],
   },
 ];
@@ -32,29 +54,6 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-});
-
-router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore();
-
-  if (!authStore.isAuthenticated && localStorage.getItem("token")) {
-    try {
-      const initialized = await authStore.initializeAuth();
-      console.log("Auth store initialized:", initialized);
-    } catch (e) {
-      console.warn("Auth initialization error in router guard:", e);
-    }
-  }
-
-  if (to.meta.requiresAuth) {
-    if (!authStore.isAuthenticated) {
-      console.log("Not authenticated, redirecting to login (root)");
-      next("/");
-      return;
-    }
-  }
-
-  next();
 });
 
 export default router;

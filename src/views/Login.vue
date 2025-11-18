@@ -1,195 +1,113 @@
-    <template>
-        <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-100 to-blue-100 p-4">
-            <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-                <div class="flex flex-col items-center mb-6">
-                    <h2 class="text-3xl font-bold text-green-700 mb-2">สมาชิกลูกบ้าน</h2>
-                    <p class="text-gray-500">กรอกเบอร์เพื่อเข้าใช้งาน</p>
+<template>
+    <main class="min-h-screen grid place-items-center bg-base-200 p-4">
+        <section class="w-full max-w-md">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title justify-center text-2xl">เข้าสู่ระบบ</h2>
+
+                    <form @submit.prevent="onSubmit" class="space-y-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">อีเมลหรือชื่อผู้ใช้</span>
+                            </label>
+                            <input v-model.trim="form.username" type="text" class="input input-bordered"
+                                placeholder="you@example.com" autocomplete="username" />
+                            <p v-if="errors.username" class="mt-1 text-error text-sm">{{ errors.username }}</p>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">รหัสผ่าน</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2">
+                                <input :type="showPassword ? 'text' : 'password'" v-model.trim="form.password"
+                                    class="grow" placeholder="••••••••" autocomplete="current-password" />
+                                <button type="button" class="btn btn-ghost btn-sm"
+                                    @click="showPassword = !showPassword">
+                                    <span v-if="showPassword">ซ่อน</span>
+                                    <span v-else>แสดง</span>
+                                </button>
+                            </label>
+                            <p v-if="errors.password" class="mt-1 text-error text-sm">{{ errors.password }}</p>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="label cursor-pointer gap-2">
+                                <input type="checkbox" v-model="remember" class="checkbox checkbox-sm" />
+                                <span class="label-text">จดจำฉัน</span>
+                            </label>
+                            <a href="#" class="link link-hover text-sm">ลืมรหัสผ่าน?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-full" :disabled="loading">
+                            <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+                            <span v-else>เข้าสู่ระบบ</span>
+                        </button>
+
+                        <p v-if="formError" class="text-error text-sm text-center">{{ formError }}</p>
+                        <p v-if="success" class="text-success text-sm text-center">เข้าสู่ระบบสำเร็จ กำลังนำทาง...</p>
+                    </form>
                 </div>
-
-                <form @submit.prevent="register" class="space-y-5" v-if="!tokenInfo.hasPhone">
-                    <div>
-                        <label class="block mb-1 font-semibold text-gray-700">เบอร์โทร</label>
-                        <input v-model="phone" type="tel" inputmode="numeric"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-                            placeholder="กรอกเบอร์โทร (10 หลัก)" required maxlength="10" />
-                    </div>
-
-                    <div>
-                        <label class="block mb-1 font-semibold text-gray-700">ยืนยันเบอร์โทร</label>
-                        <input v-model="confirmPhone" type="tel" inputmode="numeric"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-                            placeholder="กรอกเบอร์โทรอีกครั้ง" required maxlength="10" />
-
-                        <p v-if="confirmPhone && !isPhoneMatch" class="mt-2 text-sm text-red-600">เบอร์ที่กรอกไม่ตรงกัน
-                        </p>
-                    </div>
-
-                    <button type="submit" :disabled="!isFormValid"
-                        class="w-full py-2 rounded-lg font-bold shadow hover:scale-105 transition"
-                        :class="{ 'bg-gradient-to-r from-green-500 to-blue-500 text-white': isFormValid, 'bg-gray-400 text-gray-700 cursor-not-allowed': !isFormValid }">
-                        เข้าสู่ระบบ / บันทึกเบอร์โทร
-                    </button>
-                </form>
-
-                <div v-else-if="tokenInfo.hasPhone" class="text-center p-6 space-y-4">
-                    <svg class="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <h3 class="text-2xl font-extrabold text-green-700">เข้าสู่ระบบสำเร็จ!</h3>
-                    <p class="text-gray-600">กำลังนำคุณเข้าสู่หน้าหลัก</p>
-                </div>
-
-                <div v-if="message" class="mt-4 text-center text-green-600" style="font-size: 13px;">{{ message }}</div>
             </div>
-        </div>
-    </template>
+        </section>
+    </main>
+</template>
 
-<script>
-import Swal from 'sweetalert2';
-import { LoginService } from '../api/User';
-import axios from 'axios';
-import { useAuthStore } from '../stores/auth';
+<script setup>
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { useAuthStore } from '../stores/auth'
+import { UserService } from '../api/user'
 
-export default {
-    data() {
-        return {
-            phone: '',
-            confirmPhone: '',
-            message: '',
-            token: null,
-            tokenInfo: { hasPhone: false, phone: null },
-            loginService: new LoginService()
+const router = useRouter()
+const auth = useAuthStore()
+const userService = new UserService()
+
+const form = reactive({ username: '', password: '' })
+const errors = reactive({ username: '', password: '' })
+const remember = ref(true)
+const loading = ref(false)
+const formError = ref('')
+const success = ref(false)
+const showPassword = ref(false)
+
+function validate() {
+    errors.username = form.username ? '' : 'กรุณากรอกอีเมลหรือชื่อผู้ใช้'
+    errors.password = form.password ? '' : 'กรุณากรอกรหัสผ่าน'
+    return !errors.username && !errors.password
+}
+
+async function onSubmit() {
+    formError.value = ''
+    success.value = false
+    if (!validate()) return
+    loading.value = true
+    try {
+        const response = await userService.SignIn({
+            username: form.username,
+            password: form.password,
+        })
+
+        if (response && response.message === 'Success') {
+            const token = response.data?.access_token
+
+            if (!token) throw new Error('ไม่พบโทเค็น')
+
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+            await auth.initializeAuth()
+            success.value = true
+            setTimeout(() => router.push('/home'), 600)
+        } else {
+            throw new Error('เข้าสู่ระบบไม่สำเร็จ')
         }
-    },
-    computed: {
-        isPhoneValid() {
-            return /^\d{10}$/.test(this.phone);
-        },
-        isPhoneMatch() {
-            if (!this.confirmPhone) return true;
-            return this.phone === this.confirmPhone;
-        },
-        isFormValid() {
-            return this.isPhoneValid && this.isPhoneMatch;
-        }
-    },
-    mounted() {
-        this.checkTokenAndRedirect();
-    },
-    methods: {
-        checkTokenAndRedirect() {
-            const urlParams = new URLSearchParams(window.location.search);
-            let currentToken = urlParams.get('access_token');
-
-            if (!currentToken) {
-                currentToken = localStorage.getItem('token');
-            }
-
-            this.token = currentToken;
-            const LINE_LOGIN_URL = import.meta.env.VITE_LINE_REDIRECT_URL;
-
-            if (!this.token) {
-                this.message = 'โปรดเข้าสู่ระบบผ่าน LINE อีกครั้ง';
-                this.tokenInfo = { hasPhone: false, phone: null };
-
-                if (LINE_LOGIN_URL) {
-                    setTimeout(() => {
-                        window.location.href = LINE_LOGIN_URL;
-                    }, 1500);
-                } else {
-                    console.error("VITE_LINE_REDIRECT_URL is not defined.");
-                }
-                return;
-            }
-
-            localStorage.setItem('token', this.token);
-
-            this.tokenInfo = this.loginService.checkToken(this.token);
-
-            if (!this.tokenInfo.hasPhone) {
-                this.message = 'โปรดกรอกเบอร์โทรศัพท์เพื่อยืนยันตัวตน';
-                this.tokenInfo = { hasPhone: false, phone: null }; 
-                return; 
-            }
-
-            if (this.tokenInfo.name) {
-                localStorage.setItem('residentName', this.tokenInfo.name);
-            }
-            if (this.tokenInfo.avatar) {
-                localStorage.setItem('residentAvatar', this.tokenInfo.avatar);
-            }
-
-            if (this.tokenInfo.hasPhone) {
-                this.message = 'มีเบอร์โทรศัพท์ในระบบแล้ว กำลังนำเข้าหน้าหลัก...';
-                setTimeout(() => {
-                    this.$router.push('/home');
-                }, 1000);
-            } else {
-                this.message = 'โปรดกรอกเบอร์โทรศัพท์เพื่อยืนยันตัวตน';
-            }
-        },
-
-        async register() {
-            if (!this.isPhoneValid) {
-                Swal.fire('ข้อผิดพลาด', 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ต้องเป็นตัวเลข 10 หลัก)', 'error');
-                return;
-            }
-
-            if (!this.isPhoneMatch) {
-                Swal.fire('ข้อผิดพลาด', 'เบอร์โทรไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง', 'error');
-                return;
-            }
-
-            const result = await Swal.fire({
-                title: 'ยืนยันเบอร์โทรศัพท์',
-                html: `คุณต้องการบันทึกเบอร์โทรศัพท์ "${this.phone}" ใช่หรือไม่? <br>ถ้าเกิดข้อผิดพลาดไม่สามารถแก้ไขได้ <br>ต้องพบนิติหอพักเท่านั้น`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'ยืนยัน',
-                cancelButtonText: 'แก้ไข',
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    this.message = 'กำลังบันทึกเบอร์โทรศัพท์...';
-
-                    await this.loginService.savePhoneNumber(this.phone, this.token);
-
-                    Swal.fire('สำเร็จ!', 'บันทึกเบอร์โทรศัพท์เรียบร้อยแล้ว', 'success');
-
-                    try {
-                        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-                    } catch (e) { }
-
-                    try {
-                        const auth = useAuthStore();
-                        await auth.initializeAuth();
-                    } catch (e) {
-                        console.warn('Failed to re-initialize auth store after saving phone', e);
-                    }
-
-                    this.message = 'บันทึกสำเร็จ กำลังนำเข้าหน้าหลัก...';
-                    this.$router.push('/home');
-
-                } catch (error) {
-                    const errorMessage = error.response?.data?.message || 'ไม่สามารถบันทึกเบอร์โทรศัพท์ได้ กรุณาลองใหม่';
-                    Swal.fire('บันทึกไม่สำเร็จ', errorMessage, 'error');
-                    this.message = errorMessage;
-                }
-            }
-        }
+    } catch (e) {
+        console.error('Login error:', e)
+        formError.value = e.response?.data?.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+    } finally {
+        loading.value = false
     }
 }
 </script>
 
-<style>
-.min-h-screen {
-    min-height: 100vh;
-}
-
-.shadow-xl {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-</style>
+<style scoped></style>

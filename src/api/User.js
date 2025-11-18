@@ -1,77 +1,65 @@
 import axios from "axios";
 
-function decodeJwt(token) {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join("")
-    );
-
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    console.error("JWT decoding failed:", e);
-    return null;
-  }
-}
-
-export class LoginService {
-  constructor() {
+export class UserService {
+  constructor(context) {
+    this.context = context;
     this.baseUrl = import.meta.env.VITE_APP_BASE_URL;
+    this.token = localStorage.getItem("token");
   }
 
-  checkToken(token) {
-    const payload = decodeJwt(token);
-
-    const FORCE_EXPIRATION_TEST = false;
-
-    const defaultResp = { hasPhone: false, phone: null, expired: false };
-
-    if (!payload) {
-      return { ...defaultResp, expired: true };
-    }
-
-    const currentTime = Date.now() / 1000;
-    if (FORCE_EXPIRATION_TEST || (payload.exp && payload.exp < currentTime)) {
-      console.error("Token has expired (Forced)");
-      return { ...defaultResp, expired: true };
-    }
-
-    const name = payload?.displayName;
-    const avatar = payload?.avatar;
-
-    if (payload && payload.phoneNumber) {
-      return {
-        hasPhone: true,
-        phone: payload.phoneNumber,
-        name: name,
-        avatar: avatar,
-        expired: false,
-      };
-    }
-
-    return { ...defaultResp, expired: false };
-  }
-
-  async savePhoneNumber(phoneNumber, token) {
-    const url = `${this.baseUrl}api/v1/phonenumber`;
-    const dataToSend = { phoneNumber: phoneNumber };
-
+  async SignIn(Userdata) {
     try {
-      const response = await axios.post(url, dataToSend, {
+      const params = new URLSearchParams();
+      params.append("username", Userdata.username);
+      params.append("password", Userdata.password);
+
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}users/login`,
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-      });
+        data: params,
+      };
+
+      const response = await axios.request(config);
+
+      if (response.data && response.data.data) {
+        const { access_token, token_type } = response.data.data;
+
+        if (access_token) {
+          localStorage.setItem("token", access_token);
+          this.token = access_token;
+
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `${token_type} ${access_token}`;
+        }
+
+        return response.data;
+      }
+
       return response.data;
     } catch (error) {
-      console.error("Error saving phone number:", error);
+      console.error("Login error:", error);
       throw error;
     }
   }
+
+  logout() {
+    localStorage.removeItem("token");
+    this.token = null;
+    delete axios.defaults.headers.common["Authorization"];
+  }
+
+  isAuthenticated() {
+    return !!this.token;
+  }
+
+  getToken() {
+    return this.token;
+  }
 }
+
+export default UserService;
