@@ -11,6 +11,7 @@
                             <th class="bg-primary text-primary-content">ระดับชั้น</th>
                             <th class="bg-primary text-primary-content hidden md:table-cell">ห้อง</th>
                             <th class="bg-primary text-primary-content hidden lg:table-cell">อีเมล</th>
+                            <th class="bg-primary text-primary-content">จัดการ</th>
                             <!-- <th class="bg-primary text-primary-content hidden xl:table-cell">เบอร์โทร</th> -->
                         </tr>
                     </thead>
@@ -26,7 +27,7 @@
                             </td>
                         </tr>
                         <tr v-else v-for="(student, index) in students" :key="student.id" class="hover">
-                            <td class="hidden lg:table-cell">{{ index + 1 }}</td>
+                            <td class="hidden lg:table-cell">{{ getRowNumber(index) }}</td>
                             <td>
                                 <div class="flex items-center gap-3">
                                     <div class="avatar">
@@ -49,6 +50,15 @@
                             </td>
                             <td class="hidden md:table-cell">{{ student.room }}</td>
                             <td class="hidden lg:table-cell text-xs">{{ student.email }}</td>
+                            <td>
+                                <button class="btn btn-ghost btn-xs" @click="emitEdit(student)" title="แก้ไข">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                            </td>
                             <!-- <td class="hidden xl:table-cell">{{ student.phone }}</td> -->
                         </tr>
                     </tbody>
@@ -61,7 +71,7 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 
-defineProps({
+const props = defineProps({
     students: {
         type: Array,
         default: () => []
@@ -69,12 +79,30 @@ defineProps({
     loading: {
         type: Boolean,
         default: false
+    },
+    currentPage: {
+        type: Number,
+        default: 1
+    },
+    itemsPerPage: {
+        type: Number,
+        default: 5
     }
 })
+
+const emit = defineEmits(['edit'])
 
 const getInitials = (name) => {
     if (!name) return '?'
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+}
+
+const getRowNumber = (index) => {
+    return (props.currentPage - 1) * props.itemsPerPage + index + 1
+}
+
+const emitEdit = (student) => {
+    emit('edit', student)
 }
 </script>
 

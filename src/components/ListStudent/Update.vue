@@ -1,17 +1,16 @@
 <template>
     <dialog ref="modalRef" class="modal">
         <div class="modal-box max-w-2xl">
-            <h3 class="font-bold text-lg mb-4">เพิ่มนักเรียน</h3>
+            <h3 class="font-bold text-lg mb-4">แก้ไขนักเรียน</h3>
 
             <form @submit.prevent="handleSubmit" class="space-y-4">
                 <div class="space-y-2">
-                    <label class="block text-sm font-semibold">
-                        รูปภาพ <span class="text-gray-500">(ไม่บังคับ)</span>
-                    </label>
+                    <label class="block text-sm font-semibold">รูปภาพ <span
+                            class="text-gray-500">(ไม่บังคับ)</span></label>
 
-                    <div v-if="previewImage" class="relative flex justify-center mb-4">
+                    <div v-if="currentImage || previewImage" class="relative flex justify-center mb-2">
                         <div class="relative">
-                            <img :src="previewImage" alt="Preview"
+                            <img :src="previewImage || currentImage" alt="Preview"
                                 class="w-32 h-32 object-cover rounded-lg shadow-md" />
                             <button type="button" @click="removeImage"
                                 class="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error">
@@ -24,8 +23,8 @@
                         </div>
                     </div>
 
-                    <div v-if="!previewImage" class="relative">
-                        <label for="pictureInput"
+                    <div v-if="!currentImage && !previewImage" class="relative">
+                        <label for="pictureInputUpdate"
                             class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                             <span class="flex flex-col items-center justify-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none"
@@ -36,7 +35,7 @@
                                 <span class="text-sm font-medium text-gray-700">เลือกรูปภาพนักเรียน</span>
                                 <span class="text-xs text-gray-500">JPG only (สูงสุด 70KB)</span>
                             </span>
-                            <input id="pictureInput" type="file" @change="handleFileChange"
+                            <input id="pictureInputUpdate" type="file" @change="handleFileChange"
                                 accept="image/jpeg,image/jpg"
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                         </label>
@@ -46,16 +45,12 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">รหัสนักเรียน</span>
-                        </label>
+                        <label class="label"><span class="label-text">รหัสนักเรียน</span></label>
                         <input v-model="formData.userid" type="text" class="input input-bordered" required />
                     </div>
 
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">คำนำหน้า</span>
-                        </label>
+                        <label class="label"><span class="label-text">คำนำหน้า</span></label>
                         <select v-model="formData.pre_name" class="select select-bordered" required>
                             <option value="">เลือกคำนำหน้า</option>
                             <option value="เด็กชาย">เด็กชาย</option>
@@ -66,31 +61,23 @@
                     </div>
 
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">ชื่อ</span>
-                        </label>
+                        <label class="label"><span class="label-text">ชื่อ</span></label>
                         <input v-model="formData.first_name" type="text" class="input input-bordered" required
                             @input="validateFirstName" :class="{ 'input-error': firstNameError }" autocomplete="off" />
-                        <label v-if="firstNameError" class="label">
-                            <span class="label-text-alt text-error">{{ firstNameError }}</span>
-                        </label>
+                        <label v-if="firstNameError" class="label"><span class="label-text-alt text-error">{{
+                            firstNameError }}</span></label>
                     </div>
 
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">นามสกุล</span>
-                        </label>
+                        <label class="label"><span class="label-text">นามสกุล</span></label>
                         <input v-model="formData.last_name" type="text" class="input input-bordered" required
                             @input="validateLastName" :class="{ 'input-error': lastNameError }" autocomplete="off" />
-                        <label v-if="lastNameError" class="label">
-                            <span class="label-text-alt text-error">{{ lastNameError }}</span>
-                        </label>
+                        <label v-if="lastNameError" class="label"><span class="label-text-alt text-error">{{
+                            lastNameError }}</span></label>
                     </div>
 
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">ชั้นปี</span>
-                        </label>
+                        <label class="label"><span class="label-text">ชั้นปี</span></label>
                         <select v-model="formData.grade" @change="handleGradeChange" class="select select-bordered"
                             required>
                             <option value="">เลือกชั้นปี</option>
@@ -99,9 +86,7 @@
                     </div>
 
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">ห้อง</span>
-                        </label>
+                        <label class="label"><span class="label-text">ห้อง</span></label>
                         <select v-model="formData.classroom" class="select select-bordered" required>
                             <option value="">เลือกห้อง</option>
                             <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
@@ -110,7 +95,7 @@
                 </div>
 
                 <div class="modal-action">
-                    <button type="button" @click="closeModal" class="btn btn-ghost">ยกเลิก</button>
+                    <button type="button" class="btn btn-ghost" @click="closeModal">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary" :disabled="loading || !isFormValid">
                         <span v-if="loading" class="loading loading-spinner loading-sm"></span>
                         <span v-else>บันทึก</span>
@@ -127,9 +112,12 @@ import { ref, computed } from 'vue'
 const modalRef = ref(null)
 const loading = ref(false)
 const previewImage = ref('')
+const currentImage = ref('')
 const fileError = ref('')
 const firstNameError = ref('')
 const lastNameError = ref('')
+const studentId = ref('')
+
 const formData = ref({
     userid: '',
     pre_name: '',
@@ -151,139 +139,120 @@ const emit = defineEmits(['success'])
 
 const availableGrades = computed(() => {
     const grades = [...new Set(props.classrooms.map(c => c.grade))]
-    return grades.sort((a, b) => {
-        const gradeA = parseInt(a.replace('ม.', ''))
-        const gradeB = parseInt(b.replace('ม.', ''))
-        return gradeA - gradeB
-    })
+    return grades.sort((a, b) => parseInt(a.replace('ม.', '')) - parseInt(b.replace('ม.', '')))
 })
 
 const availableClassrooms = computed(() => {
-    const rooms = props.classrooms
-        .filter(c => c.grade === formData.value.grade)
-        .map(c => c.classroom)
+    const rooms = props.classrooms.filter(c => c.grade === formData.value.grade).map(c => c.classroom)
     return rooms.sort((a, b) => a - b)
 })
 
 const nameRegex = /^[A-Za-z\u0E00-\u0E7F]+$/
-
 const validateFirstName = () => {
-    if (!formData.value.first_name) {
-        firstNameError.value = 'กรุณากรอกชื่อ'
-    } else if (!nameRegex.test(formData.value.first_name)) {
-        firstNameError.value = 'ใส่ได้เฉพาะตัวอักษรภาษาไทยหรืออังกฤษเท่านั้น'
-    } else {
-        firstNameError.value = ''
-    }
+    if (!formData.value.first_name) firstNameError.value = 'กรุณากรอกชื่อ'
+    else if (!nameRegex.test(formData.value.first_name)) firstNameError.value = 'ใส่ได้เฉพาะตัวอักษรภาษาไทยหรืออังกฤษเท่านั้น'
+    else firstNameError.value = ''
 }
-
 const validateLastName = () => {
-    if (!formData.value.last_name) {
-        lastNameError.value = 'กรุณากรอกนามสกุล'
-    } else if (!nameRegex.test(formData.value.last_name)) {
-        lastNameError.value = 'ใส่ได้เฉพาะตัวอักษรภาษาไทยหรืออังกฤษเท่านั้น'
-    } else {
-        lastNameError.value = ''
-    }
+    if (!formData.value.last_name) lastNameError.value = 'กรุณากรอกนามสกุล'
+    else if (!nameRegex.test(formData.value.last_name)) lastNameError.value = 'ใส่ได้เฉพาะตัวอักษรภาษาไทยหรืออังกฤษเท่านั้น'
+    else lastNameError.value = ''
 }
 
 const isFormValid = computed(() => {
     return (
-        !firstNameError.value &&
-        !lastNameError.value &&
         formData.value.userid &&
         formData.value.pre_name &&
         formData.value.first_name &&
         formData.value.last_name &&
         formData.value.grade &&
         formData.value.classroom &&
+        !firstNameError.value &&
+        !lastNameError.value &&
         !fileError.value
     )
 })
 
-const openModal = () => {
+const parseName = (name) => {
+    if (!name) return { pre: '', first: '', last: '' }
+    const parts = name.trim().split(/\s+/)
+    return {
+        pre: parts[0] || '',
+        first: parts[1] || '',
+        last: parts.slice(2).join(' ') || ''
+    }
+}
+
+const openModal = (student) => {
+    studentId.value = student.id
+    const parsed = parseName(student.name)
     formData.value = {
-        userid: '',
-        pre_name: '',
-        first_name: '',
-        last_name: '',
-        grade: '',
-        classroom: '',
+        userid: student.userid || student.code || '',
+        pre_name: parsed.pre,
+        first_name: parsed.first,
+        last_name: parsed.last,
+        grade: student.grade || '',
+        classroom: student.room || '',
         picture: null
     }
+    currentImage.value = student.picture || ''
     previewImage.value = ''
     fileError.value = ''
     firstNameError.value = ''
     lastNameError.value = ''
-    modalRef.value.showModal()
+
+    // Ensure classroom options are aligned with grade
+    if (formData.value.grade && availableClassrooms.value.length > 0 && !availableClassrooms.value.includes(formData.value.classroom)) {
+        formData.value.classroom = availableClassrooms.value[0]
+    }
+    modalRef.value?.showModal()
 }
 
 const closeModal = () => {
-    modalRef.value.close()
-    formData.value = {
-        userid: '',
-        pre_name: '',
-        first_name: '',
-        last_name: '',
-        grade: '',
-        classroom: '',
-        picture: null
-    }
-    previewImage.value = ''
-    fileError.value = ''
-    firstNameError.value = ''
-    lastNameError.value = ''
+    modalRef.value?.close()
 }
 
 const handleGradeChange = () => {
-    formData.value.classroom = ''
     if (availableClassrooms.value.length > 0) {
         formData.value.classroom = availableClassrooms.value[0]
+    } else {
+        formData.value.classroom = ''
     }
 }
 
 const handleFileChange = (event) => {
     const file = event.target.files[0]
     fileError.value = ''
-
     if (file) {
         if (!file.type.match('image/jpeg') && !file.type.match('image/jpg')) {
             fileError.value = 'กรุณาเลือกไฟล์ JPG เท่านั้น'
             event.target.value = ''
             return
         }
-
         const maxSize = 70 * 1024
         if (file.size > maxSize) {
             fileError.value = `ขนาดไฟล์ใหญ่เกินไป (${(file.size / 1024).toFixed(2)}KB) กรุณาเลือกไฟล์ไม่เกิน 70KB`
             event.target.value = ''
             return
         }
-
         formData.value.picture = file
-
         const reader = new FileReader()
-        reader.onload = (e) => {
-            previewImage.value = e.target.result
-        }
+        reader.onload = (e) => { previewImage.value = e.target.result }
         reader.readAsDataURL(file)
     }
 }
 
 const removeImage = () => {
+    // Remove both preview and current image
     previewImage.value = ''
-    fileError.value = ''
+    currentImage.value = ''
     formData.value.picture = null
-    const fileInput = document.getElementById('pictureInput')
-    if (fileInput) {
-        fileInput.value = ''
-    }
+    const fileInput = document.getElementById('pictureInputUpdate')
+    if (fileInput) fileInput.value = ''
 }
 
 const handleSubmit = async () => {
-    validateFirstName()
-    validateLastName()
-
+    validateFirstName(); validateLastName()
     if (!isFormValid.value) {
         const { default: Swal } = await import('sweetalert2')
         Swal.fire({
@@ -291,20 +260,15 @@ const handleSubmit = async () => {
             title: 'ข้อมูลไม่ถูกต้อง',
             text: 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง',
             confirmButtonColor: '#2563eb',
-            didOpen: () => {
-                document.getElementById('app')?.removeAttribute('aria-hidden')
-            }
+            didOpen: () => { document.getElementById('app')?.removeAttribute('aria-hidden') }
         })
         return
     }
-
-    emit('success', formData.value)
+    emit('success', { id: studentId.value, ...formData.value })
     closeModal()
 }
 
-defineExpose({
-    openModal
-})
+defineExpose({ openModal, closeModal })
 </script>
 
 <style scoped></style>

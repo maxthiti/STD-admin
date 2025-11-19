@@ -8,6 +8,7 @@ const Student = () => import("../views/Admin/Student.vue");
 const Account = () => import("../views/Admin/Account.vue");
 const Department = () => import("../views/Admin/Department.vue");
 const Position = () => import("../views/Admin/Position.vue");
+const ClassRoom = () => import("../views/Admin/ClassRoom.vue");
 
 const routes = [
   { path: "/", name: "login", component: Login },
@@ -46,6 +47,11 @@ const routes = [
         path: "position",
         name: "Position",
         component: Position,
+      },
+      {
+        path: "classroom",
+        name: "ClassRoom",
+        component: ClassRoom,
       },
     ],
   },

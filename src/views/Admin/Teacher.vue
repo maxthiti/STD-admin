@@ -2,6 +2,13 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="text-2xl font-bold text-primary">จัดการอาจารย์</h2>
+            <button @click="openCreateModal" class="btn btn-primary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                เพิ่มอาจารย์
+            </button>
         </div>
 
         <div class="card bg-base-100 shadow-md">
@@ -43,7 +50,8 @@
 
         <TeacherTable :teachers="paginatedTeachers" :loading="loading" :departmentFilter="filterDepartment"
             :positionFilter="filterPosition" :departments="departments" :positions="positions"
-            @filterDepartment="handleFilterDepartment" @filterPosition="handleFilterPosition" />
+            :currentPage="currentPage" :itemsPerPage="itemsPerPage" @filterDepartment="handleFilterDepartment"
+            @filterPosition="handleFilterPosition" @edit="openEditModal" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -60,12 +68,20 @@
                 </button>
             </div>
         </div>
+
+        <UpdateModal ref="updateModalRef" :departments="departments" :positions="positions"
+            @success="handleUpdateSuccess" />
+
+        <CreateModal ref="createModalRef" :departments="departments" :positions="positions"
+            @success="handleCreateSuccess" />
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import TeacherTable from '../../components/ListTeacher/Table.vue'
+import UpdateModal from '../../components/ListTeacher/Update.vue'
+import CreateModal from '../../components/ListTeacher/Create.vue'
 import { TeacherService } from '../../api/teacher'
 import { DepartmentService } from '../../api/department'
 import { PositionService } from '../../api/position'
@@ -83,7 +99,9 @@ const filterDepartment = ref('')
 const filterPosition = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 5
-const imageBaseUrl = import.meta.env.VITE_APP_BASE_URL + 'uploads/'
+const imageBaseUrl = import.meta.env.VITE_APP_BASE_URL + 'uploaded/'
+const updateModalRef = ref(null)
+const createModalRef = ref(null)
 
 const totalPages = computed(() => Math.ceil(teachers.value.length / itemsPerPage))
 
@@ -187,6 +205,72 @@ const fetchPositions = async () => {
         }
     } catch (error) {
         console.error('Fetch positions error:', error)
+    }
+}
+
+const openEditModal = (teacher) => {
+    updateModalRef.value.openModal(teacher)
+}
+
+const openCreateModal = () => {
+    createModalRef.value.openModal()
+}
+
+const handleUpdateSuccess = async (id, formData) => {
+    try {
+        await teacherService.updateTeacher(id, formData)
+        await fetchTeachers()
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'success',
+            title: 'แก้ไขข้อมูลอาจารย์สำเร็จ',
+            showConfirmButton: false,
+            timer: 1500,
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    } catch (error) {
+        console.error('Update teacher error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถแก้ไขข้อมูลอาจารย์ได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    }
+}
+
+const handleCreateSuccess = async (formData) => {
+    try {
+        await teacherService.createTeacher(formData)
+        await fetchTeachers()
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'success',
+            title: 'เพิ่มอาจารย์สำเร็จ',
+            showConfirmButton: false,
+            timer: 1500,
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    } catch (error) {
+        console.error('Create teacher error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถเพิ่มอาจารย์ได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
     }
 }
 

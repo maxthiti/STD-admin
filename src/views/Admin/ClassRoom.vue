@@ -1,0 +1,199 @@
+<template>
+    <div class="space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 class="text-2xl font-bold text-primary">จัดการห้องเรียน</h2>
+            <button @click="openCreateModal" class="btn btn-primary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                เพิ่มห้องเรียน
+            </button>
+        </div>
+
+        <div class="card bg-base-100 shadow-md">
+            <div class="card-body p-4">
+                <div class="flex flex-wrap gap-2">
+                    <button v-for="grade in availableGrades" :key="grade.value" @click="selectedGrade = grade.value"
+                        :class="[
+                            'btn btn-sm',
+                            selectedGrade === grade.value ? 'btn-secondary' : 'btn-ghost'
+                        ]">
+                        {{ grade.label }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <CardView :classrooms="filteredClassrooms" :loading="loading" @delete="openDeleteConfirm" />
+
+        <CreateModal ref="createModalRef" :classrooms="classrooms" :teachers="teachers"
+            :availableGrades="availableGrades" @success="handleCreateSuccess" />
+    </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import CreateModal from '../../components/ClassRoom/Create.vue'
+import CardView from '../../components/ClassRoom/CardView.vue'
+import { ClassRoomService } from '../../api/class-room'
+import { TeacherService } from '../../api/teacher'
+
+const classRoomService = new ClassRoomService()
+const teacherService = new TeacherService()
+
+const classrooms = ref([])
+const teachers = ref([])
+const loading = ref(false)
+const createModalRef = ref(null)
+const selectedGrade = ref('ม.1')
+
+const availableGrades = [
+    { value: 'ม.1', label: 'มัธยมศึกษาปีที่ 1' },
+    { value: 'ม.2', label: 'มัธยมศึกษาปีที่ 2' },
+    { value: 'ม.3', label: 'มัธยมศึกษาปีที่ 3' },
+    { value: 'ม.4', label: 'มัธยมศึกษาปีที่ 4' },
+    { value: 'ม.5', label: 'มัธยมศึกษาปีที่ 5' },
+    { value: 'ม.6', label: 'มัธยมศึกษาปีที่ 6' }
+]
+
+const filteredClassrooms = computed(() => {
+    if (!selectedGrade.value) return classrooms.value
+    return classrooms.value.filter(classroom => classroom.grade === selectedGrade.value)
+})
+
+const fetchClassRooms = async () => {
+    loading.value = true
+    try {
+        const response = await classRoomService.getClassRooms()
+        if (response.message === 'Success' && response.data) {
+            classrooms.value = response.data
+        }
+    } catch (error) {
+        console.error('Fetch classrooms error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถโหลดข้อมูลห้องเรียนได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+        classrooms.value = []
+    } finally {
+        loading.value = false
+    }
+}
+
+const openCreateModal = () => {
+    createModalRef.value.openModal()
+}
+
+const handleCreateSuccess = async (formData) => {
+    try {
+        await classRoomService.createClassRoom({
+            grade: formData.grade,
+            classroom: formData.classroom,
+            adviser: formData.adviser
+        })
+        await fetchClassRooms()
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'success',
+            title: 'เพิ่มห้องเรียนสำเร็จ',
+            showConfirmButton: false,
+            timer: 1500,
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    } catch (error) {
+        console.error('Create classroom error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถเพิ่มห้องเรียนได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    }
+}
+
+const openDeleteConfirm = async (classroom) => {
+    const { default: Swal } = await import('sweetalert2')
+    const result = await Swal.fire({
+        title: 'ยืนยันการลบ?',
+        html: `คุณต้องการลบ <strong>${classroom.grade} ห้อง ${classroom.classroom}</strong> ใช่หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'ลบ',
+        cancelButtonText: 'ยกเลิก',
+        didOpen: () => {
+            document.getElementById('app').removeAttribute('aria-hidden')
+        }
+    })
+
+    if (result.isConfirmed) {
+        await handleDelete(classroom._id)
+    }
+}
+
+const handleDelete = async (id) => {
+    try {
+        await classRoomService.deleteClassRoom(id)
+        await fetchClassRooms()
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'success',
+            title: 'ลบห้องเรียนสำเร็จ',
+            showConfirmButton: false,
+            timer: 1500,
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    } catch (error) {
+        console.error('Delete classroom error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถลบห้องเรียนได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app').removeAttribute('aria-hidden')
+            }
+        })
+    }
+}
+
+const fetchTeachers = async () => {
+    try {
+        const response = await teacherService.getTeachers()
+        if (response.message === 'Success' && response.data) {
+            teachers.value = response.data.filter(t => [
+                'หัวหน้ากลุ่มสาระการเรียนรู้',
+                'รองหัวหน้ากลุ่มสาระการเรียนรู้',
+                'ครู'
+            ].includes(t.position))
+        }
+    } catch (error) {
+        console.error('Fetch teachers error:', error)
+        teachers.value = []
+    }
+}
+
+onMounted(() => {
+    fetchClassRooms()
+    fetchTeachers()
+})
+</script>
+
+<style scoped></style>

@@ -1,0 +1,119 @@
+<template>
+    <div v-if="loading" class="flex justify-center items-center py-12">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+
+    <div v-else-if="groupedClassrooms.length === 0" class="text-center py-12">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-300 mb-4" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <p class="text-base-content/60">ไม่มีข้อมูลห้องเรียน</p>
+    </div>
+
+    <div v-else class="space-y-6">
+        <div v-for="grade in groupedClassrooms" :key="grade.grade" class="card bg-base-100 shadow-md">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-primary flex items-center gap-2">
+                        <div :class="[
+                            'w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md',
+                            getGradeColor(grade.grade)
+                        ]">
+                            {{ grade.grade.replace('ม.', '') }}
+                        </div>
+                        <span>{{ getGradeLabel(grade.grade) }}</span>
+                    </h3>
+                    <div class="badge badge-primary badge-lg p-3">มี {{ grade.classrooms.length }} ห้อง</div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <div v-for="classroom in grade.classrooms" :key="classroom._id"
+                        class="relative group cursor-pointer">
+                        <div
+                            class="p-4 rounded-lg border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-primary mb-1">ห้อง {{ classroom.classroom }}</div>
+                                <div class="text-xs text-secondary font-medium">{{ getGradeLabel(classroom.grade) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click.stop="$emit('delete', classroom)"
+                            class="absolute -top-2 -right-2 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+    classrooms: {
+        type: Array,
+        default: () => []
+    },
+    loading: {
+        type: Boolean,
+        default: false
+    }
+})
+
+defineEmits(['delete'])
+
+const groupedClassrooms = computed(() => {
+    const groups = {}
+    props.classrooms.forEach(classroom => {
+        if (!groups[classroom.grade]) {
+            groups[classroom.grade] = {
+                grade: classroom.grade,
+                classrooms: []
+            }
+        }
+        groups[classroom.grade].classrooms.push(classroom)
+    })
+
+    return Object.values(groups)
+        .sort((a, b) => {
+            const gradeA = parseInt(a.grade.replace('ม.', ''))
+            const gradeB = parseInt(b.grade.replace('ม.', ''))
+            return gradeA - gradeB
+        })
+        .map(group => ({
+            ...group,
+            classrooms: group.classrooms.sort((a, b) => a.classroom - b.classroom)
+        }))
+})
+
+const getGradeLabel = (grade) => {
+    return grade === 'ม.1' ? 'มัธยมศึกษาปีที่ 1'
+        : grade === 'ม.2' ? 'มัธยมศึกษาปีที่ 2'
+            : grade === 'ม.3' ? 'มัธยมศึกษาปีที่ 3'
+                : grade === 'ม.4' ? 'มัธยมศึกษาปีที่ 4'
+                    : grade === 'ม.5' ? 'มัธยมศึกษาปีที่ 5'
+                        : grade === 'ม.6' ? 'มัธยมศึกษาปีที่ 6'
+                            : grade
+}
+
+const getGradeColor = (grade) => {
+    return grade === 'ม.1' ? 'bg-blue-300'
+        : grade === 'ม.2' ? 'bg-blue-400'
+            : grade === 'ม.3' ? 'bg-blue-500'
+                : grade === 'ม.4' ? 'bg-blue-600'
+                    : grade === 'ม.5' ? 'bg-blue-700'
+                        : grade === 'ม.6' ? 'bg-blue-800'
+                            : 'bg-primary'
+}
+</script>
+
+<style scoped></style>

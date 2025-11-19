@@ -149,6 +149,19 @@
                                 <span class="text-sm">จัดการตำแหน่ง</span>
                             </router-link>
                         </li>
+
+                        <li>
+                            <router-link to="/home/classroom"
+                                class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-base-200 transition-colors"
+                                :class="{ 'bg-primary/20 text-primary': isActive('/home/classroom') }">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                <span class="text-sm">จัดการห้องเรียน</span>
+                            </router-link>
+                        </li>
                     </ul>
                 </li>
 
@@ -196,7 +209,7 @@ const isPersonnelActive = computed(() => {
 })
 
 const isStructureActive = computed(() => {
-    return route.path === '/home/department' || route.path === '/home/position'
+    return route.path === '/home/department' || route.path === '/home/position' || route.path === '/home/classroom'
 })
 
 const toggleSidebar = () => {

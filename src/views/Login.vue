@@ -103,7 +103,28 @@ async function onSubmit() {
         }
     } catch (e) {
         console.error('Login error:', e)
-        formError.value = e.response?.data?.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+
+        let errorMessage = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+
+        if (e.response?.data) {
+            const errorData = e.response.data
+
+            if (errorData.message === 'Authentication failed') {
+                if (errorData.error === 'Wrong password') {
+                    errorMessage = 'รหัสผ่านไม่ถูกต้อง'
+                } else if (errorData.error === 'User not found') {
+                    errorMessage = 'ไม่พบผู้ใช้งานนี้'
+                } else {
+                    errorMessage = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+                }
+            } else if (errorData.message === 'Data not found') {
+                errorMessage = 'ไม่มีข้อมูลบัญชีนี้'
+            } else if (errorData.message) {
+                errorMessage = errorData.message
+            }
+        }
+
+        formError.value = errorMessage
     } finally {
         loading.value = false
     }

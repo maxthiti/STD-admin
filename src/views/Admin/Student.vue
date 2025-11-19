@@ -18,14 +18,9 @@
                         <label class="label py-1">
                             <span class="label-text text-sm">ชั้นปี</span>
                         </label>
-                        <select v-model="selectedGrade" @change="fetchStudents"
+                        <select v-model="selectedGrade" @change="handleGradeChange"
                             class="select select-bordered select-sm w-full sm:w-32">
-                            <option value="ม.1">ม.1</option>
-                            <option value="ม.2">ม.2</option>
-                            <option value="ม.3">ม.3</option>
-                            <option value="ม.4">ม.4</option>
-                            <option value="ม.5">ม.5</option>
-                            <option value="ม.6">ม.6</option>
+                            <option v-for="grade in availableGrades" :key="grade" :value="grade">{{ grade }}</option>
                         </select>
                     </div>
 
@@ -35,14 +30,7 @@
                         </label>
                         <select v-model="selectedClassroom" @change="fetchStudents"
                             class="select select-bordered select-sm w-full sm:w-24">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
+                            <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
                         </select>
                     </div>
 
@@ -80,7 +68,10 @@
             </div>
         </div>
 
-        <StudentTable :students="filteredStudents" :loading="loading" />
+        <StudentTable :students="filteredStudents" :loading="loading" :currentPage="currentPage"
+            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" />
+        <CreateModal ref="createModalRef" :classrooms="classrooms" @success="handleCreateSuccess" />
+        <UpdateModal ref="updateModalRef" :classrooms="classrooms" @success="handleUpdateSuccess" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -103,10 +94,17 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import StudentTable from '../../components/ListStudent/Table.vue'
+import CreateModal from '../../components/ListStudent/Create.vue'
+import UpdateModal from '../../components/ListStudent/Update.vue'
 import { StudentService } from '../../api/student'
+import { ClassRoomService } from '../../api/class-room'
 
 const studentService = new StudentService()
+const classRoomService = new ClassRoomService()
 const students = ref([])
+const classrooms = ref([])
+const createModalRef = ref(null)
+const updateModalRef = ref(null)
 const loading = ref(false)
 const selectedGrade = ref('ม.1')
 const selectedClassroom = ref('1')
@@ -114,6 +112,22 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 5
 const imageBaseUrl = import.meta.env.VITE_APP_BASE_URL + 'uploads/'
+
+const availableGrades = computed(() => {
+    const grades = [...new Set(classrooms.value.map(c => c.grade))]
+    return grades.sort((a, b) => {
+        const gradeA = parseInt(a.replace('ม.', ''))
+        const gradeB = parseInt(b.replace('ม.', ''))
+        return gradeA - gradeB
+    })
+})
+
+const availableClassrooms = computed(() => {
+    const rooms = classrooms.value
+        .filter(c => c.grade === selectedGrade.value)
+        .map(c => c.classroom)
+    return rooms.sort((a, b) => a - b)
+})
 
 const filteredBySearch = computed(() => {
     if (!searchQuery.value.trim()) {
@@ -160,6 +174,32 @@ const handleSearch = () => {
     currentPage.value = 1
 }
 
+const handleGradeChange = () => {
+    // เมื่อเปลี่ยนชั้นปี ให้เลือกห้องแรกที่มีในชั้นนั้น
+    if (availableClassrooms.value.length > 0) {
+        selectedClassroom.value = availableClassrooms.value[0]
+    }
+    fetchStudents()
+}
+
+const fetchClassRooms = async () => {
+    try {
+        const response = await classRoomService.getClassRooms()
+        if (response.message === 'Success' && response.data) {
+            classrooms.value = response.data
+            // ตั้งค่าเริ่มต้น
+            if (availableGrades.value.length > 0) {
+                selectedGrade.value = availableGrades.value[0]
+                if (availableClassrooms.value.length > 0) {
+                    selectedClassroom.value = availableClassrooms.value[0]
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Fetch classrooms error:', error)
+    }
+}
+
 const fetchStudents = async () => {
     loading.value = true
     currentPage.value = 1
@@ -198,13 +238,97 @@ const fetchStudents = async () => {
 }
 
 const resetFilters = () => {
-    selectedGrade.value = 'ม.1'
-    selectedClassroom.value = '1'
+    if (availableGrades.value.length > 0) {
+        selectedGrade.value = availableGrades.value[0]
+        if (availableClassrooms.value.length > 0) {
+            selectedClassroom.value = availableClassrooms.value[0]
+        }
+    }
     searchQuery.value = ''
     fetchStudents()
 }
 
-onMounted(() => {
+const openCreateModal = () => {
+    createModalRef.value.openModal()
+}
+
+const handleCreateSuccess = async (formData) => {
+    loading.value = true
+    try {
+        const response = await studentService.createStudent(formData)
+        if (response.message === 'Success') {
+            const { default: Swal } = await import('sweetalert2')
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: 'เพิ่มนักเรียนเรียบร้อยแล้ว',
+                timer: 2000,
+                showConfirmButton: false,
+                didOpen: () => {
+                    document.getElementById('app')?.removeAttribute('aria-hidden')
+                }
+            })
+            fetchStudents()
+        }
+    } catch (error) {
+        console.error('Create student error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถเพิ่มนักเรียนได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app')?.removeAttribute('aria-hidden')
+            }
+        })
+    } finally {
+        loading.value = false
+    }
+}
+
+const openUpdateModal = (student) => {
+    updateModalRef.value.openModal(student)
+}
+
+const handleUpdateSuccess = async (payload) => {
+    loading.value = true
+    try {
+        const { id, ...data } = payload
+        const response = await studentService.updateStudent(id, data)
+        if (response.message === 'Success') {
+            const { default: Swal } = await import('sweetalert2')
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกสำเร็จ',
+                text: 'แก้ไขข้อมูลนักเรียนเรียบร้อยแล้ว',
+                timer: 2000,
+                showConfirmButton: false,
+                didOpen: () => {
+                    document.getElementById('app')?.removeAttribute('aria-hidden')
+                }
+            })
+            fetchStudents()
+        }
+    } catch (error) {
+        console.error('Update student error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถแก้ไขข้อมูลนักเรียนได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app')?.removeAttribute('aria-hidden')
+            }
+        })
+    } finally {
+        loading.value = false
+    }
+}
+
+onMounted(async () => {
+    await fetchClassRooms()
     fetchStudents()
 })
 </script>

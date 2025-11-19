@@ -53,22 +53,23 @@
                                 </div>
                             </th>
                             <th class="bg-primary text-primary-content hidden xl:table-cell">อีเมล</th>
+                            <th class="bg-primary text-primary-content w-24 text-center">จัดการ</th>
                             <!-- <th class="bg-primary text-primary-content hidden xl:table-cell">เบอร์โทร</th> -->
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="loading">
-                            <td colspan="7" class="text-center py-8">
+                            <td colspan="8" class="text-center py-8">
                                 <span class="loading loading-spinner loading-lg text-primary"></span>
                             </td>
                         </tr>
                         <tr v-else-if="teachers.length === 0">
-                            <td colspan="7" class="text-center py-8 text-base-content/50">
+                            <td colspan="8" class="text-center py-8 text-base-content/50">
                                 ไม่มีข้อมูลอาจารย์
                             </td>
                         </tr>
                         <tr v-else v-for="(teacher, index) in teachers" :key="teacher.id" class="hover">
-                            <td class="hidden lg:table-cell">{{ index + 1 }}</td>
+                            <td class="hidden lg:table-cell">{{ getRowNumber(index) }}</td>
                             <td>
                                 <div class="flex items-center gap-3">
                                     <div class="avatar">
@@ -91,6 +92,18 @@
                             </td>
                             <td class="hidden lg:table-cell text-xs">{{ teacher.position }}</td>
                             <td class="hidden xl:table-cell text-xs">{{ teacher.email }}</td>
+                            <td>
+                                <div class="flex gap-2 justify-center">
+                                    <button @click="$emit('edit', teacher)" class="btn btn-ghost btn-sm btn-square"
+                                        title="แก้ไข">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
                             <!-- <td class="hidden xl:table-cell">{{ teacher.phone }}</td> -->
                         </tr>
                     </tbody>
@@ -103,7 +116,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 
-const emit = defineEmits(['filterDepartment', 'filterPosition'])
+const emit = defineEmits(['filterDepartment', 'filterPosition', 'edit'])
 
 const props = defineProps({
     teachers: {
@@ -129,6 +142,14 @@ const props = defineProps({
     positions: {
         type: Array,
         default: () => []
+    },
+    currentPage: {
+        type: Number,
+        default: 1
+    },
+    itemsPerPage: {
+        type: Number,
+        default: 5
     }
 })
 
@@ -157,6 +178,10 @@ const getShortDepartmentName = (name) => {
     }
 
     return name
+}
+
+const getRowNumber = (index) => {
+    return (props.currentPage - 1) * props.itemsPerPage + index + 1
 }
 
 const handleDepartmentFilter = (value) => {

@@ -29,31 +29,68 @@ export class StudentService {
     }
   }
 
-  //   async createStudent(studentData) {
-  //     try {
-  //       const params = new URLSearchParams();
-  //       Object.keys(studentData).forEach((key) => {
-  //         params.append(key, studentData[key]);
-  //       });
+  async createStudent(formData) {
+    try {
+      const data = new FormData();
+      data.append("userid", formData.userid);
+      data.append("pre_name", formData.pre_name);
+      data.append("first_name", formData.first_name);
+      data.append("last_name", formData.last_name);
+      data.append("grade", formData.grade);
+      data.append("classroom", formData.classroom);
 
-  //       let config = {
-  //         method: "post",
-  //         maxBodyLength: Infinity,
-  //         url: `${this.baseUrl}users/student`,
-  //         headers: {
-  //           "Content-Type": "application/x-www-form-urlencoded",
-  //           Authorization: `Bearer ${this.token}`,
-  //         },
-  //         data: params,
-  //       };
+      if (formData.picture) {
+        data.append("picture", formData.picture);
+      }
 
-  //       const response = await axios.request(config);
-  //       return response.data;
-  //     } catch (error) {
-  //       console.error("Create student error:", error);
-  //       throw error;
-  //     }
-  //   }
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}users/student`,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${this.token}`,
+        },
+        data: data,
+      };
+
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error("Create student error:", error);
+      throw error;
+    }
+  }
+
+  async updateStudent(id, formData) {
+    try {
+      const data = new FormData();
+      if (formData.userid) data.append("userid", formData.userid);
+      if (formData.pre_name) data.append("pre_name", formData.pre_name);
+      if (formData.first_name) data.append("first_name", formData.first_name);
+      if (formData.last_name) data.append("last_name", formData.last_name);
+      if (formData.grade) data.append("grade", formData.grade);
+      if (formData.classroom) data.append("classroom", formData.classroom);
+      if (formData.picture) data.append("picture", formData.picture);
+
+      let config = {
+        method: "patch",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}users/student/${id}`,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${this.token}`,
+        },
+        data: data,
+      };
+
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error("Update student error:", error);
+      throw error;
+    }
+  }
 
   //   // DELETE - ลบนักเรียน
   //   async deleteStudent(studentId) {
