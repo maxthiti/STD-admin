@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, defineExpose, defineEmits } from 'vue'
+import { ref } from 'vue'
 import DeviceService from '../../api/device'
 import Swal from 'sweetalert2'
 

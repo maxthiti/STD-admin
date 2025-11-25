@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, defineExpose, defineEmits } from 'vue'
+import { ref } from 'vue'
 
 const createModal = ref(null)
 const emit = defineEmits(['success'])

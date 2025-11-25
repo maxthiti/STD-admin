@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref, defineExpose, defineEmits } from 'vue'
+import { ref } from 'vue'
 
 const updateModal = ref(null)
 const emit = defineEmits(['success'])

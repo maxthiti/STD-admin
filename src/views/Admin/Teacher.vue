@@ -51,7 +51,7 @@
         <TeacherTable :teachers="paginatedTeachers" :loading="loading" :departmentFilter="filterDepartment"
             :positionFilter="filterPosition" :departments="departments" :positions="positions"
             :currentPage="currentPage" :itemsPerPage="itemsPerPage" @filterDepartment="handleFilterDepartment"
-            @filterPosition="handleFilterPosition" @edit="openEditModal" />
+            @filterPosition="handleFilterPosition" @edit="openEditModal" @delete="openDeleteModal" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -74,6 +74,8 @@
 
         <CreateModal ref="createModalRef" :departments="departments" :positions="positions"
             @success="handleCreateSuccess" />
+
+        <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
     </div>
 </template>
 
@@ -82,6 +84,7 @@ import { ref, onMounted, computed } from 'vue'
 import TeacherTable from '../../components/ListTeacher/Table.vue'
 import UpdateModal from '../../components/ListTeacher/Update.vue'
 import CreateModal from '../../components/ListTeacher/Create.vue'
+import DeleteModal from '../../components/ListTeacher/Delete.vue'
 import { TeacherService } from '../../api/teacher'
 import { DepartmentService } from '../../api/department'
 import { PositionService } from '../../api/position'
@@ -102,6 +105,7 @@ const itemsPerPage = 5
 const imageBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 const updateModalRef = ref(null)
 const createModalRef = ref(null)
+const deleteModalRef = ref(null)
 
 const totalPages = computed(() => Math.ceil(teachers.value.length / itemsPerPage))
 
@@ -214,6 +218,14 @@ const openEditModal = (teacher) => {
 
 const openCreateModal = () => {
     createModalRef.value.openModal()
+}
+
+const openDeleteModal = (teacher) => {
+    deleteModalRef.value?.open(teacher)
+}
+
+const handleDeleteSuccess = () => {
+    fetchTeachers()
 }
 
 const handleUpdateSuccess = async (id, formData) => {

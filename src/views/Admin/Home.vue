@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-6">
-        <DashBoardData :centerDate="startDate" />
-        <DashBoardGraph :centerDate="startDate" />
+        <DashBoardData @dateChange="handleDateChange" />
+        <DashBoardGraph :date="selectedDate" />
     </div>
 </template>
 
@@ -10,7 +10,11 @@ import { ref } from 'vue'
 import DashBoardData from '../../components/DashBoard/DashBoard-data.vue'
 import DashBoardGraph from '../../components/DashBoard/DashBoard-graph.vue'
 
-const startDate = ref(new Date())
+const selectedDate = ref(new Date().toISOString().split('T')[0])
+
+const handleDateChange = (newDate) => {
+    selectedDate.value = newDate
+}
 </script>
 
 <style scoped></style>

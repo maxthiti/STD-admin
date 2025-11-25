@@ -217,6 +217,92 @@
                 </li>
 
                 <li>
+                    <div @click="toggleReport"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer relative group"
+                        :class="{ 'bg-primary text-primary-content': isReportActive }">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span v-show="isExpanded" class="font-medium whitespace-nowrap">รายงาน</span>
+                        <svg v-show="isExpanded" xmlns="http://www.w3.org/2000/svg"
+                            :class="['h-4 w-4 ml-auto transition-transform', isReportOpen ? 'rotate-180' : '']"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+
+                        <div v-show="!isExpanded"
+                            class="absolute left-full ml-2 px-3 py-2 bg-base-300 text-base-content rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                            รายงาน
+                        </div>
+                    </div>
+
+                    <ul v-show="isExpanded && isReportOpen" class="ml-4 mt-2 space-y-2">
+                        <li>
+                            <router-link to="/home/report"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
+                                :class="submenuClass('/home/report')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <span>ตารางเข้า-ออก</span>
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link to="/home/report/late"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
+                                :class="submenuClass('/home/report/late')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>ตารางมาสาย</span>
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link to="/home/report/missed"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
+                                :class="submenuClass('/home/report/missed')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                <span>ตารางขาดเรียน/ขาดงาน</span>
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link to="/home/report/stranger"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
+                                :class="submenuClass('/home/report/stranger')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>ตารางบุคคลภายนอก</span>
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link to="/home/report/stats"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
+                                :class="submenuClass('/home/report/stats')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                <span>สถิติ</span>
+                            </router-link>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
                     <router-link to="/home/account"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors relative group"
                         :class="{ 'bg-primary text-primary-content': isActive('/home/account') }">
@@ -250,6 +336,7 @@ const isPinned = ref(true)
 const isPersonnelOpen = ref(false)
 const isStructureOpen = ref(false)
 const isEquipmentOpen = ref(false)
+const isReportOpen = ref(false)
 const isMobileMenuOpen = ref(false)
 
 const isActive = (path) => {
@@ -266,6 +353,10 @@ const isStructureActive = computed(() => {
 
 const isEquipmentActive = computed(() => {
     return route.path === '/home/device' || route.path === '/home/model'
+})
+
+const isReportActive = computed(() => {
+    return route.path === '/home/report' || route.path === '/home/report/late' || route.path === '/home/report/missed' || route.path === '/home/report/stranger' || route.path === '/home/report/stats'
 })
 
 const submenuClass = (path) => {
@@ -287,6 +378,10 @@ const toggleStructure = () => {
 
 const toggleEquipment = () => {
     isEquipmentOpen.value = !isEquipmentOpen.value
+}
+
+const toggleReport = () => {
+    isReportOpen.value = !isReportOpen.value
 }
 
 const openMobileMenu = () => {

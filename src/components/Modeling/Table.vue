@@ -34,16 +34,11 @@
                     <td>
                         <div class="flex items-center justify-center gap-2">
                             <div v-for="(model, idx) in item.modeling" :key="idx" class="tooltip tooltip-top"
-                                :data-tip="`${model.device.location}`">
+                                :data-tip="`${model.device.location} - ${statusLabel(model.status)}`">
                                 <div :class="[
                                     'w-3 h-3 rounded-full cursor-help transition-transform hover:scale-125',
-                                    model.status === 2
-                                        ? 'bg-success'
-                                        : model.status === 1
-                                            ? 'bg-warning'
-                                            : 'bg-error',
-                                ]">
-                                </div>
+                                    statusColorClass(model.status)
+                                ]" :aria-label="statusLabel(model.status)" role="img"></div>
                             </div>
                         </div>
                     </td>
@@ -94,19 +89,23 @@
                 <span class="text-sm text-base-content/60 block mb-2">สถานะ Modeling:</span>
                 <div class="flex flex-wrap gap-2">
                     <div v-for="(model, idx) in item.modeling" :key="idx" class="tooltip tooltip-top"
-                        :data-tip="`${model.device.location}`">
+                        :data-tip="`${model.device.location} - ${statusLabel(model.status)}`">
                         <div :class="[
                             'w-4 h-4 rounded-full cursor-help transition-transform hover:scale-125',
-                            model.status === 2
-                                ? 'bg-success'
-                                : model.status === 1
-                                    ? 'bg-warning'
-                                    : 'bg-error',
-                        ]">
-                        </div>
+                            statusColorClass(model.status)
+                        ]" :aria-label="statusLabel(model.status)" role="img"></div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-4 text-xs">
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-success inline-block"></span> สำเร็จ
+        </div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-warning inline-block"></span>
+            รอตรวจสอบ</div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-error inline-block"></span> ไม่สำเร็จ
         </div>
     </div>
 </template>
@@ -126,6 +125,21 @@ defineProps({
         default: 10,
     },
 });
+
+// Map status codes to Thai labels
+const statusLabel = (s) => {
+    if (s === 2) return 'สำเร็จ'
+    if (s === 1) return 'รอตรวจสอบ' // หรือ 'กำลังประมวลผล' หากต้องการเปลี่ยน
+    return 'ไม่สำเร็จ'
+}
+
+// Map status codes to Tailwind/DaisyUI color classes
+const statusColorClass = (s) => {
+    if (s === 2) return 'bg-success'
+    if (s === 1) return 'bg-warning'
+    return 'bg-error'
+}
+
 </script>
 
 <style scoped></style>

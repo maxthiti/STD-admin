@@ -93,23 +93,22 @@ export class StudentService {
     }
   }
 
-  //   // DELETE - ลบนักเรียน
-  //   async deleteStudent(studentId) {
-  //     try {
-  //       let config = {
-  //         method: "delete",
-  //         maxBodyLength: Infinity,
-  //         url: `${this.baseUrl}users/student/${studentId}`,
-  //         headers: {
-  //           Authorization: `Bearer ${this.token}`,
-  //         },
-  //       };
-
-  //       const response = await axios.request(config);
-  //       return response.data;
-  //     } catch (error) {
-  //       console.error("Delete student error:", error);
-  //       throw error;
-  //     }
-  //   }
+  async deleteStudent(studentId) {
+    try {
+      this.token = localStorage.getItem("token");
+      const config = {
+        method: "delete",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}users/student/${studentId}`,
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      };
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error("Delete student error:", error);
+      throw error;
+    }
+  }
 }

@@ -118,4 +118,23 @@ export class TeacherService {
       throw error;
     }
   }
+
+  async deleteTeacher(teacherId) {
+    try {
+      this.token = localStorage.getItem("token");
+      const config = {
+        method: "delete",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}users/teacher/${teacherId}`,
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      };
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error("Delete teacher error:", error);
+      throw error;
+    }
+  }
 }

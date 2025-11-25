@@ -11,6 +11,11 @@ const Position = () => import("../views/Admin/Position.vue");
 const ClassRoom = () => import("../views/Admin/ClassRoom.vue");
 const Device = () => import("../views/Admin/Device.vue");
 const Modeling = () => import("../views/Admin/Modeling.vue");
+const TableReport = () => import("../views/Admin/report/Attendance.vue");
+const LateReport = () => import("../views/Admin/report/Late.vue");
+const MissedReport = () => import("../views/Admin/report/Missed.vue");
+const StrangerReport = () => import("../views/Admin/report/Stranger.vue");
+const StatsView = () => import("../views/Admin/report/StatsView.vue");
 
 const routes = [
   { path: "/", name: "login", component: Login },
@@ -64,6 +69,31 @@ const routes = [
         path: "classroom",
         name: "ClassRoom",
         component: ClassRoom,
+      },
+      {
+        path: "report",
+        name: "TableReport",
+        component: TableReport,
+      },
+      {
+        path: "report/late",
+        name: "LateReport",
+        component: LateReport,
+      },
+      {
+        path: "report/missed",
+        name: "MissedReport",
+        component: MissedReport,
+      },
+      {
+        path: "report/stranger",
+        name: "StrangerReport",
+        component: StrangerReport,
+      },
+      {
+        path: "report/stats",
+        name: "StatsView",
+        component: StatsView,
       },
     ],
   },

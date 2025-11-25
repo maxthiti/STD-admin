@@ -1,104 +1,133 @@
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="stats shadow bg-base-100" @mouseenter="playAnimation" @mouseleave="stopAnimation">
-            <div class="stat">
-                <div class="stat-figure">
-                    <Vue3Lottie ref="lottieRef" :animationData="avatarAnimation" :height="80" :width="80" :loop="false"
-                        :autoPlay="false" />
-                </div>
-                <div class="stat-title">ทั้งหมด</div>
-                <div class="stat-value text-purple-500">{{ stats.total }}</div>
-                <div class="stat-desc">จำนวนทั้งหมดในระบบ</div>
+    <div class="space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold">สรุปรายวัน</h3>
+            <div class="flex items-center gap-2">
+                <input type="date" v-model="selectedDate" class="input input-sm input-bordered" @change="fetchDaily" />
+                <span v-if="loading" class="loading loading-spinner loading-sm"></span>
             </div>
         </div>
 
-        <div class="stats shadow bg-base-100">
-            <div class="stat">
-                <div class="stat-figure text-success">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        class="inline-block w-8 h-8 stroke-current">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                    </svg>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="stats shadow bg-base-100">
+                <div class="stat">
+                    <div class="stat-title">จำนวนนักเรียนทั้งหมด</div>
+                    <div class="stat-value text-primary">{{ totals.total_students || 0 }}</div>
                 </div>
-                <div class="stat-title">เข้า</div>
-                <div class="stat-value text-success">{{ stats.checkIn }}</div>
-                <div class="stat-desc">↗︎ เข้าวันนี้</div>
+            </div>
+            <div class="stats shadow bg-base-100">
+                <div class="stat">
+                    <div class="stat-title">จำนวนครูทั้งหมด</div>
+                    <div class="stat-value text-secondary">{{ totals.total_teachers || 0 }}</div>
+                </div>
+            </div>
+            <div class="stats shadow bg-base-100">
+                <div class="stat">
+                    <div class="stat-title">ทั้งหมดที่เข้า</div>
+                    <div class="stat-value text-purple-500">{{ totalCombined }}</div>
+                    <div class="stat-desc">ประจำวันที่ {{ displayDate }}</div>
+                </div>
             </div>
         </div>
 
-        <div class="stats shadow bg-base-100">
-            <div class="stat">
-                <div class="stat-figure text-warning">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        class="inline-block w-8 h-8 stroke-current">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body p-4">
+                    <h4 class="card-title">นักเรียน</h4>
+                    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
+                        <div class="stat">
+                            <div class="stat-title">เข้า</div>
+                            <div class="stat-value text-success">{{ student.total }}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-title">มาสาย</div>
+                            <div class="stat-value text-warning">{{ student.late }}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-title">ขาด</div>
+                            <div class="stat-value text-error">{{ studentAbsent }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-title">ออก</div>
-                <div class="stat-value text-warning">{{ stats.checkOut }}</div>
-                <div class="stat-desc">↘︎ ออกวันนี้</div>
             </div>
-        </div>
 
-        <div class="stats shadow bg-base-100">
-            <div class="stat">
-                <div class="stat-figure text-info">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        class="inline-block w-8 h-8 stroke-current">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body p-4">
+                    <h4 class="card-title">ครู</h4>
+                    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
+                        <div class="stat">
+                            <div class="stat-title">เข้า</div>
+                            <div class="stat-value text-info">{{ teacher.total }}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-title">มาสาย</div>
+                            <div class="stat-value text-warning">{{ teacher.late }}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-title">ขาด</div>
+                            <div class="stat-value text-warning">{{ teacherAbsent }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-title">คงเหลือ</div>
-                <div class="stat-value text-info">{{ stats.remaining }}</div>
-                <div class="stat-desc">อยู่ในพื้นที่</div>
             </div>
         </div>
     </div>
+
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Vue3Lottie } from 'vue3-lottie'
-import avatarAnimation from '../../assets/wired-gradient-21-avatar-morph-group.json'
+import { ref, onMounted, computed } from 'vue'
+import reportApi from '../../api/report.js'
 
-const props = defineProps({
-    centerDate: {
-        type: Date,
-        default: () => new Date()
-    }
+const emit = defineEmits(['dateChange'])
+
+const selectedDate = ref(new Date().toISOString().split('T')[0])
+const loading = ref(false)
+
+const totals = ref({ total_students: 0, total_teachers: 0 })
+const student = ref({ total: 0, late: 0 })
+const teacher = ref({ total: 0, late: 0 })
+
+const displayDate = computed(() => {
+    const d = new Date(selectedDate.value)
+    const dd = String(d.getDate()).padStart(2, '0')
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const yyyy = d.getFullYear()
+    return `${dd}/${mm}/${yyyy}`
 })
 
-const lottieRef = ref(null)
+const totalCombined = computed(() => (student.value.total || 0) + (teacher.value.total || 0))
+const studentAbsent = computed(() => Math.max((totals.value.total_students || 0) - (student.value.total || 0), 0))
+const teacherAbsent = computed(() => Math.max((totals.value.total_teachers || 0) - (teacher.value.total || 0), 0))
 
-const stats = ref({
-    total: 0,
-    checkIn: 0,
-    checkOut: 0,
-    remaining: 0
-})
-
-const playAnimation = () => {
-    if (lottieRef.value) {
-        lottieRef.value.play()
-    }
-}
-
-const stopAnimation = () => {
-    if (lottieRef.value) {
-        lottieRef.value.stop()
+async function fetchDaily() {
+    loading.value = true
+    emit('dateChange', selectedDate.value)
+    try {
+        const start = selectedDate.value
+        const end = selectedDate.value
+        const res = await reportApi.getDailyStats(start, end)
+        if (res.message === 'Success' && res.data) {
+            totals.value.total_students = res.data.total_students || 0
+            totals.value.total_teachers = res.data.total_teachers || 0
+            const list = res.data.daily_stats || []
+            const stu = list.find(x => x.role === 'student') || { total: 0, late: 0 }
+            const tea = list.find(x => x.role === 'teacher') || { total: 0, late: 0 }
+            student.value = { total: stu.total || 0, late: stu.late || 0 }
+            teacher.value = { total: tea.total || 0, late: tea.late || 0 }
+        }
+    } catch (e) {
+        console.error('Daily summary error', e)
+        totals.value = { total_students: 0, total_teachers: 0 }
+        student.value = { total: 0, late: 0 }
+        teacher.value = { total: 0, late: 0 }
+    } finally {
+        loading.value = false
     }
 }
 
 onMounted(() => {
-    stats.value = {
-        total: 1250,
-        checkIn: 342,
-        checkOut: 287,
-        remaining: 55
-    }
+    fetchDaily()
 })
 </script>
 

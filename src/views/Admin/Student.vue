@@ -69,9 +69,10 @@
         </div>
 
         <StudentTable :students="filteredStudents" :loading="loading" :currentPage="currentPage"
-            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" />
+            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" @delete="openDeleteModal" />
         <CreateModal ref="createModalRef" :classrooms="classrooms" @success="handleCreateSuccess" />
         <UpdateModal ref="updateModalRef" :classrooms="classrooms" @success="handleUpdateSuccess" />
+        <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -96,6 +97,7 @@ import { ref, onMounted, computed } from 'vue'
 import StudentTable from '../../components/ListStudent/Table.vue'
 import CreateModal from '../../components/ListStudent/Create.vue'
 import UpdateModal from '../../components/ListStudent/Update.vue'
+import DeleteModal from '../../components/ListStudent/Delete.vue'
 import { StudentService } from '../../api/student'
 import { ClassRoomService } from '../../api/class-room'
 
@@ -323,6 +325,14 @@ const handleUpdateSuccess = async (payload) => {
     } finally {
         loading.value = false
     }
+}
+
+const deleteModalRef = ref(null)
+const openDeleteModal = (student) => {
+    deleteModalRef.value?.open(student)
+}
+const handleDeleteSuccess = () => {
+    fetchStudents()
 }
 
 onMounted(async () => {

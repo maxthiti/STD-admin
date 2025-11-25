@@ -1,0 +1,632 @@
+<template>
+    <div class="p-6 space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-primary">สถิติการเข้า-ออก</h1>
+            <div class="flex items-center gap-3">
+                <select v-model="viewMode" @change="handleViewModeChange" class="select select-sm select-bordered">
+                    <option value="week">รายอาทิตย์</option>
+                    <option value="month">รายเดือน</option>
+                </select>
+
+                <div v-if="viewMode === 'week'" class="flex items-center gap-2">
+                    <button @click="navigateWeek(-1)" class="btn btn-xs btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <span class="text-sm whitespace-nowrap">{{ weekLabel }}</span>
+                    <button @click="navigateWeek(1)" class="btn btn-xs btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                    <span v-if="primaryLoading" class="loading loading-spinner loading-xs"></span>
+                </div>
+
+                <div v-else-if="viewMode === 'month'" class="flex items-center gap-2">
+                    <button @click="navigateMonth(-1)" class="btn btn-xs btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <span class="text-sm whitespace-nowrap">{{ monthLabel }}</span>
+                    <button @click="navigateMonth(1)" class="btn btn-xs btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                    <span v-if="primaryLoading" class="loading loading-spinner loading-xs"></span>
+                </div>
+
+                <button @click="toggleCompare" class="btn btn-sm btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    {{ compareMode ? 'ปิดการเปรียบเทียบ' : 'เปรียบเทียบ' }}
+                </button>
+            </div>
+        </div>
+
+        <div :class="['grid gap-6', compareMode ? 'lg:grid-cols-2' : 'lg:grid-cols-1']">
+            <div class="space-y-4">
+                <div v-if="primary.data" class="grid grid-cols-2 gap-3">
+                    <div class="stat bg-base-100 shadow rounded-lg p-3">
+                        <div class="stat-title text-xs">นักเรียนทั้งหมด</div>
+                        <div class="stat-value text-2xl text-primary">{{ primary.data.total_students || 0 }}</div>
+                    </div>
+                    <div class="stat bg-base-100 shadow rounded-lg p-3">
+                        <div class="stat-title text-xs">ครูทั้งหมด</div>
+                        <div class="stat-value text-2xl text-secondary">{{ primary.data.total_teachers || 0 }}</div>
+                    </div>
+                </div>
+
+                <div v-if="primary.stats" class="grid grid-cols-2 gap-3">
+                    <div class="card bg-success/10 shadow-sm p-3">
+                        <div class="text-xs font-medium">วันที่เข้ามากที่สุด</div>
+                        <div class="text-lg font-bold text-success">{{ primary.stats.maxDay.date }}</div>
+                        <div class="text-xs text-base-content/70">{{ primary.stats.maxDay.total }} คน</div>
+                    </div>
+                    <div class="card bg-warning/10 shadow-sm p-3">
+                        <div class="text-xs font-medium">วันที่สายมากที่สุด</div>
+                        <div class="text-lg font-bold text-warning">{{ primary.stats.maxLateDay.date }}</div>
+                        <div class="text-xs text-base-content/70">{{ primary.stats.maxLateDay.late }} คน</div>
+                    </div>
+                </div>
+
+                <div v-if="primary.data" class="bg-base-100 rounded-lg shadow-lg p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold">กราฟ</h3>
+                        <select v-model="primary.chartType" @change="buildPrimaryChart"
+                            class="select select-sm select-bordered">
+                            <option value="bar">กราฟแท่ง</option>
+                            <option value="line">กราฟเส้น</option>
+                        </select>
+                    </div>
+                    <div class="h-80">
+                        <canvas ref="primaryChartRef"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="compareMode" class="space-y-4">
+                <div class="bg-base-100 rounded-lg shadow-lg p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-semibold">ช่วงที่ 2 (เปรียบเทียบ)</h2>
+                        <div class="flex items-center gap-2">
+                            <div v-if="viewMode === 'week'" class="flex items-center gap-2">
+                                <button @click="navigateCompareWeek(-1)" class="btn btn-xs btn-circle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <span class="text-sm whitespace-nowrap">{{ compareWeekLabel }}</span>
+                                <button @click="navigateCompareWeek(1)" class="btn btn-xs btn-circle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                                <span v-if="compareLoading" class="loading loading-spinner loading-xs"></span>
+                            </div>
+                            <div v-else-if="viewMode === 'month'" class="flex items-center gap-2">
+                                <button @click="navigateCompareMonth(-1)" class="btn btn-xs btn-circle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <span class="text-sm whitespace-nowrap">{{ compareMonthLabel }}</span>
+                                <button @click="navigateCompareMonth(1)" class="btn btn-xs btn-circle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                                <span v-if="compareLoading" class="loading loading-spinner loading-xs"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="compare.stats" class="grid grid-cols-2 gap-3">
+                    <div class="card bg-success/10 shadow-sm p-3">
+                        <div class="text-xs font-medium">วันที่เข้ามากที่สุด</div>
+                        <div class="text-lg font-bold text-success">{{ compare.stats.maxDay.date }}</div>
+                        <div class="text-xs text-base-content/70">{{ compare.stats.maxDay.total }} คน</div>
+                    </div>
+                    <div class="card bg-warning/10 shadow-sm p-3">
+                        <div class="text-xs font-medium">วันที่สายมากที่สุด</div>
+                        <div class="text-lg font-bold text-warning">{{ compare.stats.maxLateDay.date }}</div>
+                        <div class="text-xs text-base-content/70">{{ compare.stats.maxLateDay.late }} คน</div>
+                    </div>
+                </div>
+
+                <div v-if="compare.data" class="bg-base-100 rounded-lg shadow-lg p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold">กราฟ</h3>
+                        <select v-model="compare.chartType" @change="buildCompareChart"
+                            class="select select-sm select-bordered">
+                            <option value="bar">กราฟแท่ง</option>
+                            <option value="line">กราฟเส้น</option>
+                        </select>
+                    </div>
+                    <div class="h-80">
+                        <canvas ref="compareChartRef"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import reportApi from '../../api/report.js'
+
+const compareMode = ref(false)
+const primaryLoading = ref(false)
+const compareLoading = ref(false)
+const viewMode = ref('week')
+
+const currentWeekStart = ref(new Date())
+const currentMonthDate = ref(new Date())
+const compareWeekStart = ref(new Date())
+const compareMonthDate = ref(new Date())
+
+const primary = ref({
+    startDate: '',
+    endDate: '',
+    chartType: 'bar',
+    data: null,
+    stats: null
+})
+
+const compare = ref({
+    startDate: '',
+    endDate: '',
+    chartType: 'bar',
+    data: null,
+    stats: null
+})
+
+const primaryChartRef = ref(null)
+const compareChartRef = ref(null)
+let primaryChart = null
+let compareChart = null
+
+function getMonday(d) {
+    const date = new Date(d)
+    const day = date.getDay()
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+    return new Date(date.setDate(diff))
+}
+
+function getSunday(monday) {
+    const date = new Date(monday)
+    date.setDate(date.getDate() + 6)
+    return date
+}
+
+function getFirstDayOfMonth(d) {
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+}
+
+function getLastDayOfMonth(d) {
+    return new Date(d.getFullYear(), d.getMonth() + 1, 0)
+}
+
+function formatDate(date) {
+    return date.toISOString().split('T')[0]
+}
+
+function formatDateThai(date) {
+    const d = new Date(date)
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
+}
+
+function getThaiMonth(monthIndex) {
+    const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
+    return months[monthIndex]
+}
+
+const weekLabel = computed(() => {
+    if (viewMode.value !== 'week') return ''
+    const monday = getMonday(currentWeekStart.value)
+    const sunday = getSunday(monday)
+    return `${formatDateThai(monday)} - ${formatDateThai(sunday)}`
+})
+
+const monthLabel = computed(() => {
+    if (viewMode.value !== 'month') return ''
+    const date = new Date(currentMonthDate.value)
+    return `${getThaiMonth(date.getMonth())} ${date.getFullYear()}`
+})
+
+const compareWeekLabel = computed(() => {
+    if (viewMode.value !== 'week') return ''
+    const monday = getMonday(compareWeekStart.value)
+    const sunday = getSunday(monday)
+    return `${formatDateThai(monday)} - ${formatDateThai(sunday)}`
+})
+
+const compareMonthLabel = computed(() => {
+    if (viewMode.value !== 'month') return ''
+    const date = new Date(compareMonthDate.value)
+    return `${getThaiMonth(date.getMonth())} ${date.getFullYear()}`
+})
+
+function initializeCurrentWeek() {
+    const monday = getMonday(new Date())
+    currentWeekStart.value = monday
+    const sunday = getSunday(monday)
+    primary.value.startDate = formatDate(monday)
+    primary.value.endDate = formatDate(sunday)
+}
+
+function initializeCurrentMonth() {
+    const now = new Date()
+    currentMonthDate.value = now
+    primary.value.startDate = formatDate(getFirstDayOfMonth(now))
+    primary.value.endDate = formatDate(getLastDayOfMonth(now))
+}
+
+function navigateWeek(direction) {
+    const monday = getMonday(currentWeekStart.value)
+    monday.setDate(monday.getDate() + (direction * 7))
+    currentWeekStart.value = monday
+    const sunday = getSunday(monday)
+    primary.value.startDate = formatDate(monday)
+    primary.value.endDate = formatDate(sunday)
+}
+
+function navigateMonth(direction) {
+    const date = new Date(currentMonthDate.value)
+    date.setMonth(date.getMonth() + direction)
+    currentMonthDate.value = date
+    primary.value.startDate = formatDate(getFirstDayOfMonth(date))
+    primary.value.endDate = formatDate(getLastDayOfMonth(date))
+}
+
+function navigateCompareWeek(direction) {
+    const monday = getMonday(compareWeekStart.value)
+    monday.setDate(monday.getDate() + (direction * 7))
+    compareWeekStart.value = monday
+    const sunday = getSunday(monday)
+    compare.value.startDate = formatDate(monday)
+    compare.value.endDate = formatDate(sunday)
+}
+
+function navigateCompareMonth(direction) {
+    const date = new Date(compareMonthDate.value)
+    date.setMonth(date.getMonth() + direction)
+    compareMonthDate.value = date
+    compare.value.startDate = formatDate(getFirstDayOfMonth(date))
+    compare.value.endDate = formatDate(getLastDayOfMonth(date))
+}
+
+function handleViewModeChange() {
+    if (viewMode.value === 'week') {
+        initializeCurrentWeek()
+    } else {
+        initializeCurrentMonth()
+    }
+    if (compareMode.value) {
+        compareMode.value = false
+        compare.value.data = null
+        compare.value.stats = null
+        if (compareChart) compareChart.destroy()
+    }
+}
+
+function toggleCompare() {
+    compareMode.value = !compareMode.value
+    if (compareMode.value) {
+        if (viewMode.value === 'week') {
+            const nextMonday = new Date(currentWeekStart.value)
+            nextMonday.setDate(nextMonday.getDate() + 7)
+            compareWeekStart.value = nextMonday
+            const nextSunday = getSunday(nextMonday)
+            compare.value.startDate = formatDate(nextMonday)
+            compare.value.endDate = formatDate(nextSunday)
+        } else if (viewMode.value === 'month') {
+            const nextMonth = new Date(currentMonthDate.value)
+            nextMonth.setMonth(nextMonth.getMonth() + 1)
+            compareMonthDate.value = nextMonth
+            compare.value.startDate = formatDate(getFirstDayOfMonth(nextMonth))
+            compare.value.endDate = formatDate(getLastDayOfMonth(nextMonth))
+        }
+    } else {
+        compare.value.data = null
+        compare.value.stats = null
+        if (compareChart) compareChart.destroy()
+    }
+}
+
+async function fetchPrimaryStats() {
+    primaryLoading.value = true
+    try {
+        const response = await reportApi.getDailyStats(primary.value.startDate, primary.value.endDate)
+        if (response.message === 'Success') {
+            primary.value.data = response.data
+            primary.value.stats = computeStats(response.data.daily_stats)
+            buildPrimaryChart()
+        }
+    } catch (e) {
+        console.error('Primary stats error', e)
+    } finally {
+        primaryLoading.value = false
+    }
+}
+
+async function fetchCompareStats() {
+    compareLoading.value = true
+    try {
+        const response = await reportApi.getDailyStats(compare.value.startDate, compare.value.endDate)
+        if (response.message === 'Success') {
+            compare.value.data = response.data
+            compare.value.stats = computeStats(response.data.daily_stats)
+            buildCompareChart()
+        }
+    } catch (e) {
+        console.error('Compare stats error', e)
+    } finally {
+        compareLoading.value = false
+    }
+}
+
+function computeStats(dailyStats) {
+    if (!dailyStats || dailyStats.length === 0) {
+        return {
+            maxDay: { date: '-', total: 0 },
+            minDay: { date: '-', total: 0 },
+            maxLateDay: { date: '-', late: 0 },
+            minLateDay: { date: '-', late: 0 }
+        }
+    }
+
+    const dayTotals = {}
+    const dayLates = {}
+
+    dailyStats.forEach(s => {
+        if (!dayTotals[s.date]) dayTotals[s.date] = 0
+        if (!dayLates[s.date]) dayLates[s.date] = 0
+        dayTotals[s.date] += s.total
+        dayLates[s.date] += s.late
+    })
+
+    const totalEntries = Object.entries(dayTotals)
+    const lateEntries = Object.entries(dayLates)
+
+    const maxDay = totalEntries.reduce((a, b) => (b[1] > a[1] ? b : a), totalEntries[0])
+    const minDay = totalEntries.reduce((a, b) => (b[1] < a[1] ? b : a), totalEntries[0])
+    const maxLateDay = lateEntries.reduce((a, b) => (b[1] > a[1] ? b : a), lateEntries[0])
+    const minLateDay = lateEntries.reduce((a, b) => (b[1] < a[1] ? b : a), lateEntries[0])
+
+    const formatDisplayDate = (dateStr) => {
+        if (!dateStr || dateStr === '-') return '-'
+        const [year, month, day] = dateStr.split('-')
+        return `${day}/${month}/${year}`
+    }
+
+    return {
+        maxDay: { date: formatDisplayDate(maxDay[0]), total: maxDay[1] },
+        minDay: { date: formatDisplayDate(minDay[0]), total: minDay[1] },
+        maxLateDay: { date: formatDisplayDate(maxLateDay[0]), late: maxLateDay[1] },
+        minLateDay: { date: formatDisplayDate(minLateDay[0]), late: minLateDay[1] }
+    }
+}
+
+function formatLabelDate(dateStr) {
+    if (!dateStr) return ''
+    const [year, month, day] = dateStr.split('-')
+    return `${day}/${month}/${year}`
+}
+
+function buildPrimaryChart() {
+    if (!primaryChartRef.value || !primary.value.data) return
+    if (primaryChart) primaryChart.destroy()
+
+    const ChartLib = window.Chart
+    if (!ChartLib) return
+
+    const dailyStats = primary.value.data.daily_stats || []
+    const dates = [...new Set(dailyStats.map(s => s.date))].sort()
+
+    const map = {}
+    dailyStats.forEach(s => { map[`${s.role}_${s.date}`] = s })
+
+    const studentOntime = []
+    const studentLate = []
+    const teacherOntime = []
+    const teacherLate = []
+
+    dates.forEach(date => {
+        const stu = map[`student_${date}`]
+        const tea = map[`teacher_${date}`]
+        const stuLate = stu ? stu.late : 0
+        const stuTotal = stu ? stu.total : 0
+        const teaLate = tea ? tea.late : 0
+        const teaTotal = tea ? tea.total : 0
+        studentLate.push(stuLate)
+        studentOntime.push(Math.max(stuTotal - stuLate, 0))
+        teacherLate.push(teaLate)
+        teacherOntime.push(Math.max(teaTotal - teaLate, 0))
+    })
+
+    const datasets = [
+        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: 'rgba(54,162,235,0.7)', borderColor: 'rgba(54,162,235,1)', stack: 'student' },
+        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: 'rgba(255,99,132,0.7)', borderColor: 'rgba(255,99,132,1)', stack: 'student' },
+        { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: 'rgba(255,206,86,0.7)', borderColor: 'rgba(255,206,86,1)', stack: 'teacher' },
+        { label: 'ครู (สาย)', data: teacherLate, backgroundColor: 'rgba(255,159,64,0.7)', borderColor: 'rgba(255,159,64,1)', stack: 'teacher' }
+    ]
+
+    if (primary.value.chartType === 'line') {
+        datasets.forEach(ds => {
+            ds.fill = false
+            ds.borderWidth = 2
+            ds.tension = 0.4
+            delete ds.stack
+        })
+    }
+
+    primaryChart = new ChartLib(primaryChartRef.value, {
+        type: primary.value.chartType,
+        data: { labels: dates.map(formatLabelDate), datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const v = ctx.parsed.y || 0
+                            return `${ctx.dataset.label}: ${Math.round(v)}`
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { stacked: primary.value.chartType === 'bar' },
+                y: {
+                    stacked: primary.value.chartType === 'bar',
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        callback: (v) => Math.round(v)
+                    }
+                }
+            }
+        }
+    })
+}
+
+function buildCompareChart() {
+    if (!compareChartRef.value || !compare.value.data) return
+    if (compareChart) compareChart.destroy()
+
+    const ChartLib = window.Chart
+    if (!ChartLib) return
+
+    const dailyStats = compare.value.data.daily_stats || []
+    const dates = [...new Set(dailyStats.map(s => s.date))].sort()
+
+    const map = {}
+    dailyStats.forEach(s => { map[`${s.role}_${s.date}`] = s })
+
+    const studentOntime = []
+    const studentLate = []
+    const teacherOntime = []
+    const teacherLate = []
+
+    dates.forEach(date => {
+        const stu = map[`student_${date}`]
+        const tea = map[`teacher_${date}`]
+        const stuLate = stu ? stu.late : 0
+        const stuTotal = stu ? stu.total : 0
+        const teaLate = tea ? tea.late : 0
+        const teaTotal = tea ? tea.total : 0
+        studentLate.push(stuLate)
+        studentOntime.push(Math.max(stuTotal - stuLate, 0))
+        teacherLate.push(teaLate)
+        teacherOntime.push(Math.max(teaTotal - teaLate, 0))
+    })
+
+    const datasets = [
+        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: 'rgba(54,162,235,0.7)', borderColor: 'rgba(54,162,235,1)', stack: 'student' },
+        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: 'rgba(255,99,132,0.7)', borderColor: 'rgba(255,99,132,1)', stack: 'student' },
+        { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: 'rgba(255,206,86,0.7)', borderColor: 'rgba(255,206,86,1)', stack: 'teacher' },
+        { label: 'ครู (สาย)', data: teacherLate, backgroundColor: 'rgba(255,159,64,0.7)', borderColor: 'rgba(255,159,64,1)', stack: 'teacher' }
+    ]
+
+    if (compare.value.chartType === 'line') {
+        datasets.forEach(ds => {
+            ds.fill = false
+            ds.borderWidth = 2
+            ds.tension = 0.4
+            delete ds.stack
+        })
+    }
+
+    compareChart = new ChartLib(compareChartRef.value, {
+        type: compare.value.chartType,
+        data: { labels: dates.map(formatLabelDate), datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const v = ctx.parsed.y || 0
+                            return `${ctx.dataset.label}: ${Math.round(v)}`
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { stacked: compare.value.chartType === 'bar' },
+                y: {
+                    stacked: compare.value.chartType === 'bar',
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        callback: (v) => Math.round(v)
+                    }
+                }
+            }
+        }
+    })
+}
+
+onMounted(async () => {
+    const Chart = (await import('chart.js/auto')).default
+    window.Chart = Chart
+    initializeCurrentWeek()
+    fetchPrimaryStats()
+})
+
+watch(() => primary.value.startDate, () => {
+    if (primary.value.startDate && primary.value.endDate) {
+        fetchPrimaryStats()
+    }
+})
+
+watch(() => primary.value.endDate, () => {
+    if (primary.value.startDate && primary.value.endDate) {
+        fetchPrimaryStats()
+    }
+})
+
+watch(() => compare.value.startDate, () => {
+    if (compare.value.startDate && compare.value.endDate && compareMode.value) {
+        fetchCompareStats()
+    }
+})
+
+watch(() => compare.value.endDate, () => {
+    if (compare.value.startDate && compare.value.endDate && compareMode.value) {
+        fetchCompareStats()
+    }
+})
+
+onUnmounted(() => {
+    if (primaryChart) primaryChart.destroy()
+    if (compareChart) compareChart.destroy()
+})
+</script>
+
+<style scoped></style>
