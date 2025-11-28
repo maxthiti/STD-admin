@@ -1,9 +1,8 @@
 <template>
     <dialog ref="modalRef" class="modal">
-        <div class="modal-box max-w-2xl">
-            <h3 class="font-bold text-lg mb-4">แก้ไขข้อมูลอาจารย์</h3>
+        <div class="modal-box max-w-2xl overflow-y-auto">
+            <h3 class="font-bold text-lg mb-4">แก้ไขข้อมูลบุคลากร</h3>
             <form @submit.prevent="handleSubmit">
-                <!-- Current Image Preview -->
                 <div v-if="currentImage || previewImage" class="flex justify-center mb-4">
                     <div class="relative">
                         <img :src="previewImage || currentImage" alt="Teacher Image"
@@ -20,18 +19,18 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text">รหัสอาจารย์</span>
+                            <span class="label-text">รหัสบุคลากร</span>
                         </label>
-                        <input v-model="formData.userid" type="text" class="input input-bordered" required />
+                        <input v-model="formData.userid" type="text" class="input input-bordered w-full" required />
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">คำนำหน้า</span>
                         </label>
-                        <select v-model="formData.pre_name" class="select select-bordered" required>
+                        <select v-model="formData.pre_name" class="select select-bordered w-full" required>
                             <option value="">เลือกคำนำหน้า</option>
                             <option value="นาย">นาย</option>
                             <option value="นาง">นาง</option>
@@ -39,66 +38,66 @@
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">ชื่อ</span>
                         </label>
-                        <input v-model="formData.first_name" type="text" class="input input-bordered" required
+                        <input v-model="formData.first_name" type="text" class="input input-bordered w-full" required
                             @input="validateFirstName" :class="{ 'input-error': firstNameError }" autocomplete="off" />
                         <label v-if="firstNameError" class="label">
                             <span class="label-text-alt text-error">{{ firstNameError }}</span>
                         </label>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">นามสกุล</span>
                         </label>
-                        <input v-model="formData.last_name" type="text" class="input input-bordered" required
+                        <input v-model="formData.last_name" type="text" class="input input-bordered w-full" required
                             @input="validateLastName" :class="{ 'input-error': lastNameError }" autocomplete="off" />
                         <label v-if="lastNameError" class="label">
                             <span class="label-text-alt text-error">{{ lastNameError }}</span>
                         </label>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">ตำแหน่ง</span>
                         </label>
-                        <select v-model="formData.position" class="select select-bordered" required>
+                        <select v-model="formData.position" class="select select-bordered w-full" required>
                             <option value="">เลือกตำแหน่ง</option>
                             <option v-for="pos in positions" :key="pos._id" :value="pos.name">{{ pos.name }}</option>
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">แผนก</span>
                         </label>
-                        <select v-model="formData.department" class="select select-bordered" required>
+                        <select v-model="formData.department" class="select select-bordered w-full" required>
                             <option value="">เลือกแผนก</option>
                             <option v-for="dept in departments" :key="dept._id" :value="dept.name">{{ dept.name }}
                             </option>
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">สถานะ</span>
                         </label>
-                        <select v-model="formData.status" class="select select-bordered" required>
+                        <select v-model="formData.status" class="select select-bordered w-full" required>
                             <option value="">เลือกสถานะ</option>
                             <option value="ปกติ">ปกติ</option>
                             <option value="พักงาน">พักงาน</option>
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">รูปภาพ (ถ้าต้องการเปลี่ยน)</span>
                         </label>
                         <input ref="fileInputRef" type="file" @change="handleFileChange" accept="image/jpeg,image/jpg"
-                            class="file-input file-input-bordered" />
+                            class="file-input file-input-bordered w-full" />
                         <label class="label">
                             <span class="label-text-alt text-gray-500">JPG only (สูงสุด 70KB)</span>
                         </label>

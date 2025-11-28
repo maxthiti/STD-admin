@@ -13,17 +13,17 @@
                 <table class="table table-zebra">
                     <thead>
                         <tr>
-                            <th class="w-20">#</th>
+                            <th class="w-10 md:w-20">#</th>
                             <th>ชื่อตำแหน่ง</th>
-                            <th class="w-24 text-center">จัดการ</th>
+                            <th v-if="auth.user?.role !== 'teacher'" class="w-10 md:w-24 text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(position, index) in positions" :key="position._id">
                             <td>{{ index + 1 }}</td>
                             <td class="font-medium">{{ position.name }}</td>
-                            <td>
-                                <div class="flex gap-2 justify-center">
+                            <td v-if="auth.user?.role !== 'teacher'">
+                                <div class="flex justify-center">
                                     <button @click="$emit('delete', position)" class="btn btn-ghost btn-sm btn-square"
                                         title="ลบ">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-error" fill="none"
@@ -43,6 +43,8 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 defineProps({
     positions: {
         type: Array,

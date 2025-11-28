@@ -76,7 +76,7 @@
                             lastNameError }}</span></label>
                     </div>
 
-                    <div class="form-control">
+                    <div v-if="auth.user?.role !== 'teacher'" class="form-control">
                         <label class="label"><span class="label-text">ชั้นปี</span></label>
                         <select v-model="formData.grade" @change="handleGradeChange" class="select select-bordered"
                             required>
@@ -85,7 +85,7 @@
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div v-if="auth.user?.role !== 'teacher'" class="form-control">
                         <label class="label"><span class="label-text">ห้อง</span></label>
                         <select v-model="formData.classroom" class="select select-bordered" required>
                             <option value="">เลือกห้อง</option>
@@ -108,6 +108,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 
 const modalRef = ref(null)
 const loading = ref(false)
@@ -201,7 +203,6 @@ const openModal = (student) => {
     firstNameError.value = ''
     lastNameError.value = ''
 
-    // Ensure classroom options are aligned with grade
     if (formData.value.grade && availableClassrooms.value.length > 0 && !availableClassrooms.value.includes(formData.value.classroom)) {
         formData.value.classroom = availableClassrooms.value[0]
     }
@@ -243,7 +244,6 @@ const handleFileChange = (event) => {
 }
 
 const removeImage = () => {
-    // Remove both preview and current image
     previewImage.value = ''
     currentImage.value = ''
     formData.value.picture = null

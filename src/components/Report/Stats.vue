@@ -1,14 +1,16 @@
 <template>
-    <div class="p-6 space-y-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-primary">สถิติการเข้า-ออก</h1>
-            <div class="flex items-center gap-3">
-                <select v-model="viewMode" @change="handleViewModeChange" class="select select-sm select-bordered">
-                    <option value="week">รายอาทิตย์</option>
-                    <option value="month">รายเดือน</option>
-                </select>
-
-                <div v-if="viewMode === 'week'" class="flex items-center gap-2">
+    <div class="p-0 md:p-6 space-y-6">
+        <div class="flex justify-between items-center flex-col md:flex-row md:items-center">
+            <h1 class="text-lg md:text-3xl font-bold text-primary mb-2 md:mb-0">สถิติการเข้า-ออก</h1>
+            <div class="flex items-start md:items-center gap-3 w-full md:w-auto md:justify-end flex-col md:flex-row">
+                <div class="md:w-auto mb-2 md:mb-0">
+                    <select v-model="viewMode" @change="handleViewModeChange"
+                        class="select select-sm select-bordered w-full md:w-auto">
+                        <option value="week">รายอาทิตย์</option>
+                        <option value="month">รายเดือน</option>
+                    </select>
+                </div>
+                <div v-if="viewMode === 'week'" class="flex items-center gap-2 w-full md:w-auto">
                     <button @click="navigateWeek(-1)" class="btn btn-xs btn-circle">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -24,8 +26,7 @@
                     </button>
                     <span v-if="primaryLoading" class="loading loading-spinner loading-xs"></span>
                 </div>
-
-                <div v-else-if="viewMode === 'month'" class="flex items-center gap-2">
+                <div v-else-if="viewMode === 'month'" class="flex items-center gap-2 w-full md:w-auto">
                     <button @click="navigateMonth(-1)" class="btn btn-xs btn-circle">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -42,7 +43,7 @@
                     <span v-if="primaryLoading" class="loading loading-spinner loading-xs"></span>
                 </div>
 
-                <button @click="toggleCompare" class="btn btn-sm btn-secondary">
+                <button v-if="!isMdOrLess" @click="toggleCompare" class="btn btn-sm btn-secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -53,7 +54,7 @@
             </div>
         </div>
 
-        <div :class="['grid gap-6', compareMode ? 'lg:grid-cols-2' : 'lg:grid-cols-1']">
+        <div :class="['grid gap-6', compareMode && !isMdOrLess ? 'lg:grid-cols-2' : 'lg:grid-cols-1']">
             <div class="space-y-4">
                 <div v-if="primary.data" class="grid grid-cols-2 gap-3">
                     <div class="stat bg-base-100 shadow rounded-lg p-3">
@@ -94,7 +95,7 @@
                 </div>
             </div>
 
-            <div v-if="compareMode" class="space-y-4">
+            <div v-if="compareMode && !isMdOrLess" class="space-y-4">
                 <div class="bg-base-100 rounded-lg shadow-lg p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-lg font-semibold">ช่วงที่ 2 (เปรียบเทียบ)</h2>
@@ -672,6 +673,20 @@ function buildCompareChart() {
     })
 }
 
+const isMdOrLess = ref(window.innerWidth <= 768)
+const handleResize = () => {
+    isMdOrLess.value = window.innerWidth <= 768
+    if (isMdOrLess.value && compareMode.value) {
+        compareMode.value = false
+    }
+}
+onMounted(() => {
+    window.addEventListener('resize', handleResize)
+    handleResize()
+})
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+})
 
 onMounted(async () => {
     const Chart = (await import('chart.js/auto')).default

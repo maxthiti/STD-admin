@@ -1,7 +1,7 @@
 <template>
     <div class="p-6 space-y-6">
         <div class="flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-primary">ตารางบุคคลภายนอก</h1>
+            <h1 class="text-lg md:text-3xl font-bold text-primary">สแกนไม่สำเร็จ</h1>
             <input v-model="filters.date" type="date" @change="fetchData"
                 class="text-sm px-2 py-1 bg-transparent border-none focus:outline-none focus:ring-0 rounded" />
         </div>
@@ -38,20 +38,23 @@
             <StrangerTable :data="strangerData" :startIndex="(pagination.page - 1) * pagination.limit"
                 @viewImage="openImageModal" />
 
-            <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
-                <button @click="goToPage(1)" class="btn btn-sm" :disabled="pagination.page === 1">«</button>
-                <button @click="goToPage(pagination.page - 1)" class="btn btn-sm"
-                    :disabled="pagination.page === 1">‹</button>
-                <div class="flex gap-1">
+            <div v-if="totalPages > 1" class="flex justify-center mt-6">
+                <div class="join shadow-lg">
+                    <button @click="goToPage(1)" class="join-item btn btn-sm" :disabled="pagination.page === 1">
+                        «
+                    </button>
+
                     <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
-                        :class="['btn btn-sm', page === pagination.page ? 'btn-primary' : '', typeof page !== 'number' ? 'btn-disabled' : '']">
+                        :class="['join-item btn btn-sm', page === pagination.page ? 'btn-active' : '']"
+                        :disabled="typeof page !== 'number'">
                         {{ page }}
                     </button>
+
+                    <button @click="goToPage(totalPages)" class="join-item btn btn-sm"
+                        :disabled="pagination.page === totalPages">
+                        »
+                    </button>
                 </div>
-                <button @click="goToPage(pagination.page + 1)" class="btn btn-sm"
-                    :disabled="pagination.page === totalPages">›</button>
-                <button @click="goToPage(totalPages)" class="btn btn-sm"
-                    :disabled="pagination.page === totalPages">»</button>
             </div>
 
             <div v-if="totalRecords > 0" class="text-center text-sm text-base-content/60 mt-4">
@@ -156,25 +159,44 @@ const handleDeviceChange = () => {
 const startItem = computed(() => totalRecords.value === 0 ? 0 : (pagination.value.page - 1) * pagination.value.limit + 1)
 const endItem = computed(() => Math.min(pagination.value.page * pagination.value.limit, totalRecords.value))
 
+const MAX_VISIBLE_PAGES = 3
+
 const visiblePages = computed(() => {
     const current = pagination.value.page
     const total = totalPages.value
-    const delta = 2
-    const pages = []
+    const maxPagesToShow = MAX_VISIBLE_PAGES
 
-    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    if (total <= 1) {
+        return []
+    }
+
+    if (total <= maxPagesToShow) {
+        const pages = []
+        for (let i = 1; i <= total; i++) {
+            pages.push(i)
+        }
+        return pages
+    }
+
+    let startPage = current - Math.floor(maxPagesToShow / 2)
+    let endPage = current + Math.floor(maxPagesToShow / 2)
+
+    if (startPage < 1) {
+        startPage = 1
+        endPage = Math.min(total, maxPagesToShow)
+    }
+
+    if (endPage > total) {
+        endPage = total
+        startPage = Math.max(1, total - maxPagesToShow + 1)
+    }
+
+    const pages = []
+    for (let i = startPage; i <= endPage; i++) {
         pages.push(i)
     }
 
-    if (current - delta > 2) pages.unshift('...')
-    if (current + delta < total - 1) pages.push('...')
-
-    if (total > 0) {
-        pages.unshift(1)
-        if (total > 1) pages.push(total)
-    }
-
-    return pages.filter((p, idx, arr) => p !== '...' || arr[idx - 1] !== '...')
+    return pages
 })
 
 const goToPage = (page) => {

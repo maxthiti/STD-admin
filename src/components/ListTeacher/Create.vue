@@ -1,7 +1,7 @@
 <template>
     <dialog ref="modalRef" class="modal">
-        <div class="modal-box max-w-2xl overflow-visible">
-            <h3 class="font-bold text-lg mb-4">เพิ่มอาจารย์</h3>
+        <div class="modal-box max-w-2xl overflow-visible overflow-y-auto">
+            <h3 class="font-bold text-lg mb-4">เพิ่มบุคลากร</h3>
 
             <form @submit.prevent="handleSubmit" class="space-y-4">
                 <div class="space-y-2">
@@ -45,18 +45,18 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text">รหัสอาจารย์</span>
+                            <span class="label-text">รหัสบุคลากร</span>
                         </label>
-                        <input v-model="formData.userid" type="text" class="input input-bordered" required />
+                        <input v-model="formData.userid" type="text" class="input input-bordered w-full" required />
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">คำนำหน้า</span>
                         </label>
-                        <select v-model="formData.pre_name" class="select select-bordered" required>
+                        <select v-model="formData.pre_name" class="select select-bordered w-full" required>
                             <option value="">เลือกคำนำหน้า</option>
                             <option value="นาย">นาย</option>
                             <option value="นาง">นาง</option>
@@ -64,21 +64,21 @@
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">ชื่อ</span>
                         </label>
-                        <input v-model="formData.first_name" type="text" class="input input-bordered" required />
+                        <input v-model="formData.first_name" type="text" class="input input-bordered w-full" required />
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">นามสกุล</span>
                         </label>
-                        <input v-model="formData.last_name" type="text" class="input input-bordered" required />
+                        <input v-model="formData.last_name" type="text" class="input input-bordered w-full" required />
                     </div>
 
-                    <div class="form-control relative z-[100]">
+                    <div class="form-control relative z-[100] w-full">
                         <label class="label">
                             <span class="label-text">ตำแหน่ง</span>
                         </label>
@@ -103,7 +103,7 @@
                         </div>
                     </div>
 
-                    <div class="form-control relative z-[99]">
+                    <div class="form-control relative z-[99] w-full">
                         <label class="label">
                             <span class="label-text">แผนก</span>
                         </label>
@@ -128,11 +128,11 @@
                         </div>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">สถานะ</span>
                         </label>
-                        <select v-model="formData.status" class="select select-bordered" required>
+                        <select v-model="formData.status" class="select select-bordered w-full" required>
                             <option value="">เลือกสถานะ</option>
                             <option value="ปกติ">ปกติ</option>
                             <option value="พักงาน">พักงาน</option>

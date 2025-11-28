@@ -45,7 +45,7 @@
                     class="w-10 h-10 rounded-full object-cover cursor-pointer" @click="viewImage(item.picture)" />
                 <div class="flex-1">
                     <div class="badge badge-primary badge-sm mb-2">{{ item.userid }}</div>
-                    <h3 class="font-bold text-lg">{{ item.name }}</h3>
+                    <h3 class="font-bold text-md">{{ item.name }}</h3>
                     <p class="text-sm text-base-content/70">{{ item.position }}</p>
                 </div>
             </div>
@@ -61,20 +61,22 @@
         </div>
     </div>
 
-    <div v-if="pagination.total_pages > 1" class="flex justify-center items-center gap-2 mt-6">
-        <button @click="$emit('page-change', 1)" class="btn btn-sm" :disabled="pagination.page === 1">«</button>
-        <button @click="$emit('page-change', pagination.page - 1)" class="btn btn-sm"
-            :disabled="pagination.page === 1">‹</button>
-        <div class="flex gap-1">
+    <div v-if="pagination.total_pages > 1" class="flex justify-center mt-6">
+        <div class="join shadow-lg">
+            <button @click="$emit('page-change', 1)" class="join-item btn btn-sm" :disabled="pagination.page === 1">
+                «
+            </button>
+
             <button v-for="page in visiblePages" :key="page" @click="$emit('page-change', page)"
-                :class="['btn btn-sm', page === pagination.page ? 'btn-primary' : '']">
+                :class="['join-item btn btn-sm', page === pagination.page ? 'btn-active' : '']">
                 {{ page }}
             </button>
+
+            <button @click="$emit('page-change', pagination.total_pages)" class="join-item btn btn-sm"
+                :disabled="pagination.page === pagination.total_pages">
+                »
+            </button>
         </div>
-        <button @click="$emit('page-change', pagination.page + 1)" class="btn btn-sm"
-            :disabled="pagination.page === pagination.total_pages">›</button>
-        <button @click="$emit('page-change', pagination.total_pages)" class="btn btn-sm"
-            :disabled="pagination.page === pagination.total_pages">»</button>
     </div>
 
     <div v-if="pagination.total_items > 0" class="text-center text-sm text-base-content/60 mt-4">
@@ -119,31 +121,44 @@ const imgProBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 const imageModal = ref(null)
 const selectedImage = ref(null)
 
+const MAX_VISIBLE_PAGES = 3
+
 const visiblePages = computed(() => {
     const current = props.pagination.page
     const total = props.pagination.total_pages
-    const delta = 2
-    const pages = []
+    const maxPagesToShow = MAX_VISIBLE_PAGES
 
-    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    if (total <= 1) {
+        return []
+    }
+
+    if (total <= maxPagesToShow) {
+        const pages = []
+        for (let i = 1; i <= total; i++) {
+            pages.push(i)
+        }
+        return pages
+    }
+
+    let startPage = current - Math.floor(maxPagesToShow / 2)
+    let endPage = current + Math.floor(maxPagesToShow / 2)
+
+    if (startPage < 1) {
+        startPage = 1
+        endPage = Math.min(total, maxPagesToShow)
+    }
+
+    if (endPage > total) {
+        endPage = total
+        startPage = Math.max(1, total - maxPagesToShow + 1)
+    }
+
+    const pages = []
+    for (let i = startPage; i <= endPage; i++) {
         pages.push(i)
     }
 
-    if (current - delta > 2) {
-        pages.unshift('...')
-    }
-    if (current + delta < total - 1) {
-        pages.push('...')
-    }
-
-    if (total > 0) {
-        pages.unshift(1)
-        if (total > 1) {
-            pages.push(total)
-        }
-    }
-
-    return pages.filter((p, idx, arr) => p !== '...' || arr[idx - 1] !== '...')
+    return pages
 })
 
 const viewImage = (image) => {

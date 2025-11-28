@@ -45,18 +45,18 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">รหัสนักเรียน</span>
                         </label>
-                        <input v-model="formData.userid" type="text" class="input input-bordered" required />
+                        <input v-model="formData.userid" type="text" class="input input-bordered w-full" required />
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">คำนำหน้า</span>
                         </label>
-                        <select v-model="formData.pre_name" class="select select-bordered" required>
+                        <select v-model="formData.pre_name" class="select select-bordered w-full" required>
                             <option value="">เลือกคำนำหน้า</option>
                             <option value="เด็กชาย">เด็กชาย</option>
                             <option value="เด็กหญิง">เด็กหญิง</option>
@@ -65,47 +65,61 @@
                         </select>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">ชื่อ</span>
                         </label>
-                        <input v-model="formData.first_name" type="text" class="input input-bordered" required
+                        <input v-model="formData.first_name" type="text" class="input input-bordered w-full" required
                             @input="validateFirstName" :class="{ 'input-error': firstNameError }" autocomplete="off" />
                         <label v-if="firstNameError" class="label">
                             <span class="label-text-alt text-error">{{ firstNameError }}</span>
                         </label>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">นามสกุล</span>
                         </label>
-                        <input v-model="formData.last_name" type="text" class="input input-bordered" required
+                        <input v-model="formData.last_name" type="text" class="input input-bordered w-full" required
                             @input="validateLastName" :class="{ 'input-error': lastNameError }" autocomplete="off" />
                         <label v-if="lastNameError" class="label">
                             <span class="label-text-alt text-error">{{ lastNameError }}</span>
                         </label>
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control w-full md:col-span-2">
                         <label class="label">
-                            <span class="label-text">ชั้นปี</span>
+                            <span class="label-text">ชั้นปี / ห้อง</span>
                         </label>
-                        <select v-model="formData.grade" @change="handleGradeChange" class="select select-bordered"
-                            required>
-                            <option value="">เลือกชั้นปี</option>
-                            <option v-for="grade in availableGrades" :key="grade" :value="grade">{{ grade }}</option>
-                        </select>
-                    </div>
+                        <template v-if="auth.user?.role === 'teacher'">
+                            <div class="p-2 rounded bg-gray-100 border text-base">
+                                ชั้น: {{ formData.grade }} ห้อง: {{ formData.classroom }}
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="form-control w-full mb-2">
+                                <label class="label">
+                                    <span class="label-text">ชั้นปี</span>
+                                </label>
+                                <select v-model="formData.grade" @change="handleGradeChange"
+                                    class="select select-bordered w-full" required>
+                                    <option value="">เลือกชั้นปี</option>
+                                    <option v-for="grade in availableGrades" :key="grade" :value="grade">{{ grade }}
+                                    </option>
+                                </select>
+                            </div>
 
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">ห้อง</span>
-                        </label>
-                        <select v-model="formData.classroom" class="select select-bordered" required>
-                            <option value="">เลือกห้อง</option>
-                            <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
-                        </select>
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text">ห้อง</span>
+                                </label>
+                                <select v-model="formData.classroom" class="select select-bordered w-full" required>
+                                    <option value="">เลือกห้อง</option>
+                                    <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}
+                                    </option>
+                                </select>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -122,7 +136,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
 
 const modalRef = ref(null)
 const loading = ref(false)
@@ -144,6 +161,14 @@ const props = defineProps({
     classrooms: {
         type: Array,
         default: () => []
+    },
+    fixedGrade: {
+        type: String,
+        default: ''
+    },
+    fixedClassroom: {
+        type: String,
+        default: ''
     }
 })
 
@@ -156,6 +181,13 @@ const availableGrades = computed(() => {
         const gradeB = parseInt(b.replace('ม.', ''))
         return gradeA - gradeB
     })
+})
+
+watch(() => auth.user?.role, (role) => {
+    if (role === 'teacher' && props.fixedGrade && props.fixedClassroom) {
+        formData.value.grade = props.fixedGrade
+        formData.value.classroom = props.fixedClassroom
+    }
 })
 
 const availableClassrooms = computed(() => {
@@ -201,15 +233,27 @@ const isFormValid = computed(() => {
     )
 })
 
-const openModal = () => {
-    formData.value = {
-        userid: '',
-        pre_name: '',
-        first_name: '',
-        last_name: '',
-        grade: '',
-        classroom: '',
-        picture: null
+const openModal = (fixed = null) => {
+    if (auth.user?.role === 'teacher' && fixed) {
+        formData.value = {
+            userid: '',
+            pre_name: '',
+            first_name: '',
+            last_name: '',
+            grade: fixed.grade,
+            classroom: fixed.classroom,
+            picture: null
+        }
+    } else {
+        formData.value = {
+            userid: '',
+            pre_name: '',
+            first_name: '',
+            last_name: '',
+            grade: '',
+            classroom: '',
+            picture: null
+        }
     }
     previewImage.value = ''
     fileError.value = ''

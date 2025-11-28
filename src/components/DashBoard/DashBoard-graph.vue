@@ -1,7 +1,6 @@
 <template>
     <div class="space-y-6">
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1">
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <div class="flex items-center justify-between">
@@ -16,14 +15,6 @@
                     </div>
                     <div class="h-80">
                         <canvas ref="barChartRef"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <h2 class="card-title">สัดส่วนผู้ใช้</h2>
-                    <div class="h-80 flex items-center justify-center">
-                        <canvas ref="pieChartRef"></canvas>
                     </div>
                 </div>
             </div>
@@ -43,9 +34,7 @@ const props = defineProps({
 })
 
 const barChartRef = ref(null)
-const pieChartRef = ref(null)
 let barChart = null
-let pieChart = null
 
 const currentWeekStart = ref(new Date())
 const totals = ref({ total_students: 0, total_teachers: 0 })
@@ -54,7 +43,6 @@ const strangerCount = ref(0)
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 const loading = ref(false)
 
-// Get actual CSS color from Tailwind/DaisyUI utility classes
 function getUtilityBgColor(className) {
     const el = document.createElement('div')
     el.className = className
@@ -65,7 +53,6 @@ function getUtilityBgColor(className) {
     return color || 'rgba(0,0,0,1)'
 }
 
-// Theme colors based on Sidebar: primary (students) and secondary (teachers)
 function getThemeColors() {
     const primary = getUtilityBgColor('bg-primary')
     const primaryLight = getUtilityBgColor('bg-primary/70')
@@ -130,7 +117,6 @@ async function fetchDailyStats() {
 
             await fetchStrangerData()
             buildBarChart(start, end)
-            buildPieChart(studentTotal, teacherTotal)
         }
     } catch (e) {
         console.error('Daily stats error', e)
@@ -202,8 +188,8 @@ function buildBarChart(start, end) {
     })
 
     const { primary, primaryLight, secondary, secondaryLight } = getThemeColors()
-    const red = 'rgba(220, 38, 38, 0.9)' // Tailwind red-600
-    const redLight = 'rgba(248, 113, 113, 0.9)' // Tailwind red-400
+    const red = 'rgba(220, 38, 38, 0.9)'
+    const redLight = 'rgba(248, 113, 113, 0.9)'
 
     barChart = new ChartLib(barChartRef.value, {
         type: 'bar',
@@ -255,44 +241,6 @@ function buildBarChart(start, end) {
     })
 }
 
-function buildPieChart(studentTotal, teacherTotal) {
-    if (!pieChartRef.value) return
-    if (pieChart) pieChart.destroy()
-    const ChartLib = window.Chart
-    if (!ChartLib) return
-    const { primary: p, secondary: s } = getThemeColors()
-    const error = getUtilityBgColor('bg-error')
-
-    pieChart = new ChartLib(pieChartRef.value, {
-        type: 'pie',
-        data: {
-            labels: ['นักเรียนที่เข้า', 'ครูที่เข้า', 'บุคคลภายนอก'],
-            datasets: [{
-                data: [studentTotal || 0, teacherTotal || 0, strangerCount.value || 0],
-                backgroundColor: [p, s, error],
-                borderColor: [p, s, error],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' },
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => {
-                            const label = ctx.label || ''
-                            const value = ctx.parsed || 0
-                            return `${label}: ${value}`
-                        }
-                    }
-                }
-            }
-        }
-    })
-}
-
 watch(() => props.date, (newDate) => {
     selectedDate.value = newDate
     const date = new Date(newDate)
@@ -313,7 +261,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
     if (barChart) barChart.destroy()
-    if (pieChart) pieChart.destroy()
 })
 </script>
 

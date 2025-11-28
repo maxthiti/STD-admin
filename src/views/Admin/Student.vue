@@ -2,19 +2,31 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="text-2xl font-bold text-primary">จัดการนักเรียน</h2>
-            <button class="btn btn-primary" @click="openCreateModal">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                เพิ่มนักเรียน
-            </button>
+            <div class="flex gap-2">
+                <button class="btn btn-success" @click="openImportModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10v6a2 2 0 002 2h14a2 2 0 002-2v-6" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10l4 4m0 0l4-4m-4 4V4" />
+                    </svg>
+                    นำเข้า Excel
+                </button>
+                <button class="btn btn-primary" @click="openCreateModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    เพิ่มนักเรียน
+                </button>
+            </div>
         </div>
 
         <div class="card bg-base-100 shadow-md">
             <div class="card-body p-4">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="form-control w-full sm:w-auto">
+                    <div v-if="auth.user?.role !== 'teacher'" class="form-control w-full sm:w-auto">
                         <label class="label py-1">
                             <span class="label-text text-sm">ชั้นปี</span>
                         </label>
@@ -24,7 +36,7 @@
                         </select>
                     </div>
 
-                    <div class="form-control w-full sm:w-auto">
+                    <div v-if="auth.user?.role !== 'teacher'" class="form-control w-full sm:w-auto">
                         <label class="label py-1">
                             <span class="label-text text-sm">ห้อง</span>
                         </label>
@@ -69,10 +81,13 @@
         </div>
 
         <StudentTable :students="filteredStudents" :loading="loading" :currentPage="currentPage"
-            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" @delete="openDeleteModal" />
+            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" @delete="openDeleteModal"
+            @reset="openRePasswordModal" />
         <CreateModal ref="createModalRef" :classrooms="classrooms" @success="handleCreateSuccess" />
+        <ImportExcalModal ref="importModalRef" @success="handleImportSuccess" />
         <UpdateModal ref="updateModalRef" :classrooms="classrooms" @success="handleUpdateSuccess" />
         <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
+        <RePasswordModal ref="rePasswordModalRef" @success="fetchStudents" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -96,17 +111,33 @@
 import { ref, onMounted, computed } from 'vue'
 import StudentTable from '../../components/ListStudent/Table.vue'
 import CreateModal from '../../components/ListStudent/Create.vue'
+import ImportExcalModal from '../../components/ListStudent/ImportExcal.vue'
 import UpdateModal from '../../components/ListStudent/Update.vue'
 import DeleteModal from '../../components/ListStudent/Delete.vue'
+import RePasswordModal from '../../components/ListStudent/RePassword.vue'
 import { StudentService } from '../../api/student'
 import { ClassRoomService } from '../../api/class-room'
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 
 const studentService = new StudentService()
 const classRoomService = new ClassRoomService()
 const students = ref([])
 const classrooms = ref([])
 const createModalRef = ref(null)
+const importModalRef = ref(null)
+const openImportModal = () => {
+    importModalRef.value?.openModal()
+}
+
+const handleImportSuccess = async (importedStudents) => {
+    if (Array.isArray(importedStudents)) {
+        // students.value = [...students.value, ...importedStudents]
+        await fetchStudents()
+    }
+}
 const updateModalRef = ref(null)
+const rePasswordModalRef = ref(null)
 const loading = ref(false)
 const selectedGrade = ref('ม.1')
 const selectedClassroom = ref('1')
@@ -114,6 +145,8 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 5
 const imageBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
+const lastFetchedGrade = ref('')
+const lastFetchedClassroom = ref('')
 
 const availableGrades = computed(() => {
     const grades = [...new Set(classrooms.value.map(c => c.grade))]
@@ -214,10 +247,17 @@ const fetchStudents = async () => {
                 code: student.userid,
                 grade: student.grade,
                 room: student.classroom,
-                email: student.userid + '@student.ckk.ac.th',
                 phone: student.phone || '-',
-                picture: student.picture ? imageBaseUrl + student.picture : ''
+                picture: student.picture ? imageBaseUrl + student.picture : '',
+                has_password: student.has_password
             }))
+            if (response.data.length > 0) {
+                lastFetchedGrade.value = response.data[0].grade
+                lastFetchedClassroom.value = response.data[0].classroom
+            } else {
+                lastFetchedGrade.value = ''
+                lastFetchedClassroom.value = ''
+            }
         }
     } catch (error) {
         console.error('Fetch students error:', error)
@@ -249,7 +289,14 @@ const resetFilters = () => {
 }
 
 const openCreateModal = () => {
-    createModalRef.value.openModal()
+    if (auth.user?.role === 'teacher') {
+        createModalRef.value.openModal({
+            grade: lastFetchedGrade.value,
+            classroom: lastFetchedClassroom.value
+        })
+    } else {
+        createModalRef.value.openModal()
+    }
 }
 
 const handleCreateSuccess = async (formData) => {
@@ -333,6 +380,10 @@ const openDeleteModal = (student) => {
 }
 const handleDeleteSuccess = () => {
     fetchStudents()
+}
+
+const openRePasswordModal = (student) => {
+    rePasswordModalRef.value?.open(student)
 }
 
 onMounted(async () => {

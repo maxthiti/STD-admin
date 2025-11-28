@@ -15,17 +15,18 @@
     <div v-else class="space-y-6">
         <div v-for="grade in groupedClassrooms" :key="grade.grade" class="card bg-base-100 shadow-md">
             <div class="card-body">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-primary flex items-center gap-2">
+                <div class="flex flex-col gap-2 mb-4 md:flex-row md:items-center md:justify-between">
+                    <h3 class="text-lg md:text-xl font-bold text-primary flex items-center gap-2">
                         <div :class="[
-                            'w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md',
+                            'w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md',
                             getGradeColor(grade.grade)
                         ]">
                             {{ grade.grade.replace('ม.', '') }}
                         </div>
-                        <span>{{ getGradeLabel(grade.grade) }}</span>
+                        <span class="text-base md:text-xl">{{ getGradeLabel(grade.grade) }}</span>
                     </h3>
-                    <div class="badge badge-primary badge-lg p-3">มี {{ grade.classrooms.length }} ห้อง</div>
+                    <div class="badge badge-primary badge-sm md:badge-lg px-2 py-1 md:p-3 mt-1 md:mt-0">มี {{
+                        grade.classrooms.length }} ห้อง</div>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -54,7 +55,7 @@
                             </div>
                         </div>
 
-                        <button @click.stop="$emit('delete', classroom)"
+                        <button v-if="auth.user?.role !== 'teacher'" @click.stop="$emit('delete', classroom)"
                             class="absolute -top-2 -right-2 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
@@ -71,6 +72,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 
 const props = defineProps({
     classrooms: {

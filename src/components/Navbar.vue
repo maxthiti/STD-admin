@@ -1,6 +1,5 @@
 <template>
     <header class="navbar bg-base-100 shadow-md px-6">
-        <!-- Mobile Menu Button -->
         <button @click="toggleMobileMenu" class="btn btn-ghost btn-circle mr-2 max-[570px]:flex hidden">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -13,7 +12,6 @@
         </div>
 
         <div class="flex-none gap-4">
-            <!-- Notification -->
             <button class="btn btn-ghost btn-circle">
                 <div class="indicator">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -25,19 +23,20 @@
                 </div>
             </button>
 
-            <!-- User Menu -->
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div
-                        class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center shadow-md">
-                        <span class="text-lg font-semibold">A</span>
+                        class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center shadow-md overflow-hidden">
+                        <img v-if="profilePicture" :src="profilePictureUrl" alt="profile"
+                            class="w-full h-full object-cover" />
+                        <span v-else class="text-lg font-semibold">{{ profileInitial }}</span>
                     </div>
                 </div>
                 <ul tabindex="0"
                     class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
                     <li>
                         <a class="justify-between">
-                            โปรไฟล์
+                            {{ profileName || 'โปรไฟล์' }}
                             <span class="badge">New</span>
                         </a>
                     </li>
@@ -50,7 +49,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -63,7 +62,7 @@ const emit = defineEmits(['toggleMobileMenu'])
 const pageTitle = computed(() => {
     const titles = {
         'Dashboard': 'แดชบอร์ด',
-        'Teacher': 'จัดการอาจารย์',
+        'Teacher': 'จัดการบุคลากร',
         'Student': 'จัดการนักเรียน',
         'Account': 'จัดการผู้ดูแล'
     }
@@ -76,8 +75,29 @@ const toggleMobileMenu = () => {
 
 const handleLogout = () => {
     authStore.logout()
+    localStorage.removeItem('profileName')
+    localStorage.removeItem('profilePicture')
+    localStorage.removeItem('residentRole')
     router.push('/')
 }
+
+const profileName = ref(localStorage.getItem('profileName') || '')
+const profilePicture = ref(localStorage.getItem('profilePicture') || '')
+
+// ถ้า profilePicture เป็น path ให้เติม base url
+const profilePictureUrl = computed(() => {
+    if (!profilePicture.value) return ''
+    // ปรับตาม env ของคุณ
+    const baseUrl = import.meta.env.VITE_IMG_PROFILE_URL || ''
+    return profilePicture.value.startsWith('http')
+        ? profilePicture.value
+        : baseUrl + profilePicture.value
+})
+
+const profileInitial = computed(() => {
+    if (!profileName.value) return 'A'
+    return profileName.value.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+})
 </script>
 
 <style scoped></style>

@@ -51,15 +51,13 @@
 
             <div v-if="item.imageUrl" class="flex justify-center">
                 <img :src="`${imgBaseUrl}${item.imageUrl}`" alt="snapshot"
-                    class="w-full max-w-xs rounded-lg cursor-pointer" @click="viewImage(item.imageUrl)" />
+                    class="w-24 h-24 object-cover rounded-lg cursor-pointer" @click="viewImage(item.imageUrl)" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-
 const props = defineProps({
     data: {
         type: Array,

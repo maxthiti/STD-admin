@@ -1,13 +1,13 @@
 <template>
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 class="text-2xl font-bold text-primary">จัดการอาจารย์</h2>
-            <button @click="openCreateModal" class="btn btn-primary btn-sm">
+            <h2 class="text-2xl font-bold text-primary">จัดการบุคลากร</h2>
+            <button v-if="auth.user?.role !== 'teacher'" @click="openCreateModal" class="btn btn-primary btn-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                เพิ่มอาจารย์
+                เพิ่มบุคลากร
             </button>
         </div>
 
@@ -20,7 +20,7 @@
                         </label>
                         <div class="relative">
                             <input v-model="searchQuery" @input="fetchTeachers" type="text"
-                                placeholder="ค้นหาชื่อหรือรหัสอาจารย์..."
+                                placeholder="ค้นหาชื่อหรือรหัสครู..."
                                 class="input input-bordered input-sm w-full" />
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 class="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50"
@@ -51,7 +51,8 @@
         <TeacherTable :teachers="paginatedTeachers" :loading="loading" :departmentFilter="filterDepartment"
             :positionFilter="filterPosition" :departments="departments" :positions="positions"
             :currentPage="currentPage" :itemsPerPage="itemsPerPage" @filterDepartment="handleFilterDepartment"
-            @filterPosition="handleFilterPosition" @edit="openEditModal" @delete="openDeleteModal" />
+            @filterPosition="handleFilterPosition" @edit="openEditModal" @delete="openDeleteModal"
+            @reset="openRePasswordModal" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -76,6 +77,8 @@
             @success="handleCreateSuccess" />
 
         <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
+
+        <RePasswordModal ref="rePasswordModalRef" @success="fetchTeachers" />
     </div>
 </template>
 
@@ -85,9 +88,12 @@ import TeacherTable from '../../components/ListTeacher/Table.vue'
 import UpdateModal from '../../components/ListTeacher/Update.vue'
 import CreateModal from '../../components/ListTeacher/Create.vue'
 import DeleteModal from '../../components/ListTeacher/Delete.vue'
+import RePasswordModal from '../../components/ListStudent/RePassword.vue'
 import { TeacherService } from '../../api/teacher'
 import { DepartmentService } from '../../api/department'
 import { PositionService } from '../../api/position'
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 
 const teacherService = new TeacherService()
 const departmentService = new DepartmentService()
@@ -106,6 +112,7 @@ const imageBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 const updateModalRef = ref(null)
 const createModalRef = ref(null)
 const deleteModalRef = ref(null)
+const rePasswordModalRef = ref(null)
 
 const totalPages = computed(() => Math.ceil(teachers.value.length / itemsPerPage))
 
@@ -152,7 +159,8 @@ const fetchTeachers = async () => {
                 position: teacher.position || '-',
                 email: teacher.userid + '@ckk.ac.th',
                 phone: teacher.phone || '-',
-                picture: teacher.picture ? imageBaseUrl + teacher.picture : ''
+                picture: teacher.picture ? imageBaseUrl + teacher.picture : '',
+                has_password: teacher.has_password
             }))
         }
     } catch (error) {
@@ -222,6 +230,10 @@ const openCreateModal = () => {
 
 const openDeleteModal = (teacher) => {
     deleteModalRef.value?.open(teacher)
+}
+
+const openRePasswordModal = (teacher) => {
+    rePasswordModalRef.value?.open(teacher)
 }
 
 const handleDeleteSuccess = () => {

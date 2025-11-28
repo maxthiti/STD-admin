@@ -7,7 +7,7 @@
                         <tr>
                             <th class="bg-primary text-primary-content hidden lg:table-cell">#</th>
                             <th class="bg-primary text-primary-content">ชื่อ-นามสกุล</th>
-                            <th class="bg-primary text-primary-content hidden sm:table-cell">รหัสอาจารย์</th>
+                            <th class="bg-primary text-primary-content hidden sm:table-cell">รหัสบุคลากร</th>
                             <th class="bg-primary text-primary-content hidden md:table-cell">
                                 <div class="dropdown dropdown-end">
                                     <label tabindex="0"
@@ -52,8 +52,10 @@
                                     </ul>
                                 </div>
                             </th>
-                            <th class="bg-primary text-primary-content hidden xl:table-cell">อีเมล</th>
-                            <th class="bg-primary text-primary-content w-24 text-center">จัดการ</th>
+                            <th class="bg-primary text-primary-content text-center">สถานะ</th>
+                            <th v-if="auth.user?.role !== 'teacher'"
+                                class="bg-primary text-primary-content w-24 text-center">จัดการ</th>
+                            <!-- <th class="bg-primary text-primary-content hidden xl:table-cell">อีเมล</th> -->
                             <!-- <th class="bg-primary text-primary-content hidden xl:table-cell">เบอร์โทร</th> -->
                         </tr>
                     </thead>
@@ -65,7 +67,7 @@
                         </tr>
                         <tr v-else-if="teachers.length === 0">
                             <td colspan="8" class="text-center py-8 text-base-content/50">
-                                ไม่มีข้อมูลอาจารย์
+                                ไม่มีข้อมูลบุคลากร
                             </td>
                         </tr>
                         <tr v-else v-for="(teacher, index) in teachers" :key="teacher.id" class="hover">
@@ -91,8 +93,15 @@
                                 <span class="badge badge-ghost badge-sm">{{ teacher.department }}</span>
                             </td>
                             <td class="hidden lg:table-cell text-xs">{{ teacher.position }}</td>
-                            <td class="hidden xl:table-cell text-xs">{{ teacher.email }}</td>
-                            <td>
+                            <td class="text-center">
+                                <button class="btn btn-ghost btn-xs"
+                                    :title="teacher.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
+                                    @click="emitReset(teacher)">
+                                    <span :class="teacher.has_password ? 'bg-green-500' : 'bg-red-500'"
+                                        class="inline-block w-3 h-3 rounded-full"></span>
+                                </button>
+                            </td>
+                            <td v-if="auth.user?.role !== 'teacher'">
                                 <div class="flex gap-2 justify-center">
                                     <button @click="$emit('edit', teacher)" class="btn btn-sm btn-warning btn-outline"
                                         title="แก้ไข">
@@ -122,9 +131,12 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { ref, watch } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 
-const emit = defineEmits(['filterDepartment', 'filterPosition', 'edit'])
+const emit = defineEmits(['filterDepartment', 'filterPosition', 'edit', 'reset'])
 
 const props = defineProps({
     teachers: {
@@ -200,6 +212,10 @@ const handleDepartmentFilter = (value) => {
 const handlePositionFilter = (value) => {
     localPositionFilter.value = value
     emit('filterPosition', value)
+}
+
+const emitReset = (teacher) => {
+    emit('reset', teacher)
 }
 </script>
 

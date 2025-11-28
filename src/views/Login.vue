@@ -36,7 +36,7 @@
                                 <input type="checkbox" v-model="remember" class="checkbox checkbox-sm" />
                                 <span class="label-text">จดจำฉัน</span>
                             </label>
-                            <a href="#" class="link link-hover text-sm">ลืมรหัสผ่าน?</a>
+                            <!-- <a href="#" class="link link-hover text-sm">ลืมรหัสผ่าน?</a> -->
                         </div>
 
                         <button type="submit" class="btn btn-primary w-full" :disabled="loading">
@@ -93,6 +93,46 @@ async function onSubmit() {
             const token = response.data?.access_token
 
             if (!token) throw new Error('ไม่พบโทเค็น')
+
+            let role = '';
+            let profileName = '';
+            let profilePicture = '';
+            try {
+                const payloadBase64 = token.split('.')[1]
+                    .replace(/-/g, '+')
+                    .replace(/_/g, '/');
+                const paddedPayload = payloadBase64 + '==='.slice(0, (4 - payloadBase64.length % 4) % 4);
+
+                function base64UrlDecodeUnicode(str) {
+                    const binary = atob(str);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+                    return new TextDecoder().decode(bytes);
+                }
+                const payloadJson = base64UrlDecodeUnicode(paddedPayload);
+                const payload = JSON.parse(payloadJson);
+
+                role = payload.role;
+                profileName = payload.name || '';
+                profilePicture = payload.picture || '';
+
+                if (role) {
+                    localStorage.setItem('residentRole', role);
+                }
+                if (profileName) {
+                    localStorage.setItem('profileName', profileName);
+                }
+                if (profilePicture) {
+                    localStorage.setItem('profilePicture', profilePicture);
+                }
+            } catch (e) {
+                role = '';
+                profileName = '';
+                profilePicture = '';
+                console.error("Failed to decode token:", e);
+            }
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
             await auth.initializeAuth()

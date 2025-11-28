@@ -20,8 +20,9 @@
 
         <div class="p-4 border-b overflow-hidden bg-gradient-to-r from-primary/5 to-secondary/5">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
-                    <span class="text-secondary-content font-bold text-lg">C</span>
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img src="/src/assets/Chakkam_Khanathon_School_logo.png" alt="CKK Logo"
+                        class="w-full h-full object-contain" />
                 </div>
                 <div v-show="isExpanded" class="transition-opacity duration-300">
                     <h2 class="text-xl font-bold text-primary whitespace-nowrap">CKK School</h2>
@@ -30,7 +31,7 @@
             </div>
         </div>
 
-        <nav class="menu p-4">
+        <nav class="menu p-4 overflow-y-auto h-[calc(100vh-96px)]">
             <ul class="space-y-2">
                 <li>
                     <router-link to="/home/dashboard"
@@ -73,7 +74,7 @@
                     </div>
 
                     <ul v-show="isExpanded && isPersonnelOpen" class="ml-4 mt-2 space-y-2">
-                        <li>
+                        <li v-if="auth.user?.role !== 'teacher'">
                             <router-link to="/home/teacher"
                                 class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
                                 :class="submenuClass('/home/teacher')">
@@ -82,7 +83,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                <span class="text-sm">จัดการอาจารย์</span>
+                                <span class="text-sm">จัดการบุคลากร</span>
                             </router-link>
                         </li>
 
@@ -101,7 +102,7 @@
                     </ul>
                 </li>
 
-                <li>
+                <li v-if="auth.user?.role !== 'teacher'">
                     <div @click="toggleStructure"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer relative group"
                         :class="{ 'bg-primary text-primary-content': isStructureActive }">
@@ -188,7 +189,7 @@
                     </div>
 
                     <ul v-show="isExpanded && isEquipmentOpen" class="ml-4 mt-2 space-y-2">
-                        <li>
+                        <li v-if="auth.user?.role !== 'teacher'">
                             <router-link to="/home/device"
                                 class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
                                 :class="submenuClass('/home/device')">
@@ -248,7 +249,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span>ตารางเข้า-ออก</span>
+                                <span>เข้า-ออก</span>
                             </router-link>
                         </li>
                         <li>
@@ -260,7 +261,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span>ตารางมาสาย</span>
+                                <span>มาสาย</span>
                             </router-link>
                         </li>
                         <li>
@@ -272,7 +273,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                <span>ตารางขาดเรียน/ขาดงาน</span>
+                                <span>ขาดเรียน/ขาดงาน</span>
                             </router-link>
                         </li>
                         <li>
@@ -281,10 +282,11 @@
                                 :class="submenuClass('/home/report/stranger')">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        d="M12 8v4m0 4h.01" />
                                 </svg>
-                                <span>ตารางบุคคลภายนอก</span>
+                                <span>สแกนไม่สำเร็จ</span>
                             </router-link>
                         </li>
                         <li>
@@ -302,7 +304,7 @@
                     </ul>
                 </li>
 
-                <li>
+                <li v-if="auth.user?.role !== 'teacher'">
                     <router-link to="/home/account"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors relative group"
                         :class="{ 'bg-primary text-primary-content': isActive('/home/account') }">
@@ -329,6 +331,8 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { computed, ref } from 'vue'
+import { useAuthStore } from '../stores/auth'
+const auth = useAuthStore()
 
 const route = useRoute()
 const isExpanded = ref(true)

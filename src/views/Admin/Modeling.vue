@@ -2,12 +2,12 @@
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-primary">จัดการโมเดล</h1>
-            <CreateModeling @created="fetchData" />
+            <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData" />
         </div>
 
         <div class="bg-base-100 rounded-lg shadow-lg p-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div class="form-control">
+                <div v-if="auth.user?.role !== 'teacher'" class="form-control">
                     <label class="label py-1">
                         <span class="label-text text-sm font-medium">ประเภท</span>
                     </label>
@@ -104,6 +104,9 @@ import ModelingTable from "../../components/Modeling/Table.vue";
 import CreateModeling from "../../components/Modeling/Create.vue";
 import ModelingService from "../../api/modeling.js";
 import Swal from "sweetalert2";
+import { useAuthStore } from "../../stores/auth";
+
+const auth = useAuthStore();
 
 const loading = ref(false);
 const modelings = ref([]);
