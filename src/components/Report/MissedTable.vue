@@ -21,8 +21,11 @@
                     <td class="text-center">
                         <img v-if="item.picture" :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
                             class="w-10 h-10 rounded-full object-cover inline-block cursor-pointer"
-                            @click="viewImage(item.picture)" />
-                        <div v-else class="w-10 h-10 rounded-full bg-base-200 inline-block"></div>
+                            @click="viewImage(item.picture)" @error="item.picture = null" />
+                        <div v-else
+                            class="w-10 h-10 rounded-full bg-base-200 inline-block flex items-center justify-center">
+                            <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
+                        </div>
                     </td>
                     <td>{{ item.name }}</td>
                     <td class="text-center">{{ item.position }}</td>
@@ -164,6 +167,18 @@ const visiblePages = computed(() => {
 const viewImage = (image) => {
     selectedImage.value = image
     imageModal.value?.showModal()
+}
+
+const getInitials = (name) => {
+    if (!name) return '?'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '')
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '')
+    }
+    return parts[0][0] || '?'
 }
 </script>
 

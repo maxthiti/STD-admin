@@ -12,24 +12,13 @@
         </div>
 
         <div class="flex-none gap-4">
-            <!-- <button class="btn btn-ghost btn-circle">
-                <div class="indicator">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span class="badge badge-xs badge-secondary indicator-item"></span>
-                </div>
-            </button> -->
-
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div
                         class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center shadow-md overflow-hidden">
-                        <img v-if="profilePicture" :src="profilePictureUrl" alt="profile"
-                            class="w-full h-full object-cover" />
-                        <span v-else class="text-lg font-semibold">{{ profileInitial }}</span>
+                        <img v-if="showProfileImage" :src="profilePictureUrl" alt="profile"
+                            class="w-full h-full object-cover" @error="showProfileImage = false" />
+                        <span v-else class="text-lg font-semibold">{{ getProfileInitial(profileName) }}</span>
                     </div>
                 </div>
                 <ul tabindex="0"
@@ -52,7 +41,7 @@
 const goToUpdatePassword = () => {
     router.push('/update-password')
 }
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import Swal from 'sweetalert2'
@@ -110,9 +99,22 @@ const profilePictureUrl = computed(() => {
         : baseUrl + profilePicture.value
 })
 
-const profileInitial = computed(() => {
-    if (!profileName.value) return 'A'
-    return profileName.value.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+const showProfileImage = ref(!!profilePicture.value)
+
+const getProfileInitial = (name) => {
+    if (!name) return 'A'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '')
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '')
+    }
+    return parts[0][0] || 'A'
+}
+
+watch(profilePicture, (val) => {
+    showProfileImage.value = !!val
 })
 </script>
 

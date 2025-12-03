@@ -27,7 +27,13 @@
                         <img v-if="item.imageUrl" :src="`${imgBaseUrl}${item.imageUrl}`" alt="snapshot"
                             class="w-16 h-16 object-cover inline-block cursor-pointer rounded"
                             @click="viewImage(item.imageUrl)" />
-                        <div v-else class="w-16 h-16 bg-base-200 inline-block rounded"></div>
+                        <div v-else class="w-16 h-16 bg-base-200 inline-block rounded flex items-center justify-center">
+                            <svg class="w-8 h-8 text-base-content/50" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5.121 17.804A9.001 9.001 0 0112 15c2.21 0 4.21.805 5.879 2.146M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -51,7 +57,16 @@
 
             <div v-if="item.imageUrl" class="flex justify-center">
                 <img :src="`${imgBaseUrl}${item.imageUrl}`" alt="snapshot"
-                    class="w-24 h-24 object-cover rounded-lg cursor-pointer" @click="viewImage(item.imageUrl)" />
+                    class="w-24 h-24 object-cover rounded-lg cursor-pointer" @click="viewImage(item.imageUrl)"
+                    @error="item.imageUrl = null" />
+            </div>
+            <div v-else class="flex justify-center">
+                <div class="w-24 h-24 bg-base-200 rounded-lg flex items-center justify-center">
+                    <svg class="w-10 h-10 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5.121 17.804A9.001 9.001 0 0112 15c2.21 0 4.21.805 5.879 2.146M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
             </div>
         </div>
     </div>

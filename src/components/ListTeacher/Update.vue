@@ -153,7 +153,7 @@ const props = defineProps({
 
 const emit = defineEmits(['success'])
 
-const openModal = (teacher) => {
+const openModal = async (teacher) => {
     teacherId.value = teacher.id
     currentImage.value = teacher.picture || ''
     previewImage.value = ''
@@ -170,6 +170,30 @@ const openModal = (teacher) => {
         status: 'ปกติ',
         picture: null
     }
+
+    if (teacher.picture) {
+        try {
+            const response = await fetch(teacher.picture)
+            const blob = await response.blob()
+            if (blob.size > 70 * 1024) {
+                const resizedBlob = await resizeImage(blob, 70, 300, 300)
+                if (resizedBlob.size <= 70 * 1024) {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                        currentImage.value = e.target.result
+                        previewImage.value = ''
+                    }
+                    reader.readAsDataURL(resizedBlob)
+                    formData.value.picture = new File([resizedBlob], 'teacher.jpg', { type: 'image/jpeg' })
+                } else {
+                    fileError.value = `ขนาดรูปบุคลากรเกิน 70KB (${(blob.size / 1024).toFixed(2)}KB)`
+                }
+            }
+        } catch (err) {
+            fileError.value = 'เกิดข้อผิดพลาดในการตรวจสอบหรือปรับขนาดรูปภาพ'
+        }
+    }
+
     modalRef.value.showModal()
 }
 

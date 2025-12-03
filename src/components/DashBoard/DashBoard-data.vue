@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-4">
         <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold">สรุปรายวัน</h3>
+            <h3 class="text-lg font-semibold text-white">สรุปรายวัน</h3>
             <div class="flex items-center gap-2">
                 <input type="date" v-model="selectedDate" class="input input-sm input-bordered" @change="fetchDaily" />
                 <span v-if="loading" class="loading loading-spinner loading-sm"></span>
@@ -14,7 +14,7 @@
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
                 <h3 class="font-bold text-lg mb-4">รายการเข้าเรียน{{ attendanceRole === 'teacher' ? 'ครู' : 'นักเรียน'
-                    }} วันที่ {{ displayDate }}</h3>
+                }} วันที่ {{ displayDate }}</h3>
 
                 <div class="flex gap-2 mb-4" v-if="attendanceRole === 'student'">
                     <div v-if="residentRole !== 'teacher'" class="form-control">
@@ -23,7 +23,6 @@
                         </label>
                         <select v-model="attendanceGrade" class="select select-sm select-bordered w-full"
                             @change="handleGradeChange">
-                            <option value="">ทั้งหมด</option>
                             <option v-for="grade in availableGrades" :key="grade" :value="grade">{{ grade }}</option>
                         </select>
                     </div>
@@ -33,7 +32,6 @@
                         </label>
                         <select v-model.number="attendanceClassroom" class="select select-sm select-bordered w-full"
                             @change="reloadAttendance" :disabled="!attendanceGrade">
-                            <option :value="0">ทั้งหมด</option>
                             <option v-for="classroom in availableClassrooms" :key="classroom" :value="classroom">{{
                                 classroom }}</option>
                         </select>
@@ -82,106 +80,116 @@
         <AttendanceDetail ref="detailModal" />
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="stats shadow bg-base-100">
-                <div class="stat group" ref="studentStatRef">
-                    <div class="stat-title">จำนวนนักเรียนทั้งหมด</div>
-                    <div class="stat-value text-primary">{{ totals.total_students || 0 }}</div>
-                    <div class="stat-figure">
-                        <div ref="studentIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+            <transition name="slide-fade">
+                <div v-show="showStudentStat" class="stats shadow bg-base-100">
+                    <div class="stat group" ref="studentStatRef">
+                        <div class="stat-title">จำนวนนักเรียนทั้งหมด</div>
+                        <div class="stat-value text-primary">{{ totals.total_students || 0 }}</div>
+                        <div class="stat-figure">
+                            <div ref="studentIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="stats shadow bg-base-100">
-                <div class="stat group" ref="teacherStatRef">
-                    <div class="stat-title">จำนวนครูทั้งหมด</div>
-                    <div class="stat-value text-secondary">{{ totals.total_teachers || 0 }}</div>
-                    <div class="stat-figure">
-                        <div ref="teacherIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+            </transition>
+            <transition name="slide-down">
+                <div v-show="showTeacherStat" class="stats shadow bg-base-100">
+                    <div class="stat group" ref="teacherStatRef">
+                        <div class="stat-title">จำนวนครูทั้งหมด</div>
+                        <div class="stat-value text-secondary">{{ totals.total_teachers || 0 }}</div>
+                        <div class="stat-figure">
+                            <div ref="teacherIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="stats shadow bg-base-100">
-                <div class="stat group" ref="combinedStatRef">
-                    <div class="stat-title">ทั้งหมดที่เข้า</div>
-                    <div class="stat-value text-purple-500">{{ totalCombined }}</div>
-                    <div class="stat-desc">ประจำวันที่ {{ displayDate }}</div>
-                    <div class="stat-figure">
-                        <div ref="combinedIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+            </transition>
+            <transition name="slide-right">
+                <div v-show="showCombinedStat" class="stats shadow bg-base-100">
+                    <div class="stat group" ref="combinedStatRef">
+                        <div class="stat-title">ทั้งหมดที่เข้า</div>
+                        <div class="stat-value text-purple-500">{{ totalCombined }}</div>
+                        <div class="stat-desc">ประจำวันที่ {{ displayDate }}</div>
+                        <div class="stat-figure">
+                            <div ref="combinedIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </transition>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card bg-base-100 shadow-xl group" ref="studentAbsentStatRef">
-                <div class="card-body p-4">
-                    <h4 class="card-title">นักเรียน</h4>
-                    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
-                        <div class="stat relative">
-                            <div class="stat-title">เข้า</div>
-                            <div class="stat-value text-primary">{{ student.total }}</div>
-                            <div class="stat-desc absolute bottom-2 right-2">
-                                <button @click="showAttendanceTable" class="btn btn-xs btn-primary btn-plain">
-                                    คลิก
-                                </button>
+            <transition name="slide-fade">
+                <div v-show="showStudentAbsentStat" class="card bg-base-100 shadow-xl group" ref="studentAbsentStatRef">
+                    <div class="card-body p-4">
+                        <h4 class="card-title">นักเรียน</h4>
+                        <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
+                            <div class="stat relative">
+                                <div class="stat-title">เข้า</div>
+                                <div class="stat-value text-primary">{{ student.total }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showAttendanceTable" class="btn btn-xs btn-primary btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat relative">
-                            <div class="stat-title">มาสาย</div>
-                            <div class="stat-value text-black">{{ student.late }}</div>
-                            <div class="stat-desc absolute bottom-2 right-2">
-                                <button @click="showStudentLateTable" class="btn btn-xs btn-ghost btn-plain">
-                                    คลิก
-                                </button>
+                            <div class="stat relative">
+                                <div class="stat-title">มาสาย</div>
+                                <div class="stat-value text-black">{{ student.late }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showStudentLateTable" class="btn btn-xs btn-ghost btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat relative border-l pl-4">
-                            <div class="stat-title">ขาด</div>
-                            <div class="stat-value text-error">{{ studentAbsent }}</div>
-                            <div class="stat-desc absolute bottom-2 right-2">
-                                <button @click="showStudentMissedTable" class="btn btn-xs btn-error btn-plain">
-                                    คลิก
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-xl group" ref="teacherAbsentStatRef">
-                <div class="card-body p-4">
-                    <h4 class="card-title">ครู</h4>
-                    <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
-                        <div class="stat relative">
-                            <div class="stat-title">เข้า</div>
-                            <div class="stat-value text-secondary">{{ teacher.total }}</div>
-                            <div class="stat-desc absolute bottom-2 right-2">
-                                <button @click="showTeacherAttendanceTable" class="btn btn-xs btn-secondary btn-plain">
-                                    คลิก
-                                </button>
-                            </div>
-                        </div>
-                        <div class="stat relative">
-                            <div class="stat-title">มาสาย</div>
-                            <div class="stat-value text-black">{{ teacher.late }}</div>
-                            <div class="stat-desc absolute bottom-2 right-2">
-                                <button @click="showTeacherLateTable" class="btn btn-xs btn-ghost btn-plain">
-                                    คลิก
-                                </button>
-                            </div>
-                        </div>
-                        <div class="stat group relative border-l pl-4" ref="teacherAbsentStatRef">
-                            <div class="stat-title">ขาด</div>
-                            <div class="stat-value text-error">{{ teacherAbsent }}</div>
-                            <div class="stat-desc absolute bottom-2 right-2">
-                                <button @click="showTeacherMissedTable" class="btn btn-xs btn-error btn-plain">
-                                    คลิก
-                                </button>
+                            <div class="stat relative border-l pl-4">
+                                <div class="stat-title">ขาด</div>
+                                <div class="stat-value text-error">{{ studentAbsent }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showStudentMissedTable" class="btn btn-xs btn-error btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </transition>
+            <transition name="slide-right">
+                <div v-show="showTeacherAbsentStat" class="card bg-base-100 shadow-xl group" ref="teacherAbsentStatRef">
+                    <div class="card-body p-4">
+                        <h4 class="card-title">ครู</h4>
+                        <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
+                            <div class="stat relative">
+                                <div class="stat-title">เข้า</div>
+                                <div class="stat-value text-secondary">{{ teacher.total }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showTeacherAttendanceTable"
+                                        class="btn btn-xs btn-secondary btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat relative">
+                                <div class="stat-title">มาสาย</div>
+                                <div class="stat-value text-black">{{ teacher.late }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showTeacherLateTable" class="btn btn-xs btn-ghost btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat group relative border-l pl-4" ref="teacherAbsentStatRef">
+                                <div class="stat-title">ขาด</div>
+                                <div class="stat-value text-error">{{ teacherAbsent }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showTeacherMissedTable" class="btn btn-xs btn-error btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
         </div>
     </div>
 
@@ -304,6 +312,11 @@ const studentAbsent = computed(() => Math.max((totals.value.total_students || 0)
 const teacherAbsent = computed(() => Math.max((totals.value.total_teachers || 0) - (teacher.value.total || 0), 0))
 
 const attendanceFilteredData = ref([])
+const showStudentStat = ref(false)
+const showTeacherStat = ref(false)
+const showCombinedStat = ref(false)
+const showStudentAbsentStat = ref(false)
+const showTeacherAbsentStat = ref(false)
 
 async function fetchDaily() {
     loading.value = true
@@ -599,6 +612,26 @@ function resetAttendancePage() {
 }
 
 onMounted(() => {
+    showStudentStat.value = false
+    showTeacherStat.value = false
+    showCombinedStat.value = false
+    showStudentAbsentStat.value = false
+    showTeacherAbsentStat.value = false
+    setTimeout(() => {
+        showStudentStat.value = true
+    }, 100)
+    setTimeout(() => {
+        showTeacherStat.value = true
+    }, 100)
+    setTimeout(() => {
+        showCombinedStat.value = true
+    }, 100)
+    setTimeout(() => {
+        showStudentAbsentStat.value = true
+    }, 100)
+    setTimeout(() => {
+        showTeacherAbsentStat.value = true
+    }, 100)
     fetchDaily()
     fetchClassrooms()
     if (studentIconRef.value) {
@@ -675,4 +708,59 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.slide-fade-enter-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-fade-leave-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-fade-enter-from {
+    opacity: 0;
+    transform: translateX(-60px);
+}
+
+.slide-fade-leave-to {
+    opacity: 0;
+    transform: translateX(-60px);
+}
+
+.slide-down-enter-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-down-leave-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-down-enter-from {
+    opacity: 0;
+    transform: translateY(-60px);
+}
+
+.slide-down-leave-to {
+    opacity: 0;
+    transform: translateY(-60px);
+}
+
+/* Slide right animation for combined stat */
+.slide-right-enter-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-right-leave-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-right-enter-from {
+    opacity: 0;
+    transform: translateX(60px);
+}
+
+.slide-right-leave-to {
+    opacity: 0;
+    transform: translateX(60px);
+}
+</style>

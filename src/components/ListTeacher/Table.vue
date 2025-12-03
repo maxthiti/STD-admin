@@ -55,8 +55,6 @@
                             <th class="bg-primary text-primary-content text-center">สถานะ</th>
                             <th v-if="auth.user?.role !== 'teacher'"
                                 class="bg-primary text-primary-content w-24 text-center">จัดการ</th>
-                            <!-- <th class="bg-primary text-primary-content hidden xl:table-cell">อีเมล</th> -->
-                            <!-- <th class="bg-primary text-primary-content hidden xl:table-cell">เบอร์โทร</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -77,11 +75,17 @@
                                     <div class="avatar">
                                         <div class="w-10 h-10 rounded-full">
                                             <img v-if="teacher.picture" :src="teacher.picture" :alt="teacher.name"
-                                                class="w-full h-full object-cover" />
+                                                class="w-full h-full object-cover" @error="teacher.picture = null"/>
                                             <div v-else
                                                 class="w-full h-full bg-primary text-primary-content flex items-center justify-center">
                                                 <span class="text-sm font-semibold">{{ getInitials(teacher.name)
                                                 }}</span>
+                                                <svg class="ml-1 w-4 h-4 text-base-content/50" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M5.121 17.804A9.001 9.001 0 0112 15c2.21 0 4.21.805 5.879 2.146M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
                                             </div>
                                         </div>
                                     </div>
@@ -121,7 +125,6 @@
                                     </button>
                                 </div>
                             </td>
-                            <!-- <td class="hidden xl:table-cell">{{ teacher.phone }}</td> -->
                         </tr>
                     </tbody>
                 </table>
@@ -186,7 +189,14 @@ watch(() => props.positionFilter, (newVal) => {
 
 const getInitials = (name) => {
     if (!name) return '?'
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '')
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '')
+    }
+    return parts[0][0] || '?'
 }
 
 const getShortDepartmentName = (name) => {

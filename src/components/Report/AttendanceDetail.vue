@@ -79,7 +79,8 @@
 <script setup>
 import { ref } from 'vue'
 
-const imgBaseUrl = import.meta.env.VITE_APP_IMG_URL
+// const imgBaseUrl = import.meta.env.VITE_APP_IMG_URL
+const imgBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 
 const detailModal = ref(null)
 const imageModal = ref(null)

@@ -1,7 +1,7 @@
 <template>
     <div class="p-0 md:p-6 space-y-6">
         <div class="flex justify-between items-center">
-            <h1 class="text-lg md:text-3xl font-bold text-primary">ตารางเข้า-ออก</h1>
+            <h1 class="text-lg md:text-3xl font-bold text-white">ตารางเข้า-ออก</h1>
             <input v-model="filters.date" type="date" @change="fetchData"
                 class="text-sm px-2 py-1 bg-transparent border-none focus:outline-none focus:ring-0 rounded" />
         </div>

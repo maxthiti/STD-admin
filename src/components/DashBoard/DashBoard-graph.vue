@@ -1,37 +1,39 @@
 <template>
     <div class="space-y-6">
-        <div class="grid grid-cols-1">
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <div class="flex items-center justify-between lg:flex gap-2 hidden lg:flex">
-                        <h2 class="card-title flex items-center gap-2">สถิติรายวัน
-                            <div class="flex items-center gap-1">
-                                <span class="badge badge-outline text-xs">{{ weekLabel }}</span>
+        <transition name="slide-up">
+            <div v-show="showGraphCard" class="grid grid-cols-1">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <div class="flex items-center justify-between lg:flex gap-2 hidden lg:flex">
+                            <h2 class="card-title flex items-center gap-2">สถิติรายวัน
+                                <div class="flex items-center gap-1">
+                                    <span class="badge badge-outline text-xs">{{ weekLabel }}</span>
+                                </div>
+                            </h2>
+                            <router-link to="/home/report/stats" class="btn btn-xs btn-ghost">
+                                ดูเพิ่มเติม →
+                            </router-link>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 lg:hidden">
+                            <div class="flex flex-col items-start">
+                                <span class="font-bold text-lg leading-tight">สถิติ</span>
+                                <span class="font-bold text-lg leading-tight">รายวัน</span>
                             </div>
-                        </h2>
-                        <router-link to="/home/report/stats" class="btn btn-xs btn-ghost">
-                            ดูเพิ่มเติม →
-                        </router-link>
-                    </div>
-                    <div class="flex items-center justify-between gap-2 lg:hidden">
-                        <div class="flex flex-col items-start">
-                            <span class="font-bold text-lg leading-tight">สถิติ</span>
-                            <span class="font-bold text-lg leading-tight">รายวัน</span>
+                            <div class="flex-1 flex justify-center">
+                                <span class="px-4 py-1 border rounded-full text-xs font-medium bg-base-100 shadow-sm">{{
+                                    weekLabel }}</span>
+                            </div>
+                            <router-link to="/home/report/stats" class="btn btn-xs btn-ghost whitespace-nowrap">
+                                ดูเพิ่มเติม →
+                            </router-link>
                         </div>
-                        <div class="flex-1 flex justify-center">
-                            <span class="px-4 py-1 border rounded-full text-xs font-medium bg-base-100 shadow-sm">{{
-                                weekLabel }}</span>
+                        <div class="h-80">
+                            <canvas ref="barChartRef"></canvas>
                         </div>
-                        <router-link to="/home/report/stats" class="btn btn-xs btn-ghost whitespace-nowrap">
-                            ดูเพิ่มเติม →
-                        </router-link>
-                    </div>
-                    <div class="h-80">
-                        <canvas ref="barChartRef"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
+        </transition>
     </div>
 </template>
 
@@ -55,6 +57,7 @@ const rawStats = ref([])
 const strangerCount = ref(0)
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 const loading = ref(false)
+const showGraphCard = ref(false)
 
 function getUtilityBgColor(className) {
     const el = document.createElement('div')
@@ -270,6 +273,11 @@ onMounted(async () => {
     const monday = getMonday(date)
     currentWeekStart.value = monday
     fetchDailyStats()
+
+    showGraphCard.value = false
+    setTimeout(() => {
+        showGraphCard.value = true
+    }, 100)
 })
 
 onUnmounted(() => {
@@ -277,4 +285,22 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.slide-up-enter-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-up-leave-active {
+    transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.slide-up-enter-from {
+    opacity: 0;
+    transform: translateY(60px);
+}
+
+.slide-up-leave-to {
+    opacity: 0;
+    transform: translateY(60px);
+}
+</style>

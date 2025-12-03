@@ -1,9 +1,14 @@
 <template>
-    <main class="min-h-screen grid place-items-center bg-base-200 p-2 sm:p-4">
+    <main class="min-h-screen grid place-items-center login-bg p-2 sm:p-4">
         <section class="w-full max-w-md sm:max-w-md mx-auto">
-            <div class="card bg-base-100 shadow-xl">
+            <div class="card bg-base-100 shadow-xl animate-form">
                 <div class="card-body p-4 sm:p-6">
-                    <h2 class="card-title justify-center text-2xl">เข้าสู่ระบบ</h2>
+                    <div class="flex flex-col items-center mb-4 animate-logo">
+                        <img :src="logoUrl" alt="Chakkam Khanathon School Logo" class="school-logo mb-2" />
+                        <h2 class="school-title text-blue-900 font-bold text-xl sm:text-2xl text-center drop-shadow">
+                            โรงเรียนจักรคำคณาทร</h2>
+                    </div>
+                    <h2 class="card-title justify-center text-2xl text-blue-900">เข้าสู่ระบบ</h2>
 
                     <form @submit.prevent="onSubmit" class="space-y-4">
                         <div class="form-control">
@@ -41,7 +46,7 @@
 
                         <div class="flex flex-wrap gap-2 items-center w-full">
                             <button type="submit"
-                                class="btn btn-primary flex-1 min-w-[140px] sm:min-w-[180px] text-base sm:text-lg py-3"
+                                class="btn btn-primary flex-1 min-w-[140px] sm:min-w-[180px] text-base sm:text-lg py-3 login-btn"
                                 :disabled="loading">
                                 <span v-if="loading" class="loading loading-spinner loading-sm"></span>
                                 <span v-else>เข้าสู่ระบบ</span>
@@ -72,6 +77,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import { UserService } from '../api/user'
+import logoUrl from '../assets/Chakkam_Khanathon_School_logo.png'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -224,6 +230,100 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.login-bg {
+    background: linear-gradient(135deg, #1e3a8a 60%, #ffd600 100%);
+}
+
+.school-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 16px;
+    animation: logo-pulse-smooth 2.2s ease-in-out infinite;
+}
+
+@keyframes logo-pulse-smooth {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.school-title {
+    color: #ffd600;
+    text-shadow: 1px 1px 0 #1e3a8a, 0 2px 8px #1e3a8a33;
+    letter-spacing: 1px;
+}
+
+.card {
+    border: 2px solid #1e3a8a;
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.card-title {
+    color: #1e3a8a;
+}
+
+.btn-primary.login-btn {
+    background: linear-gradient(90deg, #1e3a8a 70%, #ffd600 100%);
+    color: #fff;
+    border: none;
+    transition: transform 0.18s cubic-bezier(.68, -0.55, .27, 1.55), box-shadow 0.18s;
+    box-shadow: 0 2px 8px #1e3a8a22;
+}
+
+.btn-primary.login-btn:hover:not(:disabled) {
+    transform: scale(1.06);
+    box-shadow: 0 4px 16px #ffd60044;
+    background: linear-gradient(90deg, #1e3a8a 50%, #ffd600 100%);
+}
+
+.input,
+.input-bordered {
+    border: 1.5px solid #1e3a8a;
+    background: #fff;
+}
+
+.label-text {
+    color: #1e3a8a;
+    font-weight: 500;
+}
+
+.text-error {
+    color: #e53935;
+}
+
+.text-success {
+    color: #43a047;
+}
+
+.animate-form {
+    animation: form-fade-in-up-normal 1.1s cubic-bezier(.4, 0, .2, 1) both;
+    will-change: opacity, transform, filter;
+}
+
+@keyframes form-fade-in-up-normal {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
 @media (max-width: 640px) {
     .card-body {
         padding: 1rem !important;
@@ -243,6 +343,15 @@ async function onSubmit() {
         font-size: 1rem !important;
         padding-top: 0.75rem !important;
         padding-bottom: 0.75rem !important;
+    }
+
+    .school-logo {
+        width: 64px;
+        height: 64px;
+    }
+
+    .school-title {
+        font-size: 1.1rem;
     }
 }
 </style>

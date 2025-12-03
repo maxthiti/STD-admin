@@ -89,7 +89,9 @@
                         <label class="label"><span class="label-text">ห้อง</span></label>
                         <select v-model="formData.classroom" class="select select-bordered" required>
                             <option value="">เลือกห้อง</option>
-                            <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
+                            <option v-for="room in availableClassrooms" :key="room" :value="room">
+                                {{ room }}
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -185,7 +187,7 @@ const parseName = (name) => {
     }
 }
 
-const openModal = (student) => {
+const openModal = async (student) => {
     studentId.value = student.id
     const parsed = parseName(student.name)
     formData.value = {
@@ -203,7 +205,30 @@ const openModal = (student) => {
     firstNameError.value = ''
     lastNameError.value = ''
 
-    if (formData.value.grade && availableClassrooms.value.length > 0 && !availableClassrooms.value.includes(formData.value.classroom)) {
+    if (student.picture) {
+        try {
+            const response = await fetch(student.picture)
+            const blob = await response.blob()
+            if (blob.size > 70 * 1024) {
+                const resizedBlob = await resizeImage(blob, 70, 300, 300)
+                if (resizedBlob.size <= 70 * 1024) {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                        currentImage.value = e.target.result
+                        previewImage.value = ''
+                    }
+                    reader.readAsDataURL(resizedBlob)
+                    formData.value.picture = new File([resizedBlob], 'student.jpg', { type: 'image/jpeg' })
+                } else {
+                    fileError.value = `ขนาดรูปนักเรียนเกิน 70KB (${(blob.size / 1024).toFixed(2)}KB)`
+                }
+            }
+        } catch (err) {
+            fileError.value = 'เกิดข้อผิดพลาดในการตรวจสอบหรือปรับขนาดรูปภาพ'
+        }
+    }
+
+    if (formData.value.classroom && availableClassrooms.value.length > 0 && availableClassrooms.value.includes(formData.value.classroom)) {
         formData.value.classroom = availableClassrooms.value[0]
     }
     modalRef.value?.showModal()

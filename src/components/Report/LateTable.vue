@@ -25,7 +25,9 @@
                         <img v-if="item.picture" :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
                             class="w-10 h-10 rounded-full object-cover inline-block cursor-pointer"
                             @click="viewImage(item.picture, true)" />
-                        <div v-else class="w-10 h-10 rounded-full bg-base-200 inline-block"></div>
+                        <div v-else class="w-10 h-10 rounded-full bg-base-200 flex items-center justify-center">
+                            <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
+                        </div>
                     </td>
                     <td>{{ item.name }}</td>
                     <td class="text-center">{{ item.position }}</td>
@@ -61,7 +63,11 @@
         <div v-for="item in data" :key="item._id" class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">
             <div class="flex items-start gap-3">
                 <img v-if="item.picture" :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
-                    class="w-10 h-10 rounded-full object-cover cursor-pointer" @click="viewImage(item.picture, true)" />
+                    class="w-10 h-10 rounded-full object-cover cursor-pointer" @click="viewImage(item.picture, true)"
+                    @error="item.picture = null" />
+                <div v-else class="w-10 h-10 rounded-full bg-base-200 flex items-center justify-center">
+                    <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
+                </div>
                 <div class="flex-1">
                     <div class="badge badge-primary badge-sm mb-2">{{ item.userid }}</div>
                     <h3 class="font-bold text-lg">{{ item.name }}</h3>
@@ -207,6 +213,18 @@ const viewImage = (image, isProfile = false) => {
     selectedImage.value = image
     selectedImageType.value = isProfile ? 'profile' : 'snap'
     imageModal.value?.showModal()
+}
+
+const getInitials = (name) => {
+    if (!name) return '?'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '')
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '')
+    }
+    return parts[0][0] || '?'
 }
 </script>
 

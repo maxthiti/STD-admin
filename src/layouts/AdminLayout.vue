@@ -1,5 +1,5 @@
 <template>
-    <div class="flex min-h-screen bg-base-200">
+    <div class="bg flex min-h-screen bg-base-200">
         <Sidebar ref="sidebarRef" />
         <div class="flex-1 flex flex-col">
             <Navbar @toggleMobileMenu="handleToggleMobileMenu" />
@@ -24,4 +24,8 @@ const handleToggleMobileMenu = () => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.bg{
+    background: linear-gradient(90deg, #1e3a8a 50%, #ffd600 100%);
+}
+</style>

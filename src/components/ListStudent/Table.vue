@@ -1,5 +1,4 @@
 <template>
-
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <div class="block md:hidden">
@@ -31,7 +30,6 @@
                         <div class="flex flex-wrap gap-2 text-sm mt-2">
                             <span class="badge badge-primary badge-sm">{{ student.grade }}</span>
                             <span class="badge badge-outline badge-sm">ห้อง {{ student.room }}</span>
-                            <!-- <span class="badge badge-outline badge-sm">{{ student.phone }}</span> -->
                         </div>
                         <div class="flex items-center justify-between mt-2">
                             <button class="btn btn-ghost btn-xs"
@@ -40,7 +38,7 @@
                                 <span :class="student.has_password ? 'bg-green-500' : 'bg-red-500'"
                                     class="inline-block w-3 h-3 rounded-full"></span>
                                 <span class="ml-2 text-xs">{{ student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'
-                                    }}</span>
+                                }}</span>
                             </button>
                             <div class="flex gap-2">
                                 <button class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
@@ -95,11 +93,17 @@
                                     <div class="avatar">
                                         <div class="w-10 h-10 rounded-full">
                                             <img v-if="student.picture" :src="student.picture" :alt="student.name"
-                                                class="w-full h-full object-cover" />
+                                                class="w-full h-full object-cover" @error="student.picture = null" />
                                             <div v-else
                                                 class="w-full h-full bg-secondary text-secondary-content flex items-center justify-center">
                                                 <span class="text-sm font-semibold">{{ getInitials(student.name)
                                                     }}</span>
+                                                <svg class="ml-1 w-4 h-4 text-base-content/50" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M5.121 17.804A9.001 9.001 0 0112 15c2.21 0 4.21.805 5.879 2.146M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
                                             </div>
                                         </div>
                                     </div>
@@ -173,7 +177,14 @@ const emit = defineEmits(['edit', 'delete', 'reset'])
 
 const getInitials = (name) => {
     if (!name) return '?'
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '')
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '')
+    }
+    return parts[0][0] || '?'
 }
 
 const getRowNumber = (index) => {

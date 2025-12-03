@@ -2,7 +2,7 @@
     <div class="p-1 sm:p-2 md:p-6 space-y-2 sm:space-y-4 md:space-y-6 w-full">
         <div class="flex flex-col md:flex-row md:items-center justify-between items-center gap-2 md:gap-4">
             <div class="flex flex-col">
-                <h1 class="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-primary mb-2 md:mb-0">
+                <h1 class="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white mb-2 md:mb-0">
                     สถิติการเข้า-ออก
                 </h1>
                 <div v-if="residentRole === 'teacher'" class="mb-2 flex items-center gap-2">
@@ -78,15 +78,15 @@
                 </div>
 
                 <div v-if="primary.stats" class="grid grid-cols-2 gap-1 sm:gap-2 md:gap-3">
-                    <div class="card bg-success/10 shadow-sm p-3">
-                        <div class="text-xs font-medium">วันที่เข้ามากที่สุด</div>
-                        <div class="text-lg font-bold text-success">{{ primary.stats.maxDay.date }}</div>
-                        <div class="text-xs text-base-content/70">{{ primary.stats.maxDay.total }} คน</div>
+                    <div class="card bg-primary/100 shadow-sm p-3">
+                        <div class="text-xs font-medium text-white">วันที่เข้ามากที่สุด</div>
+                        <div class="text-lg font-bold text-warning">{{ primary.stats.maxDay.date }}</div>
+                        <div class="text-xs text-base-content/70 text-white">{{ primary.stats.maxDay.total }} คน</div>
                     </div>
-                    <div class="card bg-warning/10 shadow-sm p-3">
-                        <div class="text-xs font-medium">วันที่สายมากที่สุด</div>
-                        <div class="text-lg font-bold text-warning">{{ primary.stats.maxLateDay.date }}</div>
-                        <div class="text-xs text-base-content/70">{{ primary.stats.maxLateDay.late }} คน</div>
+                    <div class="card bg-warning/100 shadow-sm p-3">
+                        <div class="text-xs font-medium text-white">วันที่สายมากที่สุด</div>
+                        <div class="text-lg font-bold text-primary">{{ primary.stats.maxLateDay.date }}</div>
+                        <div class="text-xs text-base-content/70 text-white">{{ primary.stats.maxLateDay.late }} คน</div>
                     </div>
                 </div>
 

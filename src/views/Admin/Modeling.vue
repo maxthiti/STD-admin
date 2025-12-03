@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-6">
         <div class="flex justify-between items-center">
-            <h1 class="text-lg md:text-3xl font-bold text-primary">จัดการโมเดล</h1>
+            <h1 class="text-lg md:text-3xl font-bold text-white">จัดการโมเดล</h1>
             <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData"
                 @selectModeChanged="selectMode = $event" :selected-ids="selectedIds" />
         </div>
@@ -23,7 +23,7 @@
                         <span class="label-text text-sm font-medium">ชื่อ</span>
                     </label>
                     <input v-model="filters.name" type="text" placeholder="ค้นหาชื่อ..."
-                        class="input input-bordered input-sm w-full" @keyup.enter="fetchData" />
+                        class="input input-bordered input-sm w-full" @keyup.enter="searchByNameOrUserid" />
                 </div>
 
                 <div class="form-control">
@@ -31,7 +31,7 @@
                         <span class="label-text text-sm font-medium">รหัส</span>
                     </label>
                     <input v-model="filters.userid" type="text" placeholder="ค้นหารหัส..."
-                        class="input input-bordered input-sm w-full" @keyup.enter="fetchData" />
+                        class="input input-bordered input-sm w-full" @keyup.enter="searchByNameOrUserid" />
                 </div>
 
                 <div class="form-control">
@@ -55,7 +55,7 @@
                     </svg>
                     รีเซ็ต
                 </button>
-                <button @click="fetchData" class="btn btn-primary btn-xs">
+                <button @click="searchByNameOrUserid" class="btn btn-primary btn-xs">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -92,7 +92,7 @@
                 </div>
             </div>
             <div class="flex flex-col items-center gap-4 mt-6">
-                <div class="text-sm text-base-content/60">
+                <div class="text-sm text-base-content/60 text-white">
                     ทั้งหมด {{ totalItems }} รายการ (หน้า {{ currentPage }} / {{ totalPages }})
                 </div>
             </div>
@@ -192,6 +192,11 @@ const resetFilters = () => {
 function handleSelectedIds(ids) {
     selectedIds.value = ids;
     console.log('Selected IDs from Table:', selectedIds.value);
+}
+
+function searchByNameOrUserid() {
+    currentPage.value = 1;
+    fetchData();
 }
 
 onMounted(() => {

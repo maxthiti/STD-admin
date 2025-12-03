@@ -25,12 +25,14 @@
                         <div v-if="item.picture" class="avatar cursor-pointer inline-flex"
                             @click="openImage(item.picture)">
                             <div class="w-10 h-10 rounded">
-                                <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile" />
+                                <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
+                                    @error="item.picture = null" />
                             </div>
                         </div>
                         <div v-else class="avatar placeholder inline-flex">
-                            <div class="bg-neutral text-neutral-content w-10 h-10 rounded">
-                                <span class="text-xs">N/A</span>
+                            <div
+                                class="bg-neutral text-neutral-content w-10 h-10 rounded flex items-center justify-center">
+                                <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
                             </div>
                         </div>
                     </td>
@@ -84,8 +86,8 @@
                         </div>
                     </div>
                     <div v-else class="avatar placeholder">
-                        <div class="bg-neutral text-neutral-content w-12 h-12 rounded">
-                            <span>—</span>
+                        <div class="bg-neutral text-neutral-content w-12 h-12 rounded flex items-center justify-center">
+                            <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
                         </div>
                     </div>
                 </div>
@@ -282,6 +284,18 @@ const extractEntryExit = (item) => {
         const exit = stamps.filter(s => s.hour >= 12).sort((a, b) => b.raw.localeCompare(a.raw))[0] || null
         return { entry, exit }
     }
+}
+
+const getInitials = (name) => {
+    if (!name) return '?'
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '')
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '')
+    }
+    return parts[0][0] || '?'
 }
 </script>
 
