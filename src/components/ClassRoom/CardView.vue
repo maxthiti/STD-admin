@@ -32,17 +32,16 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     <div v-for="classroom in grade.classrooms" :key="classroom._id"
                         class="relative group cursor-pointer">
-                        <div @click="$emit('edit', classroom)"
-                            class="p-4 rounded-lg border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 h-full flex flex-col">
+                        <div class="p-4 rounded-lg border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 h-full flex flex-col cursor-pointer">
                             <div class="text-center flex-1 flex flex-col justify-between">
-                                <div>
+                                <div @click="goToStudent(classroom.grade, classroom.classroom)">
                                     <div class="text-2xl font-bold text-primary mb-1">ห้อง {{ classroom.classroom }}
                                     </div>
                                     <div class="text-xs text-secondary font-medium">{{ getGradeLabel(classroom.grade) }}
                                     </div>
                                 </div>
                                 <div v-if="classroom.adviser && classroom.adviser.name"
-                                    class="mt-2 pt-2 border-t border-primary/20">
+                                    @click="$emit('edit', classroom)" class="mt-2 pt-2 border-t border-primary/20">
                                     <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
                                     <div class="text-xs font-semibold text-primary mt-1 line-clamp-2">{{
                                         classroom.adviser.name }}
@@ -73,7 +72,14 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthStore } from '../../stores/auth'
+import { useRouter } from 'vue-router'
+
 const auth = useAuthStore()
+const router = useRouter()
+
+const goToStudent = (grade, classroom) => {
+    router.push({ name: 'Student', query: { grade, classroom } })
+}
 
 const props = defineProps({
     classrooms: {

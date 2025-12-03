@@ -28,7 +28,7 @@
                     <input type="file" accept="image/*" multiple @change="onImagesChange"
                         class="file-input file-input-bordered file-input-sm w-full max-w-xs" />
                     <p v-if="imageFiles.length" class="text-xs text-success mt-1">รูปภาพที่เลือก: {{ imageFiles.length
-                        }} ไฟล์</p>
+                    }} ไฟล์</p>
                     <p class="text-xs text-gray-500 mt-1">กรุณาตั้งชื่อไฟล์รูปภาพเป็นรหัสนักเรียน เช่น <b>6200.jpg</b>
                         เพื่อให้ระบบแมปข้อมูลอัตโนมัติ</p>
                 </div>
@@ -68,7 +68,7 @@
                             </tr>
                             <tr v-if="previewData.length > 10">
                                 <td colspan="7" class="text-center italic text-sm">... และอีก {{ previewData.length - 10
-                                }} รายการ</td>
+                                    }} รายการ</td>
                             </tr>
                         </tbody>
                     </table>
@@ -90,6 +90,45 @@
 </template>
 
 <script setup>
+async function resizeImage(file, maxSizeKB = 70, maxWidth = 300, maxHeight = 300) {
+    return new Promise((resolve, reject) => {
+        const img = new window.Image();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth || height > maxHeight) {
+                    const scale = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * scale);
+                    height = Math.round(height * scale);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                let quality = 0.85;
+                function tryCompress() {
+                    canvas.toBlob((b) => {
+                        if (!b) return reject('บีบอัดรูปไม่สำเร็จ');
+                        if (b.size / 1024 > maxSizeKB && quality > 0.4) {
+                            quality -= 0.05;
+                            tryCompress();
+                        } else {
+                            resolve(b);
+                        }
+                    }, 'image/jpeg', quality);
+                }
+                tryCompress();
+            };
+            img.onerror = () => reject('ไฟล์รูปไม่ถูกต้อง');
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject('อ่านไฟล์รูปไม่สำเร็จ');
+        reader.readAsDataURL(file);
+    });
+}
 import { ref } from 'vue'
 import { StudentService } from '../../api/student'
 import * as XLSX from 'xlsx'
@@ -209,10 +248,22 @@ async function handleImport() {
     isImporting.value = true
     try {
         const imageMap = {};
-        imageFiles.value.forEach(file => {
+        // รีไซส์รูปภาพทุกไฟล์ก่อน import
+        for (const file of imageFiles.value) {
             const baseName = file.name.split('.')[0];
-            imageMap[baseName] = file;
-        });
+            if (file.type.match('image/jpeg') || file.type.match('image/jpg')) {
+                try {
+                    const resizedBlob = await resizeImage(file, 70, 300, 300);
+                    if (resizedBlob.size > 70 * 1024) {
+                        // ถ้าเกิน 70KB หลังรีไซส์ ไม่ใช้
+                        continue;
+                    }
+                    imageMap[baseName] = new File([resizedBlob], file.name, { type: 'image/jpeg' });
+                } catch (err) {
+                    // ถ้ารีไซส์ไม่ได้ ไม่ใช้
+                }
+            }
+        }
 
         const importedStudents = [];
         for (const student of previewData.value) {

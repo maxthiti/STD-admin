@@ -7,6 +7,7 @@ import router from "./routes";
 import { createPinia } from "pinia";
 import { useAuthStore } from "./stores/auth";
 import axios from "axios";
+import { UserService } from "./api/user";
 
 const app = createApp(App);
 
@@ -22,20 +23,35 @@ if (token) {
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
 
+const userService = new UserService();
 axios.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
-    if (status === 401) {
-      console.warn(
-        "Global interceptor: 401 received, clearing token and redirecting to login"
-      );
-      try {
-        localStorage.removeItem("token");
-      } catch (e) {}
-      const loginPath = "/";
-      if (window.location.pathname !== loginPath) {
-        window.location.href = loginPath;
+    const originalRequest = error.config;
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      if (localStorage.getItem("refresh_token")) {
+        try {
+          await userService.refreshToken();
+          originalRequest.headers["Authorization"] =
+            axios.defaults.headers.common["Authorization"];
+          return axios(originalRequest);
+        } catch (e) {
+          userService.logout();
+          const loginPath = "/";
+          if (window.location.pathname !== loginPath) {
+            window.location.href = loginPath;
+          }
+          return Promise.reject(e);
+        }
+      } else {
+        userService.logout();
+        const loginPath = "/";
+        if (window.location.pathname !== loginPath) {
+          window.location.href = loginPath;
+        }
+        return Promise.reject(error);
       }
     }
     return Promise.reject(error);

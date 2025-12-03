@@ -49,17 +49,21 @@ import Swal from 'sweetalert2'
 const deleteModal = ref(null)
 const device = ref(null)
 const loading = ref(false)
-const emit = defineEmits(['deleted'])
+const emit = defineEmits(['deleted', 'deleteError'])
 
 const openModal = (d) => {
     device.value = d
     if (deleteModal.value) deleteModal.value.showModal()
 }
 
-const closeModal = () => {
+import { nextTick } from 'vue'
+
+const closeModal = async () => {
     if (loading.value) return
     if (deleteModal.value) deleteModal.value.close()
+    await nextTick()
     device.value = null
+    emit('close')
 }
 
 const confirmDelete = async () => {
@@ -67,23 +71,12 @@ const confirmDelete = async () => {
     loading.value = true
     try {
         await DeviceService.deleteDevice(device.value._id)
+        await closeModal()
         emit('deleted', device.value._id)
-        await Swal.fire({
-            icon: 'success',
-            title: 'ลบสำเร็จ',
-            text: 'ลบอุปกรณ์เรียบร้อยแล้ว',
-            timer: 1500,
-            showConfirmButton: false
-        })
-        closeModal()
     } catch (error) {
         console.error('Delete error:', error)
-        Swal.fire({
-            icon: 'error',
-            title: 'เกิดข้อผิดพลาด',
-            text: 'ไม่สามารถลบอุปกรณ์ได้',
-            confirmButtonText: 'ปิด'
-        })
+        await closeModal()
+        emit('deleteError', device.value._id)
     } finally {
         loading.value = false
     }

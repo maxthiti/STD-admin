@@ -12,7 +12,7 @@
                     <div class="mb-1">สถานที่: {{ device.location }}</div>
                     <div class="mb-1">สถานะ: <span
                             :class="formatStatus(device.status) === 'ออนไลน์' ? 'text-green-600' : 'text-red-600'">{{
-                            formatStatus(device.status) }}</span></div>
+                                formatStatus(device.status) }}</span></div>
                     <div class="flex gap-2 justify-end mt-2">
                         <button @click="$emit('edit', device)" class="btn btn-xs btn-warning btn-outline">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -60,7 +60,11 @@
                         <td>{{ device.location }}</td>
                         <td class="hidden md:table-cell">{{ formatDateTime(device.current_time) }}</td>
                         <td class="hidden sm:table-cell">{{ formatGateType(device.gate_type) }}</td>
-                        <td>{{ formatStatus(device.status) }}</td>
+                        <td>
+                            <span
+                                :class="isOnline(device.current_time) ? 'inline-block w-3 h-3 rounded-full bg-green-500 mr-2 align-middle' : 'inline-block w-3 h-3 rounded-full bg-red-500 mr-2 align-middle'"
+                                :title="isOnline(device.current_time) ? 'ออนไลน์' : 'ออฟไลน์'"></span>
+                        </td>
                         <td class="text-center">
                             <div class="flex gap-2 justify-center">
                                 <button @click="$emit('edit', device)" class="btn btn-sm btn-warning btn-outline">
@@ -135,13 +139,20 @@ const formatGateType = (gateType) => {
 }
 
 const formatStatus = (status) => {
-    if (status === undefined || status === null || status === '') return '-'
-    if (status === true) return 'ออนไลน์'
-    if (status === false) return 'ออฟไลน์'
-    const s = String(status).toLowerCase()
-    if (s === 'online' || s === 'active') return 'ออนไลน์'
-    if (s === 'offline' || s === 'inactive') return 'ออฟไลน์'
-    return String(status)
+    // ...existing code...
+}
+
+const isOnline = (currentTime) => {
+    if (!currentTime) return false
+    try {
+        const now = new Date()
+        const deviceTime = new Date(currentTime)
+        const diffMs = now - deviceTime
+        const diffMin = diffMs / 1000 / 60
+        return diffMin <= 3
+    } catch (e) {
+        return false
+    }
 }
 </script>
 

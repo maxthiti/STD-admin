@@ -1,9 +1,12 @@
 <template>
-    <!-- Desktop View -->
     <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg overflow-x-auto">
         <table class="table table-zebra w-full">
             <thead>
                 <tr class="bg-primary text-primary-content">
+                    <th v-if="selectMode" class="text-center">
+                        <input type="checkbox" :checked="selectedAll"
+                            @change="toggleSelectAll($event.target.checked)" />
+                    </th>
                     <th class="text-center">ลำดับ</th>
                     <th>ชื่อ-สกุล</th>
                     <th class="text-center">รหัสนักเรียน/รหัสอาจารย์</th>
@@ -15,11 +18,14 @@
             </thead>
             <tbody>
                 <tr v-if="data.length === 0">
-                    <td colspan="7" class="text-center py-8 text-base-content/60">
+                    <td :colspan="selectMode ? 8 : 7" class="text-center py-8 text-base-content/60">
                         ไม่พบข้อมูล
                     </td>
                 </tr>
                 <tr v-for="(item, index) in data" :key="item._id" class="hover">
+                    <td v-if="selectMode" class="text-center">
+                        <input type="checkbox" :value="item._id" v-model="selectedIdsLocal" />
+                    </td>
                     <td class="text-center">{{ (page - 1) * limit + index + 1 }}</td>
                     <td>{{ item.name }}</td>
                     <td class="text-center">{{ item.userid }}</td>
@@ -59,6 +65,9 @@
         </div>
         <div v-for="(item, index) in data" :key="item._id" class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">
             <div class="flex justify-between items-start">
+                <div v-if="selectMode" class="mr-2 flex items-center">
+                    <input type="checkbox" :value="item._id" v-model="selectedIdsLocal" />
+                </div>
                 <div class="flex-1">
                     <div class="badge badge-primary badge-sm mb-2">{{ (page - 1) * limit + index + 1 }}</div>
                     <h3 class="font-bold text-lg">{{ item.name }}</h3>
@@ -122,9 +131,10 @@
 </template>
 
 <script setup>
+import { ref, watch } from 'vue'
 import DetailModeling from './Detail.vue';
 
-defineProps({
+const props = defineProps({
     data: {
         type: Array,
         required: true,
@@ -137,18 +147,52 @@ defineProps({
         type: Number,
         default: 10,
     },
+    selectMode: {
+        type: Boolean,
+        default: false,
+    },
+    selectedIds: {
+        type: Array,
+        default: () => [],
+    },
 });
 
-defineEmits(['updated']);
+const emit = defineEmits(['updated', 'selectedIds']);
 
-// Map status codes to Thai labels
+const selectedIdsLocal = ref([]);
+const selectedAll = ref(false);
+
+watch(() => props.selectedIds, (val) => {
+    selectedIdsLocal.value = [...val];
+}, { immediate: true });
+
+watch(selectedIdsLocal, (val) => {
+    emit('selectedIds', val);
+});
+
+watch(() => props.selectMode, (val) => {
+    if (!val) {
+        selectedIdsLocal.value = [];
+        selectedAll.value = false;
+    }
+});
+
+const toggleSelectAll = (checked) => {
+    if (checked) {
+        selectedIdsLocal.value = props.data.map(item => item._id);
+        selectedAll.value = true;
+    } else {
+        selectedIdsLocal.value = [];
+        selectedAll.value = false;
+    }
+};
+
 const statusLabel = (s) => {
     if (s === 2) return 'สำเร็จ'
     if (s === 1) return 'รอตรวจสอบ'
     return 'ไม่สำเร็จ'
 }
 
-// Map status codes to Tailwind/DaisyUI color classes
 const statusColorClass = (s) => {
     if (s === 2) return 'bg-success'
     if (s === 1) return 'bg-warning'

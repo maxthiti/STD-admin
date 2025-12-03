@@ -3,13 +3,26 @@
         <div class="grid grid-cols-1">
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between lg:flex gap-2 hidden lg:flex">
                         <h2 class="card-title flex items-center gap-2">สถิติรายวัน
                             <div class="flex items-center gap-1">
                                 <span class="badge badge-outline text-xs">{{ weekLabel }}</span>
                             </div>
                         </h2>
                         <router-link to="/home/report/stats" class="btn btn-xs btn-ghost">
+                            ดูเพิ่มเติม →
+                        </router-link>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 lg:hidden">
+                        <div class="flex flex-col items-start">
+                            <span class="font-bold text-lg leading-tight">สถิติ</span>
+                            <span class="font-bold text-lg leading-tight">รายวัน</span>
+                        </div>
+                        <div class="flex-1 flex justify-center">
+                            <span class="px-4 py-1 border rounded-full text-xs font-medium bg-base-100 shadow-sm">{{
+                                weekLabel }}</span>
+                        </div>
+                        <router-link to="/home/report/stats" class="btn btn-xs btn-ghost whitespace-nowrap">
                             ดูเพิ่มเติม →
                         </router-link>
                     </div>

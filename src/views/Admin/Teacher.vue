@@ -20,8 +20,7 @@
                         </label>
                         <div class="relative">
                             <input v-model="searchQuery" @input="fetchTeachers" type="text"
-                                placeholder="ค้นหาชื่อหรือรหัสครู..."
-                                class="input input-bordered input-sm w-full" />
+                                placeholder="ค้นหาชื่อหรือรหัสครู..." class="input input-bordered input-sm w-full" />
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 class="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,6 +83,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 import TeacherTable from '../../components/ListTeacher/Table.vue'
 import UpdateModal from '../../components/ListTeacher/Update.vue'
 import CreateModal from '../../components/ListTeacher/Create.vue'
@@ -301,6 +302,9 @@ const handleCreateSuccess = async (formData) => {
 onMounted(() => {
     fetchDepartments()
     fetchPositions()
+    if (route.query.search) {
+        searchQuery.value = route.query.search
+    }
     fetchTeachers()
 })
 </script>

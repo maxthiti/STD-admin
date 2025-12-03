@@ -2,7 +2,8 @@
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-lg md:text-3xl font-bold text-primary">จัดการโมเดล</h1>
-            <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData" />
+            <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData"
+                @selectModeChanged="selectMode = $event" :selected-ids="selectedIds" />
         </div>
 
         <div class="bg-base-100 rounded-lg shadow-lg p-4">
@@ -70,7 +71,8 @@
         </div>
 
         <div v-else>
-            <ModelingTable :data="modelings" :page="currentPage" :limit="filters.limit" @updated="fetchData" />
+            <ModelingTable :data="modelings" :page="currentPage" :limit="filters.limit" :selectMode="selectMode"
+                :selected-ids="selectedIds" @updated="fetchData" @selectedIds="handleSelectedIds" />
 
             <div v-if="totalPages > 1" class="flex justify-center mt-6">
                 <div class="join">
@@ -113,6 +115,8 @@ const modelings = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
+const selectMode = ref(false);
+const selectedIds = ref([]);
 
 const filters = ref({
     role: "student",
@@ -184,6 +188,11 @@ const resetFilters = () => {
     currentPage.value = 1;
     fetchData();
 };
+
+function handleSelectedIds(ids) {
+    selectedIds.value = ids;
+    console.log('Selected IDs from Table:', selectedIds.value);
+}
 
 onMounted(() => {
     fetchData();

@@ -39,12 +39,25 @@
 
         <CreateModal ref="createModal" @success="handleCreateSuccess" />
         <UpdateModal ref="updateModal" @success="handleUpdateSuccess" />
-        <DeleteModal ref="deleteModal" @deleted="handleDeletedSuccess" />
+        <DeleteModal v-if="showDeleteModal" ref="deleteModal" @deleted="handleDeletedSuccess"
+            @deleteError="handleDeleteError" @close="closeDeleteModal" />
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+const showDeleteModal = ref(false)
+
+const openDeleteModal = (device) => {
+    showDeleteModal.value = true
+    nextTick(() => {
+        if (deleteModal.value) deleteModal.value.openModal(device)
+    })
+}
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false
+}
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import Table from '../../components/Device/Table.vue'
 import CreateModal from '../../components/Device/Create.vue'
 import UpdateModal from '../../components/Device/Update.vue'
@@ -85,17 +98,24 @@ const handleCreateSuccess = async (formData) => {
         await DeviceService.createDevice(formData)
         if (createModal.value) {
             createModal.value.closeModal()
+            setTimeout(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เพิ่มอุปกรณ์สำเร็จ',
+                    text: 'เพิ่มข้อมูลอุปกรณ์เรียบร้อยแล้ว',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    fetchDevices()
+                })
+            }, 300)
+            return
         }
-        await Swal.fire({
-            icon: 'success',
-            title: 'เพิ่มอุปกรณ์สำเร็จ',
-            text: 'เพิ่มข้อมูลอุปกรณ์เรียบร้อยแล้ว',
-            timer: 1500,
-            showConfirmButton: false
-        })
-        await fetchDevices()
     } catch (error) {
         console.error('Error creating device:', error)
+        if (createModal.value) {
+            createModal.value.closeModal()
+        }
         Swal.fire({
             icon: 'error',
             title: 'เกิดข้อผิดพลาด',
@@ -116,18 +136,25 @@ const handleUpdateSuccess = async (formData) => {
         const { id, ...updateData } = formData
         await DeviceService.updateDevice(id, updateData)
         if (updateModal.value) {
-            updateModal.value.closeModal()
+            await updateModal.value.closeModal()
+            setTimeout(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'แก้ไขอุปกรณ์สำเร็จ',
+                    text: 'แก้ไขข้อมูลอุปกรณ์เรียบร้อยแล้ว',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    fetchDevices()
+                })
+            }, 300)
+            return
         }
-        await Swal.fire({
-            icon: 'success',
-            title: 'แก้ไขอุปกรณ์สำเร็จ',
-            text: 'แก้ไขข้อมูลอุปกรณ์เรียบร้อยแล้ว',
-            timer: 1500,
-            showConfirmButton: false
-        })
-        await fetchDevices()
     } catch (error) {
         console.error('Error updating device:', error)
+        if (updateModal.value) {
+            updateModal.value.closeModal()
+        }
         Swal.fire({
             icon: 'error',
             title: 'เกิดข้อผิดพลาด',
@@ -139,17 +166,44 @@ const handleUpdateSuccess = async (formData) => {
 
 const handleDelete = (id) => {
     const target = devices.value.find(d => d._id === id)
-    if (deleteModal.value && target) {
-        deleteModal.value.openModal(target)
+    if (target) {
+        openDeleteModal(target)
     }
 }
-
 const handleDeletedSuccess = async () => {
-    await fetchDevices()
+    closeDeleteModal()
+    await nextTick()
+    Swal.fire({
+        icon: 'success',
+        title: 'ลบอุปกรณ์สำเร็จ',
+        text: 'ลบข้อมูลอุปกรณ์เรียบร้อยแล้ว',
+        timer: 1500,
+        showConfirmButton: false
+    }).then(() => {
+        fetchDevices()
+    })
 }
 
+const handleDeleteError = async () => {
+    closeDeleteModal()
+    await nextTick()
+    Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่สามารถลบอุปกรณ์ได้',
+        confirmButtonText: 'ตรวจสอบอีกครั้ง'
+    })
+}
+
+let refreshInterval = null
 onMounted(() => {
     fetchDevices()
+    refreshInterval = setInterval(() => {
+        fetchDevices()
+    }, 60000)
+})
+onUnmounted(() => {
+    if (refreshInterval) clearInterval(refreshInterval)
 })
 </script>
 

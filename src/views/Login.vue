@@ -129,6 +129,7 @@ async function onSubmit() {
 
         if (response && response.message === 'Success') {
             const token = response.data?.access_token
+            const refreshToken = response.data?.data?.refresh_token
 
             if (!token) throw new Error('ไม่พบโทเค็น')
 
@@ -181,6 +182,11 @@ async function onSubmit() {
             }
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+            if (remember.value && refreshToken) {
+                localStorage.setItem('refresh_token', refreshToken);
+            } else {
+                localStorage.removeItem('refresh_token');
+            }
             await auth.initializeAuth()
             success.value = true
             setTimeout(() => router.push('/home'), 600)

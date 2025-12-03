@@ -25,6 +25,13 @@
                     <input v-model="filters.search" type="text" placeholder="กรอกชื่อหรือรหัส"
                         class="input input-sm input-bordered w-full" />
                 </div>
+                <div v-if="residentRole === 'teacher'" class="form-control flex flex-col items-center md:items-end">
+                    <div
+                        class="p-1 text-white bg-primary rounded-md text-center min-w-[120px] flex flex-col items-center">
+                        <span class="label-text text-sm font-medium mb-1 text-secondary">ชั้นปี / ห้อง</span>
+                        <span>{{ teacherGrade }}/{{ teacherClassroom }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 

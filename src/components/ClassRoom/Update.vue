@@ -24,7 +24,8 @@
                     </label>
                     <div v-if="currentTeacherName" class="mb-2 p-2 bg-base-200 rounded-lg">
                         <span class="text-sm text-base-content/70">ครูประจำชั้นปัจจุบัน: </span>
-                        <span class="text-sm font-semibold text-primary">{{ currentTeacherName }}</span>
+                        <span @click="goToTeacherPage" class="text-sm font-semibold text-primary">{{ currentTeacherName
+                            }}</span>
                     </div>
                     <select v-model="formData.adviser" class="select select-bordered" required>
                         <option value="">เลือกครูประจำห้อง</option>
@@ -48,6 +49,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 const props = defineProps({
     teachers: {
@@ -65,6 +68,14 @@ const formData = ref({
     adviser: ''
 })
 const currentTeacherName = ref('')
+const goToTeacherPage = () => {
+    if (currentTeacherName.value && currentTeacherName.value !== 'ไม่มีข้อมูล') {
+        router.push({
+            name: 'Teacher',
+            query: { search: currentTeacherName.value }
+        })
+    }
+}
 
 const emit = defineEmits(['success'])
 

@@ -31,7 +31,7 @@
                             <span class="label-text text-sm">ชั้นปี</span>
                         </label>
                         <select v-model="selectedGrade" @change="handleGradeChange"
-                            class="select select-bordered select-sm w-full sm:w-32">
+                            class="select select-bordered select-sm w-full sm:w-32" :disabled="isQueryFilter">
                             <option v-for="grade in availableGrades" :key="grade" :value="grade">{{ grade }}</option>
                         </select>
                     </div>
@@ -41,7 +41,7 @@
                             <span class="label-text text-sm">ห้อง</span>
                         </label>
                         <select v-model="selectedClassroom" @change="fetchStudents"
-                            class="select select-bordered select-sm w-full sm:w-24">
+                            class="select select-bordered select-sm w-full sm:w-24" :disabled="isQueryFilter">
                             <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
                         </select>
                     </div>
@@ -108,7 +108,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 import StudentTable from '../../components/ListStudent/Table.vue'
 import CreateModal from '../../components/ListStudent/Create.vue'
 import ImportExcalModal from '../../components/ListStudent/ImportExcal.vue'
@@ -117,6 +119,7 @@ import DeleteModal from '../../components/ListStudent/Delete.vue'
 import RePasswordModal from '../../components/ListStudent/RePassword.vue'
 import { StudentService } from '../../api/student'
 import { ClassRoomService } from '../../api/class-room'
+const isQueryFilter = ref(false)
 import { useAuthStore } from '../../stores/auth'
 const auth = useAuthStore()
 
@@ -388,6 +391,18 @@ const openRePasswordModal = (student) => {
 
 onMounted(async () => {
     await fetchClassRooms()
+    const queryGrade = route.query.grade
+    const queryClassroom = route.query.classroom
+    if (queryGrade && availableGrades.value.includes(queryGrade)) {
+        selectedGrade.value = queryGrade
+        await nextTick()
+        if (queryClassroom && availableClassrooms.value.includes(Number(queryClassroom))) {
+            selectedClassroom.value = Number(queryClassroom)
+        } else {
+            selectedClassroom.value = availableClassrooms.value[0]
+        }
+    }
+    isQueryFilter.value = false
     fetchStudents()
 })
 </script>

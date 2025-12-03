@@ -1,8 +1,15 @@
 <template>
     <div class="p-1 sm:p-2 md:p-6 space-y-2 sm:space-y-4 md:space-y-6 w-full">
         <div class="flex flex-col md:flex-row md:items-center justify-between items-center gap-2 md:gap-4">
-            <h1 class="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-primary mb-2 md:mb-0">
-                สถิติการเข้า-ออก</h1>
+            <div class="flex flex-col">
+                <h1 class="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-primary mb-2 md:mb-0">
+                    สถิติการเข้า-ออก
+                </h1>
+                <div v-if="residentRole === 'teacher'" class="mb-2 flex items-center gap-2">
+                    <span class="label-text text-sm font-medium text-secondary">ชั้นปี / ห้อง</span>
+                    <span class="font-bold text-primary">{{ teacherGrade }}/{{ teacherClassroom }}</span>
+                </div>
+            </div>
             <div
                 class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full md:w-auto md:justify-end">
                 <div class="md:w-auto mb-2 md:mb-0 w-full">
@@ -175,6 +182,9 @@
 </template>
 
 <script setup>
+const residentRole = localStorage.getItem('residentRole') || ''
+const teacherGrade = localStorage.getItem('grade') || ''
+const teacherClassroom = localStorage.getItem('classroom') || ''
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import reportApi from '../../api/report.js'
 

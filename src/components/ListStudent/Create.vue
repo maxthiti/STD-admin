@@ -291,31 +291,75 @@ const handleGradeChange = () => {
     }
 }
 
-const handleFileChange = (event) => {
-    const file = event.target.files[0]
-    fileError.value = ''
+
+async function resizeImage(file, maxSizeKB = 70, maxWidth = 300, maxHeight = 300) {
+    return new Promise((resolve, reject) => {
+        const img = new window.Image();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth || height > maxHeight) {
+                    const scale = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * scale);
+                    height = Math.round(height * scale);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                let quality = 0.85;
+                let blob = null;
+                function tryCompress() {
+                    canvas.toBlob((b) => {
+                        if (!b) return reject('บีบอัดรูปไม่สำเร็จ');
+                        if (b.size / 1024 > maxSizeKB && quality > 0.4) {
+                            quality -= 0.05;
+                            tryCompress();
+                        } else {
+                            resolve(b);
+                        }
+                    }, 'image/jpeg', quality);
+                }
+                tryCompress();
+            };
+            img.onerror = () => reject('ไฟล์รูปไม่ถูกต้อง');
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject('อ่านไฟล์รูปไม่สำเร็จ');
+        reader.readAsDataURL(file);
+    });
+}
+
+const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    fileError.value = '';
 
     if (file) {
         if (!file.type.match('image/jpeg') && !file.type.match('image/jpg')) {
-            fileError.value = 'กรุณาเลือกไฟล์ JPG เท่านั้น'
-            event.target.value = ''
-            return
+            fileError.value = 'กรุณาเลือกไฟล์ JPG เท่านั้น';
+            event.target.value = '';
+            return;
         }
-
-        const maxSize = 70 * 1024
-        if (file.size > maxSize) {
-            fileError.value = `ขนาดไฟล์ใหญ่เกินไป (${(file.size / 1024).toFixed(2)}KB) กรุณาเลือกไฟล์ไม่เกิน 70KB`
-            event.target.value = ''
-            return
+        try {
+            const resizedBlob = await resizeImage(file, 70, 300, 300);
+            if (resizedBlob.size > 70 * 1024) {
+                fileError.value = `ขนาดไฟล์หลังรีไซส์ยังเกิน 70KB (${(resizedBlob.size / 1024).toFixed(2)}KB)`;
+                event.target.value = '';
+                return;
+            }
+            formData.value.picture = new File([resizedBlob], file.name, { type: 'image/jpeg' });
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.value = e.target.result;
+            };
+            reader.readAsDataURL(resizedBlob);
+        } catch (err) {
+            fileError.value = 'เกิดข้อผิดพลาดในการรีไซส์รูปภาพ';
+            event.target.value = '';
         }
-
-        formData.value.picture = file
-
-        const reader = new FileReader()
-        reader.onload = (e) => {
-            previewImage.value = e.target.result
-        }
-        reader.readAsDataURL(file)
     }
 }
 

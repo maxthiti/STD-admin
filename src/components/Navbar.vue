@@ -12,7 +12,7 @@
         </div>
 
         <div class="flex-none gap-4">
-            <button class="btn btn-ghost btn-circle">
+            <!-- <button class="btn btn-ghost btn-circle">
                 <div class="indicator">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -21,7 +21,7 @@
                     </svg>
                     <span class="badge badge-xs badge-secondary indicator-item"></span>
                 </div>
-            </button>
+            </button> -->
 
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
@@ -33,11 +33,11 @@
                     </div>
                 </div>
                 <ul tabindex="0"
-                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-72">
                     <li>
                         <a class="justify-between">
                             {{ profileName || 'โปรไฟล์' }}
-                            <span class="badge">New</span>
+                            <span class="badge">{{ residentRole }}</span>
                         </a>
                     </li>
                     <li><a @click="goToUpdatePassword">ตั้งค่ารหัสผ่าน</a></li>
@@ -100,6 +100,7 @@ const handleLogout = async () => {
 
 const profileName = ref(localStorage.getItem('profileName') || '')
 const profilePicture = ref(localStorage.getItem('profilePicture') || '')
+const residentRole = ref(localStorage.getItem('residentRole') || '')
 
 const profilePictureUrl = computed(() => {
     if (!profilePicture.value) return ''

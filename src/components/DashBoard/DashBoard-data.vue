@@ -14,7 +14,7 @@
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
                 <h3 class="font-bold text-lg mb-4">รายการเข้าเรียน{{ attendanceRole === 'teacher' ? 'ครู' : 'นักเรียน'
-                }} วันที่ {{ displayDate }}</h3>
+                    }} วันที่ {{ displayDate }}</h3>
 
                 <div class="flex gap-2 mb-4" v-if="attendanceRole === 'student'">
                     <div v-if="residentRole !== 'teacher'" class="form-control">
@@ -431,23 +431,28 @@ async function showStudentLateTable() {
     try {
         loading.value = true
         lateRole.value = 'student'
-        const res = await reportApi.getLateReport({
+        let params = {
             date: selectedDate.value,
             role: 'student'
-        })
+        }
+        const res = await reportApi.getLateReport(params)
         if (res.message === 'Success' && res.data) {
-            lateAllData.value = res.data || []
-            lateTotalItems.value = lateAllData.value.length
-            lateTotalPages.value = Math.ceil(lateAllData.value.length / lateLimit.value) || 1
-            latePage.value = 1
-            const start = 0
-            lateData.value = lateAllData.value.slice(start, start + lateLimit.value)
-            lateModal.value?.showModal()
+            let allLate = res.data || [];
+            if (residentRole.value === 'teacher') {
+                allLate = allLate.filter(item => item.grade === localGrade.value && Number(item.classroom) === localClassroom.value);
+            }
+            lateAllData.value = allLate;
+            lateTotalItems.value = lateAllData.value.length;
+            lateTotalPages.value = Math.ceil(lateAllData.value.length / lateLimit.value) || 1;
+            latePage.value = 1;
+            const start = 0;
+            lateData.value = lateAllData.value.slice(start, start + lateLimit.value);
+            lateModal.value?.showModal();
         }
     } catch (e) {
-        console.error('Error fetching student late data:', e)
+        console.error('Error fetching student late data:', e);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 
@@ -455,23 +460,28 @@ async function showTeacherLateTable() {
     try {
         loading.value = true
         lateRole.value = 'teacher'
-        const res = await reportApi.getLateReport({
+        let params = {
             date: selectedDate.value,
             role: 'teacher'
-        })
+        }
+        const res = await reportApi.getLateReport(params)
         if (res.message === 'Success' && res.data) {
-            lateAllData.value = res.data || []
-            lateTotalItems.value = lateAllData.value.length
-            lateTotalPages.value = Math.ceil(lateAllData.value.length / lateLimit.value) || 1
-            latePage.value = 1
-            const start = 0
-            lateData.value = lateAllData.value.slice(start, start + lateLimit.value)
-            lateModal.value?.showModal()
+            let allLate = res.data || [];
+            if (residentRole.value === 'teacher') {
+                allLate = allLate.filter(item => item.name === profileName.value);
+            }
+            lateAllData.value = allLate;
+            lateTotalItems.value = lateAllData.value.length;
+            lateTotalPages.value = Math.ceil(lateAllData.value.length / lateLimit.value) || 1;
+            latePage.value = 1;
+            const start = 0;
+            lateData.value = lateAllData.value.slice(start, start + lateLimit.value);
+            lateModal.value?.showModal();
         }
     } catch (e) {
-        console.error('Error fetching teacher late data:', e)
+        console.error('Error fetching teacher late data:', e);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 
@@ -484,18 +494,22 @@ async function showStudentMissedTable() {
             role: 'student'
         })
         if (res.message === 'Success' && res.data) {
-            missedAllData.value = res.data || []
-            missedTotalItems.value = missedAllData.value.length
-            missedTotalPages.value = Math.ceil(missedAllData.value.length / missedLimit.value) || 1
-            missedPage.value = 1
-            const start = 0
-            missedData.value = missedAllData.value.slice(start, start + missedLimit.value)
-            missedModal.value?.showModal()
+            let allMissed = res.data || [];
+            if (residentRole.value === 'teacher') {
+                allMissed = allMissed.filter(item => item.grade === localGrade.value && Number(item.classroom) === localClassroom.value);
+            }
+            missedAllData.value = allMissed;
+            missedTotalItems.value = missedAllData.value.length;
+            missedTotalPages.value = Math.ceil(missedAllData.value.length / missedLimit.value) || 1;
+            missedPage.value = 1;
+            const start = 0;
+            missedData.value = missedAllData.value.slice(start, start + missedLimit.value);
+            missedModal.value?.showModal();
         }
     } catch (e) {
-        console.error('Error fetching student missed data:', e)
+        console.error('Error fetching student missed data:', e);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 
@@ -508,18 +522,22 @@ async function showTeacherMissedTable() {
             role: 'teacher'
         })
         if (res.message === 'Success' && res.data) {
-            missedAllData.value = res.data || []
-            missedTotalItems.value = missedAllData.value.length
-            missedTotalPages.value = Math.ceil(missedAllData.value.length / missedLimit.value) || 1
-            missedPage.value = 1
-            const start = 0
-            missedData.value = missedAllData.value.slice(start, start + missedLimit.value)
-            missedModal.value?.showModal()
+            let allMissed = res.data || [];
+            if (residentRole.value === 'teacher') {
+                allMissed = allMissed.filter(item => item.name === profileName.value);
+            }
+            missedAllData.value = allMissed;
+            missedTotalItems.value = missedAllData.value.length;
+            missedTotalPages.value = Math.ceil(missedAllData.value.length / missedLimit.value) || 1;
+            missedPage.value = 1;
+            const start = 0;
+            missedData.value = missedAllData.value.slice(start, start + missedLimit.value);
+            missedModal.value?.showModal();
         }
     } catch (e) {
-        console.error('Error fetching teacher missed data:', e)
+        console.error('Error fetching teacher missed data:', e);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 

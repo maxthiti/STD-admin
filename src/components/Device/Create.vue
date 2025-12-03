@@ -38,7 +38,7 @@
                     <select v-model="formData.device_type" class="select select-bordered w-full" required>
                         <option value="" disabled>เลือกประเภทอุปกรณ์</option>
                         <option value="ipcam">IP Camera</option>
-                        <option value="Aifacecc">AI Face CC</option>
+                        <option value="Aifacescan">AI Face CC</option>
                     </select>
                 </div>
 

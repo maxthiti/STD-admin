@@ -1,18 +1,38 @@
 <template>
     <div>
-        <button @click="openModal" class="btn btn-primary btn-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            สร้าง Modeling
-        </button>
+        <div class="flex gap-2 items-center">
+            <template v-if="!selectMode">
+                <button @click="openModal" class="btn btn-primary btn-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    สร้าง Modeling
+                </button>
+                <button class="btn btn-warning btn-sm flex items-center gap-1" @click="handleSelectMode">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.657 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    เลือกบุคคล
+                </button>
+            </template>
+            <template v-else>
+                <button class="btn btn-ghost btn-sm flex items-center gap-1" @click="cancelSelectMode">
+                    ยกเลิก
+                </button>
+                <button class="btn btn-primary btn-sm flex items-center gap-1" @click="openCreateModalWithSelected">
+                    ยืนยัน
+                </button>
+            </template>
+        </div>
 
         <dialog ref="modal" class="modal">
             <div class="modal-box max-w-md">
                 <h3 class="font-bold text-lg mb-4">สร้าง Modeling</h3>
                 <form @submit.prevent="handleSubmit">
-                    <div class="form-control mb-4">
+                    <div v-if="!hideType" class="form-control mb-4">
                         <label class="label">
                             <span class="label-text">ประเภท <span class="text-error">*</span></span>
                         </label>
@@ -46,12 +66,17 @@
                         </label>
                     </div>
 
-                    <div class="modal-action">
-                        <button type="button" @click="closeModal" class="btn btn-ghost">ยกเลิก</button>
-                        <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-                            <span v-if="isSubmitting" class="loading loading-spinner loading-xs"></span>
-                            {{ isSubmitting ? 'กำลังบันทึก...' : 'บันทึก' }}
+                    <div class="modal-action flex justify-between items-center">
+                        <button v-if="hideType" type="button" @click="backToSelectPerson" class="btn btn-warning">
+                            กลับ
                         </button>
+                        <div class="flex gap-2">
+                            <button type="button" @click="closeModal" class="btn btn-ghost">ยกเลิก</button>
+                            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                                <span v-if="isSubmitting" class="loading loading-spinner loading-xs"></span>
+                                {{ isSubmitting ? 'กำลังบันทึก...' : 'บันทึก' }}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -63,12 +88,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ModelingService from '../../api/modeling.js';
 import DeviceService from '../../api/device.js';
 import Swal from 'sweetalert2';
 
-const emit = defineEmits(['created']);
+const emit = defineEmits(['created', 'selectModeChanged']);
+const selectMode = ref(false);
 
 const modal = ref(null);
 const isSubmitting = ref(false);
@@ -80,6 +106,24 @@ const formData = ref({
     device_id: []
 });
 
+const hideType = ref(false);
+
+const props = defineProps({
+    selectedIds: {
+        type: Array,
+        default: () => [],
+    },
+});
+
+const selectedIds = computed(() => props.selectedIds);
+
+const openCreateModalWithSelected = () => {
+    openModal();
+    hideType.value = true;
+    console.log('Selected IDs:', selectedIds.value);
+    console.log('hideType:', hideType.value);
+};
+
 const openModal = () => {
     modal.value?.showModal();
     loadDevices();
@@ -88,6 +132,9 @@ const openModal = () => {
 const closeModal = () => {
     modal.value?.close();
     resetForm();
+    selectMode.value = false;
+    hideType.value = false;
+    emit('selectModeChanged', false);
 };
 
 const resetForm = () => {
@@ -116,6 +163,27 @@ const loadDevices = async () => {
     }
 };
 
+const handleSelectMode = () => {
+    selectMode.value = !selectMode.value;
+    emit('selectModeChanged', selectMode.value);
+};
+
+const cancelSelectMode = () => {
+    selectMode.value = false;
+    emit('selectModeChanged', false);
+};
+
+const saveSelected = () => {
+    Swal.fire({
+        icon: 'success',
+        title: 'บันทึกสำเร็จ',
+        timer: 1200,
+        showConfirmButton: false
+    });
+    selectMode.value = false;
+    emit('selectModeChanged', false);
+};
+
 const handleSubmit = async () => {
     if (formData.value.device_id.length === 0) {
         Swal.fire({
@@ -128,7 +196,18 @@ const handleSubmit = async () => {
 
     isSubmitting.value = true;
     try {
-        const response = await ModelingService.createModeling(formData.value);
+        let payload;
+        if (hideType.value) {
+            payload = {
+                option: "user selected",
+                device_id: formData.value.device_id,
+                user_id: selectedIds.value
+            };
+        } else {
+            payload = formData.value;
+        }
+
+        const response = await ModelingService.createModeling(payload);
 
         if (response.message === 'Success') {
             Swal.fire({
@@ -151,6 +230,11 @@ const handleSubmit = async () => {
     } finally {
         isSubmitting.value = false;
     }
+};
+
+const backToSelectPerson = () => {
+    hideType.value = false;
+    modal.value?.close();
 };
 
 onMounted(() => {
