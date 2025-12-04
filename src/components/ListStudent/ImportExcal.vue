@@ -148,7 +148,7 @@ const isPreviewing = ref(false)
 const isImporting = ref(false)
 const modalRef = ref(null)
 
-const exampleExcelUrl = '/src/assets/ตัวอย่าง Excel.xlsx'
+const exampleExcelUrl = '/src/assets/Excel-Student.xlsx'
 
 const emit = defineEmits(['success'])
 const studentService = new StudentService()
