@@ -111,4 +111,27 @@ export class StudentService {
       throw error;
     }
   }
+
+  async deleteAllByGrade(grade) {
+    try {
+      this.token = localStorage.getItem("token");
+      const data = new URLSearchParams();
+      data.append("grade", grade);
+      const config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}users/deletestudent`,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${this.token}`,
+        },
+        data: data,
+      };
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error("Delete all students by grade error:", error);
+      throw error;
+    }
+  }
 }

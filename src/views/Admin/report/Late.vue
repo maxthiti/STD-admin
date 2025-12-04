@@ -25,8 +25,7 @@
                     <input v-model="filters.search" type="text" placeholder="กรอกชื่อหรือรหัส"
                         class="input input-sm input-bordered w-full" />
                 </div>
-                <div v-if="residentRole === 'teacher'"
-                    class="form-control flex flex-col items-center md:items-end">
+                <div v-if="residentRole === 'teacher'" class="form-control flex flex-col items-center md:items-end">
                     <div
                         class="p-1 text-white bg-primary rounded-md text-center min-w-[120px] flex flex-col items-center">
                         <span class="label-text text-sm font-medium mb-1 text-secondary">ชั้นปี / ห้อง</span>
@@ -137,7 +136,12 @@ const isNumericSearch = computed(() => /^\d+$/.test(filters.value.search.trim())
 const filteredData = computed(() => {
     let base = lateData.value
     if (residentRole === 'teacher' && teacherGrade && teacherClassroom) {
-        base = base.filter(item => item.position === 'นักเรียน' && item.grade === teacherGrade && item.classroom == teacherClassroom)
+        base = base.filter(item => {
+            const match = item.grade.trim() === teacherGrade.trim()
+                && Number(String(item.classroom).trim()) === Number(String(teacherClassroom).trim())
+            console.log('item.classroom:', item.classroom, typeof item.classroom, 'teacherClassroom:', teacherClassroom, typeof teacherClassroom, 'match:', Number(String(item.classroom).trim()) === Number(String(teacherClassroom).trim()))
+            return match
+        })
     }
     const term = filters.value.search.trim()
     if (!term) return base

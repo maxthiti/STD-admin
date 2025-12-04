@@ -120,8 +120,6 @@ const selectedIds = computed(() => props.selectedIds);
 const openCreateModalWithSelected = () => {
     openModal();
     hideType.value = true;
-    console.log('Selected IDs:', selectedIds.value);
-    console.log('hideType:', hideType.value);
 };
 
 const openModal = () => {

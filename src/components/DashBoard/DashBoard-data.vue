@@ -14,12 +14,16 @@
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
                 <h3 class="font-bold text-lg mb-4">รายการเข้าเรียน{{ attendanceRole === 'teacher' ? 'ครู' : 'นักเรียน'
-                }} วันที่ {{ displayDate }}</h3>
+                    }} วันที่ {{ displayDate }}</h3>
                 <div v-if="attendanceRole === 'student'">
-                    <Attendance :role="'student'" :date="selectedDate" />
+                    <Attendance :role="'student'" :date="selectedDate" v-if="residentRole !== 'teacher'" />
+                    <Attendance :role="'student'" :date="selectedDate" v-else :fixed-grade="localGrade"
+                        :fixed-classroom="localClassroom" :hide-dropdown="true" />
                 </div>
                 <div v-else>
-                    <Attendance :role="'teacher'" :date="selectedDate" />
+                    <Attendance :role="'teacher'" :date="selectedDate" v-if="residentRole !== 'teacher'" />
+                    <Attendance :role="'teacher'" :date="selectedDate" v-else :fixed-name="profileName"
+                        :hide-search="true" />
                 </div>
             </div>
             <form method="dialog" class="modal-backdrop">
@@ -181,7 +185,6 @@ const studentCardRef = ref(null)
 import lottie from 'lottie-web'
 import reportApi from '../../api/report.js'
 import { ClassRoomService } from '../../api/class-room.js'
-import AttendanceTable from '../Report/AttendanceTable.vue'
 import LateTable from '../Report/LateTable.vue'
 import MissedTable from '../Report/MissedTable.vue'
 import AttendanceDetail from '../Report/AttendanceDetail.vue'
@@ -726,7 +729,6 @@ onMounted(() => {
     transform: translateY(-60px);
 }
 
-/* Slide right animation for combined stat */
 .slide-right-enter-active {
     transition: all 1.1s cubic-bezier(0.23, 1, 0.32, 1);
 }

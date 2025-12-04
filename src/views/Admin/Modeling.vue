@@ -191,7 +191,6 @@ const resetFilters = () => {
 
 function handleSelectedIds(ids) {
     selectedIds.value = ids;
-    console.log('Selected IDs from Table:', selectedIds.value);
 }
 
 function searchByNameOrUserid() {

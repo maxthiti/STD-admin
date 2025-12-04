@@ -20,6 +20,15 @@
                     </svg>
                     เพิ่มนักเรียน
                 </button>
+                <button v-if="auth.user?.role !== 'teacher' && (selectedGrade === 'ม.3' || selectedGrade === 'ม.6')"
+                    class="btn btn-error btn-sm" @click="openDeleteAllModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    ลบทั้งหมด {{ selectedGrade }}
+                </button>
             </div>
         </div>
 
@@ -88,6 +97,7 @@
         <UpdateModal ref="updateModalRef" :classrooms="classrooms" @success="handleUpdateSuccess" />
         <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
         <RePasswordModal ref="rePasswordModalRef" @success="fetchStudents" />
+        <DeleteAllModal ref="deleteAllModalRef" @success="handleDeleteAllSuccess" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -117,6 +127,7 @@ import ImportExcalModal from '../../components/ListStudent/ImportExcal.vue'
 import UpdateModal from '../../components/ListStudent/Update.vue'
 import DeleteModal from '../../components/ListStudent/Delete.vue'
 import RePasswordModal from '../../components/ListStudent/RePassword.vue'
+import DeleteAllModal from '../../components/ListStudent/DeleteAll.vue'
 import { StudentService } from '../../api/student'
 import { ClassRoomService } from '../../api/class-room'
 const isQueryFilter = ref(false)
@@ -382,6 +393,14 @@ const openDeleteModal = (student) => {
     deleteModalRef.value?.open(student)
 }
 const handleDeleteSuccess = () => {
+    fetchStudents()
+}
+
+const deleteAllModalRef = ref(null)
+const openDeleteAllModal = () => {
+    deleteAllModalRef.value?.open(selectedGrade.value)
+}
+const handleDeleteAllSuccess = () => {
     fetchStudents()
 }
 

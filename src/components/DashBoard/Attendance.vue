@@ -1,19 +1,19 @@
 <template>
     <div>
         <div class="flex flex-wrap gap-2 mb-4 items-center">
-            <input v-model="searchText" @keyup.enter="handleSearch" type="text" class="input input-sm input-bordered"
-                placeholder="ค้นหาชื่อหรือรหัส" style="width: 180px;" />
-            <select v-if="props.role !== 'teacher'" v-model="selectedGrade" @change="handleGradeChange"
-                class="select select-sm select-bordered">
+            <input v-if="!props.hideSearch" v-model="searchText" @keyup.enter="handleSearch" type="text"
+                class="input input-sm input-bordered" placeholder="ค้นหาชื่อหรือรหัส" style="width: 180px;" />
+            <select v-if="props.role !== 'teacher' && !props.hideDropdown" v-model="selectedGrade"
+                @change="handleGradeChange" class="select select-sm select-bordered">
                 <option value="">เลือกชั้น</option>
                 <option v-for="grade in grades" :key="grade" :value="grade">{{ grade }}</option>
             </select>
-            <select v-if="props.role !== 'teacher'" v-model="selectedClassroom" @change="handleClassroomChange"
-                class="select select-sm select-bordered">
+            <select v-if="props.role !== 'teacher' && !props.hideDropdown" v-model="selectedClassroom"
+                @change="handleClassroomChange" class="select select-sm select-bordered">
                 <option value="">เลือกห้อง</option>
                 <option v-for="room in classrooms" :key="room" :value="room">{{ room }}</option>
             </select>
-            <button class="btn btn-sm btn-primary" @click="handleSearch">ค้นหา</button>
+            <button v-if="!props.hideSearch" class="btn btn-sm btn-primary" @click="handleSearch">ค้นหา</button>
         </div>
         <div class="bg-base-100 rounded-lg shadow-lg overflow-x-auto">
             <table class="table table-zebra w-full">
@@ -78,12 +78,17 @@ const pagination = ref({ page: 1, limit: 5, total_items: 0, total_pages: 1 })
 const detailRef = ref(null)
 const props = defineProps({
     role: { type: String, default: 'student' },
-    date: { type: String, default: '' }
+    date: { type: String, default: '' },
+    fixedGrade: { type: String, default: '' },
+    fixedClassroom: { type: [String, Number], default: '' },
+    fixedName: { type: String, default: '' },
+    hideDropdown: { type: Boolean, default: false },
+    hideSearch: { type: Boolean, default: false }
 })
 
 const searchText = ref('')
-const selectedGrade = ref('')
-const selectedClassroom = ref('')
+const selectedGrade = ref(props.fixedGrade || '')
+const selectedClassroom = ref(props.fixedClassroom || '')
 const grades = ref([])
 const classrooms = ref([])
 const allClassrooms = ref([])
@@ -151,22 +156,26 @@ async function fetchData(page = 1) {
     loading.value = true
     try {
         let params = {
-            date: props.date || '2025-11-04',
+            date: props.date,
             role: props.role,
             name: '',
             department: '',
             userid: '',
             page,
             limit: 5,
-            grade: selectedGrade.value,
-            classroom: selectedClassroom.value || 0
+            grade: props.fixedGrade || selectedGrade.value,
+            classroom: props.fixedClassroom !== '' ? props.fixedClassroom : (selectedClassroom.value || 0)
         }
-        if (searchText.value) {
+        if (props.fixedName) {
+            params.name = props.fixedName
+        } else if (!props.hideSearch && searchText.value) {
             params.page = 1
             if (/^\d+$/.test(searchText.value)) {
                 params.userid = searchText.value
+                params.name = ''
             } else {
                 params.name = searchText.value
+                params.userid = ''
             }
         }
         const result = await reportApi.getCommingPersonReport(params)
@@ -190,6 +199,8 @@ function changePage(page) {
 import { watch } from 'vue'
 onMounted(() => {
     fetchClassRooms()
+    if (props.fixedGrade) selectedGrade.value = props.fixedGrade
+    if (props.fixedClassroom !== '') selectedClassroom.value = props.fixedClassroom
     fetchData(1)
 })
 

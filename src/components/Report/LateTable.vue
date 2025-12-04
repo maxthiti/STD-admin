@@ -46,7 +46,7 @@
                         <span v-else class="text-base-content/50">-</span>
                     </td>
                     <td class="text-center">
-                        <img v-if="item.image_snap" :src="`${imgBaseUrl}${item.image_snap}`" alt="late snapshot"
+                        <img v-if="item.image_snap" :src="`${imgProBaseUrl}${item.image_snap}`" alt="late snapshot"
                             class="w-16 h-16 object-cover rounded-md cursor-pointer inline-block"
                             @click="viewImage(item.image_snap)" />
                         <span v-else class="text-base-content/50">-</span>
@@ -97,7 +97,7 @@
                 <p class="font-medium inline" v-else>-</p>
             </div>
 
-            <img v-if="item.image_snap" :src="`${imgBaseUrl}${item.image_snap}`" alt="late snapshot"
+            <img v-if="item.image_snap" :src="`${imgProBaseUrl}${item.image_snap}`" alt="late snapshot"
                 class="w-full h-40 object-cover rounded-md cursor-pointer" @click="viewImage(item.image_snap)" />
         </div>
     </div>
@@ -134,7 +134,7 @@
                     class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10 bg-white/80 hover:bg-white">✕</button>
             </form>
             <img v-if="selectedImage"
-                :src="`${selectedImageType === 'profile' ? imgProBaseUrl : imgBaseUrl}${selectedImage}`"
+                :src="`${selectedImageType === 'profile' ? imgProBaseUrl : imgProBaseUrl}${selectedImage}`"
                 alt="late image" class="w-full h-auto max-h-[90vh] object-contain" />
         </div>
         <form method="dialog" class="modal-backdrop">
@@ -159,7 +159,7 @@ const props = defineProps({
 
 const emit = defineEmits(['page-change'])
 
-const imgBaseUrl = import.meta.env.VITE_APP_IMG_URL
+// const imgBaseUrl = import.meta.env.VITE_APP_IMG_URL
 const imgProBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 
 const imageModal = ref(null)

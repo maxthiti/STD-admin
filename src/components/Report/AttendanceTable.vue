@@ -262,28 +262,9 @@ const extractEntryExit = (item) => {
         location: ts.location
     }))
 
-    const isStudent = item.position && item.position.toLowerCase().includes('นักเรียน')
-
-    if (isStudent) {
-        const entry = stamps.filter(s => s.location === 'ipc_1_in' || s.location === 'ipc_2_in')[0]
-        const exit = stamps.filter(s => s.location === 'ipc_1_out' || s.location === 'ipc_2_out')[0]
-
-        let entryTerminal = null
-        let exitTerminal = null
-        const terminalStamps = stamps.filter(s => s.location === 'student terminal')
-        if (terminalStamps.length > 0) {
-            entryTerminal = terminalStamps.filter(s => s.hour < 12).sort((a, b) => a.raw.localeCompare(b.raw))[0] || null
-            exitTerminal = terminalStamps.filter(s => s.hour >= 12).sort((a, b) => b.raw.localeCompare(a.raw))[0] || null
-        }
-        return {
-            entry: entry || entryTerminal,
-            exit: exit || exitTerminal
-        }
-    } else {
-        const entry = stamps.filter(s => s.hour < 12).sort((a, b) => a.raw.localeCompare(b.raw))[0] || null
-        const exit = stamps.filter(s => s.hour >= 12).sort((a, b) => b.raw.localeCompare(a.raw))[0] || null
-        return { entry, exit }
-    }
+    const entry = stamps.filter(s => s.hour < 12).sort((a, b) => a.raw.localeCompare(b.raw))[0] || null
+    const exit = stamps.filter(s => s.hour >= 12).sort((a, b) => a.raw.localeCompare(b.raw))[0] || null
+    return { entry, exit }
 }
 
 const getInitials = (name) => {

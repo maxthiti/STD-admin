@@ -121,11 +121,14 @@
     </div>
 
     <div class="mt-4 flex flex-wrap gap-4 text-xs">
-        <div class="flex items-center gap-1 text-white"><span class="w-3 h-3 rounded-full bg-success inline-block"></span> สำเร็จ
+        <div class="flex items-center gap-1 text-white"><span
+                class="w-3 h-3 rounded-full bg-success inline-block"></span> สำเร็จ
         </div>
-        <div class="flex items-center gap-1 text-white"><span class="w-3 h-3 rounded-full bg-warning inline-block"></span>
+        <div class="flex items-center gap-1 text-white"><span
+                class="w-3 h-3 rounded-full bg-warning inline-block"></span>
             รอตรวจสอบ</div>
-        <div class="flex items-center gap-1 text-white"><span class="w-3 h-3 rounded-full bg-error inline-block"></span> ไม่สำเร็จ
+        <div class="flex items-center gap-1 text-white"><span class="w-3 h-3 rounded-full bg-error inline-block"></span>
+            ไม่สำเร็จ
         </div>
     </div>
 </template>
@@ -167,7 +170,9 @@ watch(() => props.selectedIds, (val) => {
 }, { immediate: true });
 
 watch(selectedIdsLocal, (val) => {
-    emit('selectedIds', val);
+    if (JSON.stringify(val) !== JSON.stringify(props.selectedIds)) {
+        emit('selectedIds', val);
+    }
 });
 
 watch(() => props.selectMode, (val) => {
