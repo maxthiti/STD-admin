@@ -1,9 +1,11 @@
 <template>
     <div class="space-y-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-lg md:text-3xl font-bold text-white">จัดการโมเดล</h1>
-            <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData"
-                @selectModeChanged="selectMode = $event" :selected-ids="selectedIds" />
+        <div class="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+            <h1 class="text-lg md:text-3xl font-bold text-white">จัดการเชื่อมต่ออุปกรณ์</h1>
+            <div class="w-full sm:w-auto flex justify-end">
+                <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData"
+                    @selectModeChanged="selectMode = $event" :selected-ids="selectedIds" />
+            </div>
         </div>
 
         <div class="bg-base-100 rounded-lg shadow-lg p-4">
@@ -42,6 +44,37 @@
                         class="select select-bordered select-sm w-full">
                         <option value="all">ทั้งหมด</option>
                         <option value="fail">ไม่สำเร็จ</option>
+                    </select>
+                </div>
+
+                <div v-if="filters.role === 'student' && auth.user?.role !== 'teacher'" class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-sm font-medium">ชั้นปี</span>
+                    </label>
+                    <select v-model="filters.grade" @change="fetchData" class="select select-bordered select-sm w-full">
+                        <option value="">ทั้งหมด</option>
+                        <option v-for="grade in grades" :key="grade" :value="grade">{{ grade }}</option>
+                    </select>
+                </div>
+                <div v-if="filters.role === 'student' && auth.user?.role !== 'teacher'" class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-sm font-medium">ห้อง</span>
+                    </label>
+                    <select v-model="filters.classroom" @change="fetchData"
+                        class="select select-bordered select-sm w-full">
+                        <option value="">ทั้งหมด</option>
+                        <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
+                    </select>
+                </div>
+
+                <div v-if="filters.role === 'teacher' && auth.user?.role !== 'teacher'" class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-sm font-medium">แผนก</span>
+                    </label>
+                    <select v-model="filters.department" @change="fetchData"
+                        class="select select-bordered select-sm w-full">
+                        <option value="">ทั้งหมด</option>
+                        <option v-for="dept in departments" :key="dept._id" :value="dept.name">{{ dept.name }}</option>
                     </select>
                 </div>
             </div>
@@ -102,6 +135,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { ClassRoomService } from '../../api/class-room.js';
+import { DepartmentService } from '../../api/department.js';
 import ModelingTable from "../../components/Modeling/Table.vue";
 import CreateModeling from "../../components/Modeling/Create.vue";
 import ModelingService from "../../api/modeling.js";
@@ -125,6 +160,17 @@ const filters = ref({
     userid: "",
     status: "all",
     limit: 10,
+    grade: "",
+    classroom: ""
+});
+
+const classrooms = ref([]);
+const grades = ref([]);
+const departments = ref([]);
+
+const availableClassrooms = computed(() => {
+    if (!filters.value.grade) return [];
+    return classrooms.value.filter(c => c.grade === filters.value.grade).map(c => c.classroom).sort((a, b) => a - b);
 });
 
 const visiblePages = computed(() => {
@@ -147,10 +193,14 @@ const visiblePages = computed(() => {
 const fetchData = async () => {
     loading.value = true;
     try {
-        const response = await ModelingService.getModelings({
-            ...filters.value,
-            page: currentPage.value,
-        });
+        let params = { ...filters.value, page: currentPage.value };
+        if (params.role === 'student') {
+            params.department = '';
+        } else if (params.role === 'teacher') {
+            params.grade = '';
+            params.classroom = '0';
+        }
+        const response = await ModelingService.getModelings(params);
 
         if (response.message === "Success") {
             modelings.value = response.data;
@@ -198,8 +248,29 @@ function searchByNameOrUserid() {
     fetchData();
 }
 
-onMounted(() => {
+onMounted(async () => {
     fetchData();
+    // ดึงข้อมูลห้องและชั้นปี
+    try {
+        const classRoomService = new ClassRoomService();
+        const departmentService = new DepartmentService();
+        const [classroomRes, departmentRes] = await Promise.all([
+            classRoomService.getClassRooms(),
+            departmentService.getDepartments()
+        ]);
+        classrooms.value = classroomRes?.data || [];
+        // สร้างรายการชั้นปีจากข้อมูลห้อง
+        const gradeSet = new Set();
+        (classroomRes?.data || []).forEach(room => {
+            if (room.grade) gradeSet.add(room.grade);
+        });
+        grades.value = Array.from(gradeSet);
+        departments.value = departmentRes?.data || [];
+    } catch (e) {
+        classrooms.value = [];
+        grades.value = [];
+        departments.value = [];
+    }
 });
 </script>
 

@@ -133,10 +133,10 @@
     </div>
 
     <div class="mt-4 flex flex-wrap gap-4 text-xs">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 text-white">
             <span class="badge badge-success badge-xs">เวลา</span> แสดงเวลาที่เข้า/ออก
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 text-white">
             <span class="badge badge-error badge-xs">ไม่มี</span> ไม่มีข้อมูลเวลา
         </div>
     </div>
@@ -160,7 +160,7 @@
         </div>
     </div>
 
-    <div v-if="pagination.total_items > 0" class="text-center text-sm text-base-content/60 mt-4">
+    <div v-if="pagination.total_items > 0" class="text-center text-sm text-base-content/60 mt-4 text-white">
         แสดง {{ ((pagination.page - 1) * pagination.limit) + 1 }} - {{
             Math.min(pagination.page * pagination.limit, pagination.total_items)
         }} จาก {{ pagination.total_items }} รายการ

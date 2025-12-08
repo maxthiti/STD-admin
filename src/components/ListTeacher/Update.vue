@@ -7,7 +7,7 @@
                     <div class="relative">
                         <img :src="previewImage || currentImage" alt="Teacher Image"
                             class="w-32 h-32 object-cover rounded-lg shadow-md" />
-                        <button v-if="previewImage" type="button" @click="removeNewImage"
+                        <button type="button" @click="removeNewImage"
                             class="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
@@ -118,7 +118,14 @@
 </template>
 
 <script setup>
+
 import { ref, computed } from 'vue'
+const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
+const getPictureUrl = (pic) => {
+    if (!pic) return '';
+    if (pic.startsWith('http')) return pic;
+    return `${imgProfileUrl}${pic}`;
+};
 
 const modalRef = ref(null)
 const loading = ref(false)
@@ -155,7 +162,7 @@ const emit = defineEmits(['success'])
 
 const openModal = async (teacher) => {
     teacherId.value = teacher.id
-    currentImage.value = teacher.picture || ''
+    currentImage.value = getPictureUrl(teacher.picture) || ''
     previewImage.value = ''
     fileError.value = ''
     firstNameError.value = ''

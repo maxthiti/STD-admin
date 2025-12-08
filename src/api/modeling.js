@@ -16,6 +16,8 @@ class ModelingService {
         status: params.status || "all",
         page: params.page || 1,
         limit: params.limit || 10,
+        grade: params.grade || "",
+        classroom: params.classroom || "0"
       });
       const response = await axios.get(
         `${this.baseUrl}modeling?${queryParams}`,

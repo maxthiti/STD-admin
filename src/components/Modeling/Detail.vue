@@ -18,7 +18,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <span class="text-sm text-base-content/60">ชื่อ-สกุล:</span>
-                            <p class="font-medium">{{ item.name }}</p>
+                            <div class="flex items-center gap-3 mt-1">
+                                <div class="avatar">
+                                    <div class="w-12 h-12 rounded-full">
+                                        <img v-if="item.picture" :src="getPictureUrl(item.picture)" :alt="item.name"
+                                            class="w-full h-full object-cover" @error="item.picture = null" />
+                                        <div v-else
+                                            class="w-full h-full bg-primary text-primary-content flex items-center justify-center">
+                                            <span class="text-lg font-semibold">{{ getInitials(item.name) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="font-medium">{{ item.name }}</span>
+                            </div>
                         </div>
                         <div>
                             <span class="text-sm text-base-content/60">รหัส:</span>
@@ -72,9 +84,9 @@
                                     </td>
                                     <td>
                                         <div class="flex justify-center gap-1">
-                                            <ReModel v-if="model.status === 0" :modeling-id="model.modeling_id"
-                                                :location="model.device.location" @updated="handleUpdated"
-                                                :before-action="closeModal" />
+                                            <ReModel v-if="model.status === 0 || model.status === 1"
+                                                :modeling-id="model.modeling_id" :location="model.device.location"
+                                                @updated="handleUpdated" :before-action="closeModal" />
                                             <DeleteModeling :modeling-id="model.modeling_id" :name="item.name"
                                                 :location="model.device.location" @deleted="handleUpdated"
                                                 :before-action="closeModal" />
@@ -98,6 +110,24 @@
 </template>
 
 <script setup>
+const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '');
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '');
+    }
+    return parts[0][0] || '?';
+};
+
+const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
+const getPictureUrl = (pic) => {
+    if (!pic) return '';
+    if (pic.startsWith('http')) return pic;
+    return `${imgProfileUrl}${pic}`;
+};
 import { ref } from 'vue';
 import ReModel from './ReModel.vue';
 import DeleteModeling from './Delete.vue';

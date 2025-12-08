@@ -110,6 +110,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
+const getPictureUrl = (pic) => {
+    if (!pic) return '';
+    if (pic.startsWith('http')) return pic;
+    return `${imgProfileUrl}${pic}`;
+};
 import { useAuthStore } from '../../stores/auth'
 const auth = useAuthStore()
 
@@ -199,7 +205,7 @@ const openModal = async (student) => {
         classroom: student.room || '',
         picture: null
     }
-    currentImage.value = student.picture || ''
+    currentImage.value = getPictureUrl(student.picture) || ''
     previewImage.value = ''
     fileError.value = ''
     firstNameError.value = ''

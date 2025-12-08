@@ -7,7 +7,7 @@
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    สร้าง Modeling
+                    เพิ่มการเชื่อมต่ออุปกรณ์
                 </button>
                 <button class="btn btn-warning btn-sm flex items-center gap-1" @click="handleSelectMode">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
