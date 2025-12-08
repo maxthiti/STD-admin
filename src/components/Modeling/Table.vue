@@ -165,18 +165,22 @@
     </div>
 
     <div class="mt-4 flex flex-wrap gap-4 text-xs">
-        <div class="flex items-center gap-1 text-white"><span
-                class="w-3 h-3 rounded-full bg-success inline-block"></span> สำเร็จ
+        <div class="flex items-center gap-1 text-white">
+            <span class="w-3 h-3 rounded-full bg-info inline-block"></span> กำลังเชื่อมโยงอุปกรณ์
         </div>
-        <div class="flex items-center gap-1 text-white"><span
-                class="w-3 h-3 rounded-full bg-warning inline-block"></span>
-            รอตรวจสอบ</div>
-        <div class="flex items-center gap-1 text-white"><span class="w-3 h-3 rounded-full bg-error inline-block"></span>
-            ไม่สำเร็จ
+        <div class="flex items-center gap-1 text-white">
+            <span class="w-3 h-3 rounded-full bg-success inline-block"></span> สำเร็จ
         </div>
-        <UpdateStudent ref="updateStudentRef" :classrooms="classrooms" @success="onStudentUpdate" />
+        <div class="flex items-center gap-1 text-white">
+            <span class="w-3 h-3 rounded-full bg-error inline-block"></span> เชื่อมโยงไม่สำเร็จ
+        </div>
+        <div class="flex items-center gap-1 text-white">
+            <span class="w-3 h-3 rounded-full bg-warning inline-block"></span> กำลังลบเชื่อมโยงอุปกรณ์
+        </div>
+        <UpdateStudent ref="updateStudentRef" :classrooms="classrooms"
+            @success="() => emit('updated', { refresh: true, key: Math.random() })" emitRaw />
         <UpdateTeacher ref="updateTeacherRef" :departments="departments" :positions="positions"
-            @success="onTeacherUpdate" />
+            @success="() => emit('updated', { refresh: true, key: Math.random() })" />
     </div>
 </template>
 
@@ -193,9 +197,9 @@ const getInitials = (name) => {
     return parts[0][0] || '?';
 };
 const detailItem = ref(null);
-const openDetail = (item) => {
-    detailItem.value = item;
-};
+// const openDetail = (item) => {
+//     detailItem.value = item;
+// };
 
 import { ref, watch, onMounted } from 'vue';
 import DetailModeling from './Detail.vue';
@@ -251,8 +255,7 @@ const handleEdit = (item) => {
             code: item.userid,
             grade: item.grade,
             room: item.classroom,
-            picture: pictureUrl,
-            ...item
+            picture: pictureUrl
         });
     } else {
         updateTeacherRef.value?.openModal({
@@ -261,17 +264,9 @@ const handleEdit = (item) => {
             userid: item.userid,
             position: item.position,
             department: item.department,
-            picture: pictureUrl,
-            ...item
+            picture: pictureUrl
         });
     }
-};
-
-const onStudentUpdate = () => {
-    emit('updated');
-};
-const onTeacherUpdate = () => {
-    emit('updated');
 };
 
 const props = defineProps({
@@ -330,15 +325,19 @@ const toggleSelectAll = (checked) => {
 };
 
 const statusLabel = (s) => {
-    if (s === 2) return 'สำเร็จ'
-    if (s === 1) return 'รอตรวจสอบ'
-    return 'ไม่สำเร็จ'
+    if (s === 0) return 'กำลังเชื่อมโยงอุปกรณ์';
+    if (s === 2) return 'สำเร็จ';
+    if (s === 4) return 'เชื่อมโยงไม่สำเร็จ';
+    if (s === 5) return 'กำลังลบเชื่อมโยงอุปกรณ์';
+    return 'ไม่ทราบสถานะ';
 }
 
 const statusColorClass = (s) => {
-    if (s === 2) return 'bg-success'
-    if (s === 1) return 'bg-warning'
-    return 'bg-error'
+    if (s === 0) return 'bg-info';
+    if (s === 2) return 'bg-success';
+    if (s === 4) return 'bg-error';
+    if (s === 5) return 'bg-warning';
+    return 'bg-base-300';
 }
 </script>
 

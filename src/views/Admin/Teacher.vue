@@ -266,33 +266,9 @@ const handleDeleteSuccess = () => {
     fetchTeachers()
 }
 
-const handleUpdateSuccess = async (id, formData) => {
-    try {
-        await teacherService.updateTeacher(id, formData)
-        await fetchTeachers()
-        const { default: Swal } = await import('sweetalert2')
-        Swal.fire({
-            icon: 'success',
-            title: 'แก้ไขข้อมูลอาจารย์สำเร็จ',
-            showConfirmButton: false,
-            timer: 1500,
-            didOpen: () => {
-                document.getElementById('app').removeAttribute('aria-hidden')
-            }
-        })
-    } catch (error) {
-        console.error('Update teacher error:', error)
-        const { default: Swal } = await import('sweetalert2')
-        Swal.fire({
-            icon: 'error',
-            title: 'เกิดข้อผิดพลาด',
-            text: 'ไม่สามารถแก้ไขข้อมูลอาจารย์ได้',
-            confirmButtonColor: '#2563eb',
-            didOpen: () => {
-                document.getElementById('app').removeAttribute('aria-hidden')
-            }
-        })
-    }
+const handleUpdateSuccess = () => {
+    // Update.vue now handles the updateTeacher API call and shows alerts
+    fetchTeachers()
 }
 
 const handleCreateSuccess = async (formData) => {

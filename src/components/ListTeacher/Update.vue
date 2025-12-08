@@ -118,6 +118,7 @@
 </template>
 
 <script setup>
+import { TeacherService } from '../../api/teacher'
 
 import { ref, computed } from 'vue'
 const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
@@ -351,8 +352,39 @@ const handleSubmit = async () => {
         })
         return
     }
-    emit('success', teacherId.value, formData.value)
-    closeModal()
+    loading.value = true
+    try {
+        const teacherService = new TeacherService()
+        const response = await teacherService.updateTeacher(teacherId.value, formData.value)
+        if (response.message === 'Success') {
+            const { default: Swal } = await import('sweetalert2')
+            Swal.fire({
+                icon: 'success',
+                title: 'แก้ไขข้อมูลอาจารย์สำเร็จ',
+                showConfirmButton: false,
+                timer: 1500,
+                didOpen: () => {
+                    document.getElementById('app')?.removeAttribute('aria-hidden')
+                }
+            })
+            emit('success')
+            closeModal()
+        }
+    } catch (error) {
+        console.error('Update teacher error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถแก้ไขข้อมูลอาจารย์ได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app')?.removeAttribute('aria-hidden')
+            }
+        })
+    } finally {
+        loading.value = false
+    }
 }
 
 defineExpose({

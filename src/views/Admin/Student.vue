@@ -352,40 +352,9 @@ const openUpdateModal = (student) => {
     updateModalRef.value.openModal(student)
 }
 
-const handleUpdateSuccess = async (payload) => {
-    loading.value = true
-    try {
-        const { id, ...data } = payload
-        const response = await studentService.updateStudent(id, data)
-        if (response.message === 'Success') {
-            const { default: Swal } = await import('sweetalert2')
-            Swal.fire({
-                icon: 'success',
-                title: 'บันทึกสำเร็จ',
-                text: 'แก้ไขข้อมูลนักเรียนเรียบร้อยแล้ว',
-                timer: 2000,
-                showConfirmButton: false,
-                didOpen: () => {
-                    document.getElementById('app')?.removeAttribute('aria-hidden')
-                }
-            })
-            fetchStudents()
-        }
-    } catch (error) {
-        console.error('Update student error:', error)
-        const { default: Swal } = await import('sweetalert2')
-        Swal.fire({
-            icon: 'error',
-            title: 'เกิดข้อผิดพลาด',
-            text: 'ไม่สามารถแก้ไขข้อมูลนักเรียนได้',
-            confirmButtonColor: '#2563eb',
-            didOpen: () => {
-                document.getElementById('app')?.removeAttribute('aria-hidden')
-            }
-        })
-    } finally {
-        loading.value = false
-    }
+const handleUpdateSuccess = () => {
+    // Update.vue now handles the updateStudent API call and shows alerts
+    fetchStudents()
 }
 
 const deleteModalRef = ref(null)

@@ -16,7 +16,7 @@ app.use(router);
 
 const authStore = useAuthStore();
 const initialized = authStore.initializeAuth();
-console.log("Main.js - Auth store initialized:", initialized);
+// console.log("Main.js - Auth store initialized:", initialized);
 
 const token = localStorage.getItem("token");
 if (token) {

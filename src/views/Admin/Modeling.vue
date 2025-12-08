@@ -141,7 +141,7 @@ import ModelingTable from "../../components/Modeling/Table.vue";
 import CreateModeling from "../../components/Modeling/Create.vue";
 import ModelingService from "../../api/modeling.js";
 import Swal from "sweetalert2";
-import { useAuthStore } from "../../stores/auth";
+import { useAuthStore } from "../../stores/auth.js";
 
 const auth = useAuthStore();
 
@@ -250,7 +250,6 @@ function searchByNameOrUserid() {
 
 onMounted(async () => {
     fetchData();
-    // ดึงข้อมูลห้องและชั้นปี
     try {
         const classRoomService = new ClassRoomService();
         const departmentService = new DepartmentService();
@@ -259,7 +258,6 @@ onMounted(async () => {
             departmentService.getDepartments()
         ]);
         classrooms.value = classroomRes?.data || [];
-        // สร้างรายการชั้นปีจากข้อมูลห้อง
         const gradeSet = new Set();
         (classroomRes?.data || []).forEach(room => {
             if (room.grade) gradeSet.add(room.grade);

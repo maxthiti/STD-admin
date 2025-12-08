@@ -84,8 +84,7 @@
                                     </td>
                                     <td>
                                         <div class="flex justify-center gap-1">
-                                            <ReModel v-if="model.status === 0 || model.status === 1"
-                                                :modeling-id="model.modeling_id" :location="model.device.location"
+                                            <ReModel :modeling-id="model.modeling_id" :location="model.device.location"
                                                 @updated="handleUpdated" :before-action="closeModal" />
                                             <DeleteModeling :modeling-id="model.modeling_id" :name="item.name"
                                                 :location="model.device.location" @deleted="handleUpdated"

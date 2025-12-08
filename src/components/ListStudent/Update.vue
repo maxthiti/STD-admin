@@ -110,6 +110,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { StudentService } from '../../api/student'
 const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
 const getPictureUrl = (pic) => {
     if (!pic) return '';
@@ -343,8 +344,41 @@ const handleSubmit = async () => {
         })
         return
     }
-    emit('success', { id: studentId.value, ...formData.value })
-    closeModal()
+    loading.value = true
+    try {
+        const studentService = new StudentService()
+        const { ...data } = formData.value
+        const response = await studentService.updateStudent(studentId.value, data)
+        if (response.message === 'Success') {
+            const { default: Swal } = await import('sweetalert2')
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกสำเร็จ',
+                text: 'แก้ไขข้อมูลนักเรียนเรียบร้อยแล้ว',
+                timer: 2000,
+                showConfirmButton: false,
+                didOpen: () => {
+                    document.getElementById('app')?.removeAttribute('aria-hidden')
+                }
+            })
+            emit('success')
+            closeModal()
+        }
+    } catch (error) {
+        console.error('Update student error:', error)
+        const { default: Swal } = await import('sweetalert2')
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถแก้ไขข้อมูลนักเรียนได้',
+            confirmButtonColor: '#2563eb',
+            didOpen: () => {
+                document.getElementById('app')?.removeAttribute('aria-hidden')
+            }
+        })
+    } finally {
+        loading.value = false
+    }
 }
 
 defineExpose({ openModal, closeModal })
