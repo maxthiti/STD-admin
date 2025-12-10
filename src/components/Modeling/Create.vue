@@ -30,7 +30,7 @@
 
         <dialog ref="modal" class="modal">
             <div class="modal-box max-w-md">
-                <h3 class="font-bold text-lg mb-4">สร้าง Modeling</h3>
+                <h3 class="font-bold text-lg mb-4">เพิ่มการเชื่อมต่ออุปกรณ์</h3>
                 <form @submit.prevent="handleSubmit">
                     <div v-if="!hideType" class="form-control mb-4">
                         <label class="label">

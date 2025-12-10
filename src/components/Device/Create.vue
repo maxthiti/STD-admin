@@ -47,7 +47,7 @@
                         <span class="label-text">Device Key</span>
                         <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
                     </label>
-                    <input v-model="formData.device_key" type="text" placeholder="กรอก Device Key (ถ้าม)"
+                    <input v-model="formData.device_key" type="text" placeholder="กรอก Device Key (ถ้ามี)"
                         class="input input-bordered w-full" />
                 </div>
 

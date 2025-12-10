@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref, defineExpose } from 'vue'
+import { ref } from 'vue'
 import { ClassRoomService } from '../../api/class-room'
 const modalRef = ref(null)
 const loading = ref(false)

@@ -1,5 +1,5 @@
 <template>
-    <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg overflow-x-auto">
+    <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg">
         <table class="table table-zebra w-full">
             <thead>
                 <tr class="bg-primary text-primary-content">

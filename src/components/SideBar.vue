@@ -304,7 +304,7 @@
                     </ul>
                 </li>
 
-                <li v-if="auth.user?.role !== 'teacher'">
+                <li v-if="auth.user?.role == 'super admin'">
                     <router-link to="/home/account"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors relative group"
                         :class="{ 'bg-primary text-primary-content': isActive('/home/account') }">
