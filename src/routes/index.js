@@ -17,6 +17,7 @@ const LateReport = () => import("../views/Admin/report/Late.vue");
 const MissedReport = () => import("../views/Admin/report/Missed.vue");
 const StrangerReport = () => import("../views/Admin/report/Stranger.vue");
 const StatsView = () => import("../views/Admin/report/StatsView.vue");
+const Holidays = () => import("../views/Admin/Holidays.vue");
 
 const routes = [
   { path: "/", name: "login", component: Login },
@@ -100,6 +101,11 @@ const routes = [
         path: "/update-password",
         name: "UpdatePassword",
         component: UpdatePassword,
+      },
+      {
+        path: "holidays",
+        name: "Holidays",
+        component: Holidays,
       },
     ],
   },

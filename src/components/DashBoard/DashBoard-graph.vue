@@ -105,13 +105,6 @@ const weekLabel = computed(() => {
     return `${formatDateThai(monday)} - ${formatDateThai(sunday)}`
 })
 
-// function navigateWeek(direction) {
-//     const monday = getMonday(currentWeekStart.value)
-//     monday.setDate(monday.getDate() + (direction * 7))
-//     currentWeekStart.value = monday
-//     fetchDailyStats()
-// }
-
 async function fetchDailyStats() {
     loading.value = true
     try {
@@ -125,11 +118,6 @@ async function fetchDailyStats() {
             totals.value.total_students = response.data.total_students || 0
             totals.value.total_teachers = response.data.total_teachers || 0
             rawStats.value = response.data.daily_stats || []
-
-            const studentData = rawStats.value.find(s => s.role === 'student' && s.date === selectedDate.value)
-            const teacherData = rawStats.value.find(s => s.role === 'teacher' && s.date === selectedDate.value)
-            // const studentTotal = studentData ? studentData.total : 0
-            // const teacherTotal = teacherData ? teacherData.total : 0
 
             await fetchStrangerData()
             buildBarChart(start, end)
@@ -204,22 +192,25 @@ function buildBarChart(start, end) {
     })
 
     const { primary, primaryLight, secondary, secondaryLight } = getThemeColors()
-    // const red = 'rgba(220, 38, 38, 0.9)'
-    // const redLight = 'rgba(248, 113, 113, 0.9)'
     const black = 'rgba(0,0,0,0.85)'
+
+    const isTeacher = localStorage.getItem('residentRole') === 'teacher'
+    let datasets = [
+        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primary, borderColor: primary, stack: 'student' },
+        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black, stack: 'student' }
+    ]
+    if (!isTeacher) {
+        datasets.push(
+            { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondary, borderColor: secondary, stack: 'teacher' },
+            { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black, stack: 'teacher' }
+        )
+    }
 
     barChart = new ChartLib(barChartRef.value, {
         type: 'bar',
         data: {
             labels: weekdayLabels,
-            datasets: [
-                { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primary, borderColor: primary, stack: 'student' },
-                // { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: red, borderColor: red, stack: 'student' },
-                { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black, stack: 'student' },
-                { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondary, borderColor: secondary, stack: 'teacher' },
-                // { label: 'ครู (สาย)', data: teacherLate, backgroundColor: redLight, borderColor: redLight, stack: 'teacher' }
-                { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black, stack: 'teacher' }
-            ]
+            datasets
         },
         options: {
             responsive: true,

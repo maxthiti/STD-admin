@@ -163,10 +163,22 @@
                                 <span class="text-sm">จัดการห้องเรียน</span>
                             </router-link>
                         </li>
+                        <li>
+                            <router-link to="/home/holidays"
+                                class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
+                                :class="submenuClass('/home/holidays')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10m-12 8a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12z" />
+                                </svg>
+                                <span class="text-sm">จัดการวันหยุด</span>
+                            </router-link>
+                        </li>
                     </ul>
                 </li>
 
-                <li>
+                <li v-if="auth.user?.role !== 'teacher'">
                     <div @click="toggleEquipment"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer relative group"
                         :class="{ 'bg-primary text-primary-content': isEquipmentActive }">
@@ -189,7 +201,7 @@
                     </div>
 
                     <ul v-show="isExpanded && isEquipmentOpen" class="ml-4 mt-2 space-y-2">
-                        <li v-if="auth.user?.role !== 'teacher'">
+                        <li>
                             <router-link to="/home/device"
                                 class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
                                 :class="submenuClass('/home/device')">

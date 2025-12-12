@@ -14,7 +14,7 @@
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
                 <h3 class="font-bold text-lg mb-4">รายการเข้าเรียน{{ attendanceRole === 'teacher' ? 'ครู' : 'นักเรียน'
-                    }} วันที่ {{ displayDate }}</h3>
+                }} วันที่ {{ displayDate }}</h3>
                 <div v-if="attendanceRole === 'student'">
                     <Attendance :role="'student'" :date="selectedDate" v-if="residentRole !== 'teacher'" />
                     <Attendance :role="'student'" :date="selectedDate" v-else :fixed-grade="localGrade"
@@ -63,7 +63,7 @@
 
         <AttendanceDetail ref="detailModal" />
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div v-if="auth.user?.role !== 'teacher'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <transition name="slide-fade">
                 <div v-show="showStudentStat" class="stats shadow bg-base-100">
                     <div class="stat group" ref="studentStatRef">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
             </transition>
-            <transition name="slide-down">
+            <transition v-if="auth.user?.role !== 'teacher'" name="slide-down">
                 <div v-show="showTeacherStat" class="stats shadow bg-base-100">
                     <div class="stat group" ref="teacherStatRef">
                         <div class="stat-title">จำนวนครูทั้งหมด</div>
@@ -100,7 +100,7 @@
             </transition>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div v-if="auth.user?.role !== 'teacher'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <transition name="slide-fade">
                 <div v-show="showStudentAbsentStat" class="card bg-base-100 shadow-xl group" ref="studentAbsentStatRef">
                     <div class="card-body p-4">
@@ -137,7 +137,7 @@
                     </div>
                 </div>
             </transition>
-            <transition name="slide-right">
+            <transition v-if="auth.user?.role !== 'teacher'" name="slide-right">
                 <div v-show="showTeacherAbsentStat" class="card bg-base-100 shadow-xl group" ref="teacherAbsentStatRef">
                     <div class="card-body p-4">
                         <h4 class="card-title">ครู</h4>
@@ -175,6 +175,55 @@
                 </div>
             </transition>
         </div>
+        <div v-if="auth.user?.role === 'teacher'" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <transition name="slide-fade">
+                <div v-show="showStudentStat" class="stats shadow bg-base-100">
+                    <div class="stat group" ref="studentStatRef">
+                        <div class="stat-title">จำนวนนักเรียนทั้งหมด</div>
+                        <div class="stat-value text-primary">{{ totals.total_students || 0 }}</div>
+                        <div class="stat-figure">
+                            <div ref="studentIconRef" class="w-20 h-20 transition-transform duration-200"></div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+            <transition name="slide-right">
+                <div v-show="showStudentAbsentStat" class="card bg-base-100 shadow-xl group" ref="studentAbsentStatRef">
+                    <div class="card-body p-4">
+                        <h4 class="card-title">นักเรียน</h4>
+                        <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
+                            <div class="stat relative">
+                                <div class="stat-title">เข้า</div>
+                                <div class="stat-value text-primary">{{ student.total }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showAttendanceTable" class="btn btn-xs btn-primary btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat relative">
+                                <div class="stat-title">มาสาย</div>
+                                <div class="stat-value text-black">{{ student.late }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showStudentLateTable" class="btn btn-xs btn-ghost btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat relative border-l pl-4">
+                                <div class="stat-title">ขาด</div>
+                                <div class="stat-value text-error">{{ studentAbsent }}</div>
+                                <div class="stat-desc absolute bottom-2 right-2">
+                                    <button @click="showStudentMissedTable" class="btn btn-xs btn-error btn-plain">
+                                        คลิก
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
     </div>
 
 </template>
@@ -189,7 +238,9 @@ import LateTable from '../Report/LateTable.vue'
 import MissedTable from '../Report/MissedTable.vue'
 import AttendanceDetail from '../Report/AttendanceDetail.vue'
 import Attendance from './Attendance.vue'
+import { useAuthStore } from '../../stores/auth'
 
+const auth = useAuthStore()
 const emit = defineEmits(['dateChange'])
 
 const selectedDate = ref(new Date().toISOString().split('T')[0])
@@ -203,8 +254,6 @@ const combinedIconRef = ref(null)
 const combinedStatRef = ref(null)
 const studentLateIconRef = ref(null)
 const studentLateStatRef = ref(null)
-const studentAbsentStatRef = ref(null)
-const teacherAbsentStatRef = ref(null)
 
 const totals = ref({ total_students: 0, total_teachers: 0 })
 const student = ref({ total: 0, late: 0 })
@@ -213,10 +262,8 @@ const teacher = ref({ total: 0, late: 0 })
 const attendanceModal = ref(null)
 const lateModal = ref(null)
 const missedModal = ref(null)
-const detailModal = ref(null)
 const attendanceData = ref([])
 const attendancePage = ref(1)
-const attendanceLimit = ref(5)
 const attendanceTotalItems = ref(0)
 const attendanceTotalPages = ref(0)
 const attendanceGrade = ref('')
@@ -252,13 +299,6 @@ const displayDate = computed(() => {
     const yyyy = d.getFullYear()
     return `${dd}/${mm}/${yyyy}`
 })
-
-// const attendancePagination = computed(() => ({
-//     page: attendancePage.value,
-//     limit: attendanceLimit.value,
-//     total_items: attendanceTotalItems.value,
-//     total_pages: attendanceTotalPages.value
-// }))
 
 const latePagination = computed(() => ({
     page: latePage.value,
@@ -553,43 +593,6 @@ function handleMissedPageChange(page) {
         missedData.value = missedAllData.value.slice(start, start + missedLimit.value)
     }
 }
-
-async function reloadAttendance() {
-    attendancePage.value = 1
-    if (attendanceRole.value === 'teacher') {
-        await showTeacherAttendanceTable()
-    } else {
-        await showAttendanceTable()
-    }
-}
-
-// function handleGradeChange() {
-//     if (availableClassrooms.value.length > 0) {
-//         attendanceClassroom.value = availableClassrooms.value[0]
-//     } else {
-//         attendanceClassroom.value = 0
-//     }
-//     reloadAttendance()
-// }
-
-// async function handlePageChange(page) {
-//     if (page >= 1 && page <= attendanceTotalPages.value) {
-//         attendancePage.value = page
-//         if (residentRole.value === 'teacher') {
-//             attendanceData.value = attendanceFilteredData.value.slice((attendancePage.value - 1) * 5, attendancePage.value * 5)
-//         } else {
-//             if (attendanceRole.value === 'teacher') {
-//                 await showTeacherAttendanceTable()
-//             } else {
-//                 await showAttendanceTable()
-//             }
-//         }
-//     }
-// }
-
-// function viewDetail(item) {
-//     detailModal.value?.openModal(item)
-// }
 
 function resetAttendancePage() {
     attendancePage.value = 1

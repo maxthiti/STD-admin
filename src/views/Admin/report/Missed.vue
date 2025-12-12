@@ -3,7 +3,7 @@
         <div class="flex justify-between items-center text-white">
             <h1 class="text-lg md:text-3xl font-bold">ตารางขาดเรียน/ขาดงาน</h1>
             <input v-model="filters.date" type="date" @change="fetchData"
-                class="text-sm px-2 py-1 bg-transparent border-none focus:outline-none focus:ring-0 rounded" />
+                class="text-sm px-2 py-1 bg-white border border-base-300 focus:outline-none focus:ring-2 focus:ring-primary rounded shadow-sm text-base-content" />
         </div>
 
         <div class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">

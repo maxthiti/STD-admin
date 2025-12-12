@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 class="text-2xl font-bold text-white">จัดการห้องเรียน</h2>
+        <div class="flex flex-row justify-between items-start sm:items-center gap-4">
+            <h2 class="text-xl sm:text-2xl font-bold text-white">จัดการห้องเรียน</h2>
             <button v-if="auth.user?.role !== 'teacher'" @click="openCreateModal" class="btn btn-primary btn-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">

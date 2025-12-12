@@ -1,13 +1,13 @@
 <template>
     <div class="min-h-screen bg-base-200 p-4 sm:p-6">
         <div class="w-full">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div class="flex flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                    <h1 class="text-3xl font-bold text-primary">จัดการอุปกรณ์</h1>
-                    <p class="text-sm text-base-content/60 mt-1">ระบบจัดการข้อมูลอุปกรณ์</p>
+                    <h1 class="text-xl sm:text-3xl font-bold text-primary">จัดการอุปกรณ์</h1>
+                    <p class="text-sm sm:text-base text-base-content/60 mt-1">ระบบจัดการข้อมูลอุปกรณ์</p>
                 </div>
                 <button @click="openCreateModal" class="btn btn-primary gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-5 w-3 sm:w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>

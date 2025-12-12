@@ -9,7 +9,7 @@
         </div>
 
         <div class="bg-base-100 rounded-lg shadow-lg p-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div v-if="auth.user?.role !== 'teacher'" class="form-control">
                     <label class="label py-1">
                         <span class="label-text text-sm font-medium">ประเภท</span>
