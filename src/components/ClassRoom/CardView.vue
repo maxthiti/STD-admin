@@ -32,7 +32,8 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     <div v-for="classroom in grade.classrooms" :key="classroom._id"
                         class="relative group cursor-pointer">
-                        <div class="p-4 rounded-lg border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 h-full flex flex-col cursor-pointer">
+                        <div
+                            class="p-4 rounded-lg border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 h-full flex flex-col cursor-pointer">
                             <div class="text-center flex-1 flex flex-col justify-between">
                                 <div @click="goToStudent(classroom.grade, classroom.classroom)">
                                     <div class="text-2xl font-bold text-primary mb-1">ห้อง {{ classroom.classroom }}
@@ -40,12 +41,22 @@
                                     <div class="text-xs text-secondary font-medium">{{ getGradeLabel(classroom.grade) }}
                                     </div>
                                 </div>
-                                <div v-if="classroom.adviser && classroom.adviser.name"
-                                    @click="$emit('edit', classroom)" class="mt-2 pt-2 border-t border-primary/20">
-                                    <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
-                                    <div class="text-xs font-semibold text-primary mt-1 line-clamp-2">{{
-                                        classroom.adviser.name }}
-                                    </div>
+                                <div v-if="classroom.adviser && classroom.adviser.name">
+                                    <template v-if="auth.user?.role !== 'viewer'">
+                                        <div @click="$emit('edit', classroom)"
+                                            class="mt-2 pt-2 border-t border-primary/20 cursor-pointer hover:bg-primary/10 rounded">
+                                            <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
+                                            <div class="text-xs font-semibold text-primary mt-1 line-clamp-2">{{
+                                                classroom.adviser.name }}</div>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div class="mt-2 pt-2 border-t border-primary/20">
+                                            <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
+                                            <div class="text-xs font-semibold text-primary mt-1 line-clamp-2">{{
+                                                classroom.adviser.name }}</div>
+                                        </div>
+                                    </template>
                                 </div>
                                 <div v-else class="mt-2 pt-2 border-t border-primary/20 invisible">
                                     <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
@@ -54,7 +65,8 @@
                             </div>
                         </div>
 
-                        <button v-if="auth.user?.role !== 'teacher'" @click.stop="$emit('delete', classroom)"
+                        <button v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'"
+                            @click.stop="$emit('delete', classroom)"
                             class="absolute -top-2 -right-2 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">

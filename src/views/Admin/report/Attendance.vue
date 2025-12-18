@@ -1,9 +1,22 @@
 <template>
     <div class="p-0 md:p-6 space-y-6">
-        <div class="flex justify-between items-center text-white">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center text-white gap-2">
             <h1 class="text-lg md:text-3xl font-bold">ตารางเข้า-ออก</h1>
-            <input v-model="filters.date" type="date" @change="fetchData"
-                class="text-sm px-2 py-1 bg-white border border-base-300 focus:outline-none focus:ring-2 focus:ring-primary rounded shadow-sm text-base-content" />
+            <div class="flex flex-row gap-2 items-stretch md:items-center justify-end md:justify-center">
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium mb-1 md:mb-0 md:mr-1">วันที่เริ่มต้น</label>
+                    <input v-model="filters.start" type="date" @change="fetchData"
+                        class="text-sm px-2 py-1 bg-white border border-base-300 focus:outline-none focus:ring-2 focus:ring-primary rounded shadow-sm text-base-content" />
+                </div>
+                <div class="hidden md:flex items-center justify-center md:mx-1">
+                    <span class="mx-1">-</span>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium mb-1 md:mb-0 md:mr-1">วันที่สิ้นสุด</label>
+                    <input v-model="filters.end" type="date" @change="fetchData"
+                        class="text-sm px-2 py-1 bg-white border border-base-300 focus:outline-none focus:ring-2 focus:ring-primary rounded shadow-sm text-base-content" />
+                </div>
+            </div>
         </div>
 
         <div class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">
@@ -61,30 +74,45 @@
                 </div>
             </div>
 
-            <div class="flex gap-2">
-                <button @click="fetchData" class="btn btn-sm btn-primary" :disabled="loading">
-                    <svg v-if="loading" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
+            <div class="flex items-center justify-between">
+                <div class="flex gap-1 md:gap-2">
+                    <button @click="fetchData" class="btn btn-sm btn-primary" :disabled="loading">
+                        <svg v-if="loading" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        ค้นหา
+                    </button>
+                    <button @click="resetFilters" class="btn btn-sm btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        รีเซ็ต
+                    </button>
+                </div>
+                <button @click="toggleTableType" class="btn btn-sm btn-secondary">
+                    <svg v-if="tableType === 'detail'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            d="M3 7h18M3 12h18M3 17h18" />
                     </svg>
-                    ค้นหา
-                </button>
-                <button @click="resetFilters" class="btn btn-sm btn-outline">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    รีเซ็ต
+                    {{ tableType === 'detail' ? 'แบบจำนวน' : 'แบบข้อมูล' }}
                 </button>
             </div>
         </div>
@@ -103,8 +131,10 @@
         </div>
 
         <div v-else>
-            <ReportTable :data="reportData" :pagination="pagination" @viewDetail="openDetailModal"
-                @page-change="goToPage" />
+            <ReportTable v-if="tableType === 'detail'" :data="reportData" :pagination="pagination" :filters="filters"
+                @viewDetail="openDetailModal" @page-change="goToPage" />
+            <ReportTableAmount v-else :data="reportData" :dateRange="{ start: filters.start, end: filters.end }"
+                :pagination="pagination" :role="filters.role" @page-change="goToPage" />
         </div>
 
         <AttendanceDetail ref="detailModal" />
@@ -114,8 +144,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import ReportTable from '../../../components/Report/AttendanceTable.vue'
+import ReportTableAmount from '../../../components/Report/AttendanceTable-amount.vue'
 import AttendanceDetail from '../../../components/Report/AttendanceDetail.vue'
 import reportApi from '../../../api/report.js'
+const tableType = ref('detail')
+
+function toggleTableType() {
+    tableType.value = tableType.value === 'detail' ? 'amount' : 'detail'
+}
 
 const loading = ref(false)
 const error = ref(null)
@@ -131,7 +167,8 @@ const filters = ref({
     search: '',
     grade: residentRole === 'teacher' ? teacherGrade : 'ม.1',
     classroom: residentRole === 'teacher' ? teacherClassroom : 1,
-    date: getDefaultDate()
+    start: getDefaultDate(),
+    end: getDefaultDate(),
 })
 
 const pagination = ref({
@@ -168,8 +205,8 @@ const fetchData = async () => {
         const rawSearch = filters.value.search.trim()
         const isNumeric = /^\d+$/.test(rawSearch)
         let params = {
-            start: filters.value.date,
-            end: filters.value.date,
+            start: filters.value.start,
+            end: filters.value.end,
             name: isNumeric ? '' : rawSearch,
             userid: isNumeric ? rawSearch : '',
             page: pagination.value.page,
@@ -185,8 +222,6 @@ const fetchData = async () => {
             params.grade = filters.value.grade
             params.classroom = filters.value.classroom
         }
-
-        console.log('ส่งข้อมูลไป API:', params)
 
         const response = await reportApi.getAttendanceReport(params)
 
@@ -214,7 +249,8 @@ const resetFilters = () => {
             search: '',
             grade: teacherGrade,
             classroom: teacherClassroom,
-            date: getDefaultDate()
+            start: getDefaultDate(),
+            end: getDefaultDate(),
         }
     } else {
         filters.value = {
@@ -222,7 +258,8 @@ const resetFilters = () => {
             search: '',
             grade: 'ม.1',
             classroom: 1,
-            date: getDefaultDate()
+            start: getDefaultDate(),
+            end: getDefaultDate(),
         }
     }
     pagination.value.page = 1
@@ -236,8 +273,8 @@ const goToPage = (page) => {
     }
 }
 
-const openDetailModal = (item) => {
-    detailModal.value.openModal(item)
+const openDetailModal = (item, attendance = null) => {
+    detailModal.value.openModal(item, attendance)
 }
 
 onMounted(() => {

@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="text-xl sm:text-2xl font-bold text-white">จัดการนักเรียน</h2>
-            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+            <div v-if="auth.user?.role !== 'viewer'" class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button v-if="auth.user?.role !== 'teacher'" class="btn btn-success btn-sm" @click="openImportModal">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -90,14 +90,16 @@
         </div>
 
         <StudentTable :students="filteredStudents" :loading="loading" :currentPage="currentPage"
-            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" @delete="openDeleteModal"
-            @reset="openRePasswordModal" />
+            :itemsPerPage="itemsPerPage" @edit="openUpdateModal" @delete="openDeleteModal" @reset="openRePasswordModal"
+            @detail="openDetailModal" />
         <CreateModal ref="createModalRef" :classrooms="classrooms" @success="handleCreateSuccess" />
         <ImportExcalModal ref="importModalRef" @success="handleImportSuccess" />
         <UpdateModal ref="updateModalRef" :classrooms="classrooms" @success="handleUpdateSuccess" />
         <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
         <RePasswordModal ref="rePasswordModalRef" @success="fetchStudents" />
         <DeleteAllModal ref="deleteAllModalRef" @success="handleDeleteAllSuccess" />
+        <DetailModal v-if="detailModalVisible && detailStudent" :visible="detailModalVisible" :student="detailStudent"
+            @close="closeDetailModal" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -120,7 +122,6 @@
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-const route = useRoute()
 import StudentTable from '../../components/ListStudent/Table.vue'
 import CreateModal from '../../components/ListStudent/Create.vue'
 import ImportExcalModal from '../../components/ListStudent/ImportExcal.vue'
@@ -128,12 +129,14 @@ import UpdateModal from '../../components/ListStudent/Update.vue'
 import DeleteModal from '../../components/ListStudent/Delete.vue'
 import RePasswordModal from '../../components/ListStudent/RePassword.vue'
 import DeleteAllModal from '../../components/ListStudent/DeleteAll.vue'
+import DetailModal from '../../components/ListStudent/Detail.vue'
 import { StudentService } from '../../api/student'
 import { ClassRoomService } from '../../api/class-room'
-const isQueryFilter = ref(false)
 import { useAuthStore } from '../../stores/auth'
-const auth = useAuthStore()
 
+const isQueryFilter = ref(false)
+const auth = useAuthStore()
+const route = useRoute()
 const studentService = new StudentService()
 const classRoomService = new ClassRoomService()
 const students = ref([])
@@ -161,6 +164,18 @@ const itemsPerPage = 5
 const imageBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 const lastFetchedGrade = ref('')
 const lastFetchedClassroom = ref('')
+
+const detailModalVisible = ref(false)
+const detailStudent = ref(null)
+
+const openDetailModal = (student) => {
+    detailStudent.value = student
+    detailModalVisible.value = true
+}
+const closeDetailModal = () => {
+    detailModalVisible.value = false
+    detailStudent.value = null
+}
 
 const availableGrades = computed(() => {
     const grades = [...new Set(classrooms.value.map(c => c.grade))]

@@ -125,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import DetailAttendance from './DetailAttendance.vue'
 import reportApi from '../../api/report.js'
 import { ClassRoomService } from '../../api/class-room.js'
@@ -254,7 +254,6 @@ function changePage(page) {
     }
 }
 
-import { watch } from 'vue'
 onMounted(() => {
     fetchClassRooms()
     if (props.fixedGrade) selectedGrade.value = props.fixedGrade

@@ -38,9 +38,6 @@
 </template>
 
 <script setup>
-const goToUpdatePassword = () => {
-    router.push('/update-password')
-}
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
@@ -61,6 +58,10 @@ const pageTitle = computed(() => {
     }
     return titles[route.name] || 'ระบบจัดการ'
 })
+
+const goToUpdatePassword = () => {
+    router.push('/update-password')
+}
 
 const toggleMobileMenu = () => {
     emit('toggleMobileMenu')

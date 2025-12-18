@@ -31,14 +31,14 @@
                     </div>
                 </div>
 
-                <div v-if="selectedItem.attendances && selectedItem.attendances.length > 0">
+                <div v-if="selectedAttendance">
                     <div class="mb-4">
                         <h4 class="font-semibold text-gray-700">บันทึกเวลา - {{
-                            formatDate(selectedItem.attendances[0].date) }}</h4>
+                            formatDate(selectedAttendance.date) }}</h4>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div v-for="(ts, idx) in selectedItem.attendances[0].timeStamps" :key="idx"
+                        <div v-for="(ts, idx) in selectedAttendance.timeStamps" :key="idx"
                             class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border border-gray-200"
                             @click="openImageModal(ts.image)">
                             <img :src="`${imgBaseUrl}${ts.image}`" alt="attendance image"
@@ -85,10 +85,12 @@ const imgBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 const detailModal = ref(null)
 const imageModal = ref(null)
 const selectedItem = ref(null)
+const selectedAttendance = ref(null)
 const selectedImage = ref(null)
 
-const openModal = (item) => {
+const openModal = (item, attendance = null) => {
     selectedItem.value = item
+    selectedAttendance.value = attendance
     detailModal.value.showModal()
 }
 

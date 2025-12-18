@@ -22,10 +22,62 @@
                 <button class="btn btn-ghost btn-sm flex items-center gap-1" @click="cancelSelectMode">
                     ยกเลิก
                 </button>
+                <button class="btn btn-info btn-sm flex items-center gap-1" @click="showBasket = true">
+                    จำนวน ({{ selectedIds.length }})
+                </button>
                 <button class="btn btn-primary btn-sm flex items-center gap-1" @click="openCreateModalWithSelected">
                     ยืนยัน
                 </button>
             </template>
+            <dialog ref="basketDialog" class="modal">
+                <div class="modal-box max-w-2xl">
+                    <h3 class="font-bold text-lg mb-4">รายการที่เลือก ({{ selectedIds.length }})</h3>
+                    <div v-if="selectedIds.length === 0" class="text-center text-base-content/60 py-8">
+                        ยังไม่มีรายการที่เลือก
+                    </div>
+                    <div v-else>
+                        <table class="table table-zebra w-full mb-4">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>รูป</th>
+                                    <th>ชื่อ</th>
+                                    <th>รหัส</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, idx) in pagedSelected" :key="item._id">
+                                    <td>{{ (basketPage - 1) * basketPerPage + idx + 1 }}</td>
+                                    <td>
+                                        <img v-if="item.picture" :src="getPictureUrl(item.picture)" alt="avatar"
+                                            class="w-8 h-8 rounded-full object-cover" />
+                                    </td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.userid }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div v-if="basketTotalPages > 1" class="flex justify-center mb-2">
+                            <div class="join">
+                                <button class="join-item btn btn-sm" @click="goToBasketPage(basketPage - 1)"
+                                    :disabled="basketPage === 1">«</button>
+                                <button v-for="page in basketDisplayedPages" :key="page" class="join-item btn btn-sm"
+                                    :class="{ 'btn-active': page === basketPage }" @click="goToBasketPage(page)">
+                                    {{ page }}
+                                </button>
+                                <button class="join-item btn btn-sm" @click="goToBasketPage(basketPage + 1)"
+                                    :disabled="basketPage === basketTotalPages">»</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-action">
+                        <button class="btn btn-ghost" @click="closeBasket">ปิด</button>
+                    </div>
+                </div>
+                <form method="dialog" class="modal-backdrop">
+                    <button type="button" @click="closeBasket">close</button>
+                </form>
+            </dialog>
         </div>
 
         <dialog ref="modal" class="modal">
@@ -88,18 +140,76 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import ModelingService from '../../api/modeling.js';
 import DeviceService from '../../api/device.js';
 import Swal from 'sweetalert2';
 
-const emit = defineEmits(['created', 'selectModeChanged']);
+const emit = defineEmits(['created', 'selectModeChanged', 'selectedIds']);
 const selectMode = ref(false);
 
 const modal = ref(null);
+const basketDialog = ref(null);
+const showBasket = ref(false);
+
+function closeBasket() {
+    showBasket.value = false;
+    basketDialog.value?.close();
+}
+
+watch(showBasket, (val) => {
+    if (val) {
+        basketDialog.value?.showModal();
+    } else {
+        basketDialog.value?.close();
+    }
+});
+
+const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
+function getPictureUrl(pic) {
+    if (!pic) return '';
+    if (pic.startsWith('http')) return pic;
+    return `${imgProfileUrl}${pic}`;
+}
 const isSubmitting = ref(false);
 const loadingDevices = ref(false);
 const devices = ref([]);
+
+const basketPage = ref(1);
+const basketPerPage = 5;
+const pagedSelected = computed(() => {
+    const reversed = [...selectedIds.value].reverse();
+    const start = (basketPage.value - 1) * basketPerPage;
+    const end = start + basketPerPage;
+    return reversed.slice(start, end);
+});
+const basketTotalPages = computed(() => Math.ceil(selectedIds.value.length / basketPerPage));
+const basketDisplayedPages = computed(() => {
+    const pages = [];
+    const maxVisible = 5;
+    let startPage = Math.max(1, basketPage.value - Math.floor(maxVisible / 2));
+    let endPage = Math.min(basketTotalPages.value, startPage + maxVisible - 1);
+    if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+    }
+    return pages;
+});
+function goToBasketPage(page) {
+    if (page >= 1 && page <= basketTotalPages.value) {
+        basketPage.value = page;
+    }
+}
+watch(showBasket, (val) => {
+    if (val) basketPage.value = 1;
+    if (val) {
+        basketDialog.value?.showModal();
+    } else {
+        basketDialog.value?.close();
+    }
+});
 
 const formData = ref({
     option: 'student',
@@ -107,6 +217,7 @@ const formData = ref({
 });
 
 const hideType = ref(false);
+
 
 const props = defineProps({
     selectedIds: {
@@ -169,18 +280,8 @@ const handleSelectMode = () => {
 const cancelSelectMode = () => {
     selectMode.value = false;
     emit('selectModeChanged', false);
+    emit('selectedIds', []);
 };
-
-// const saveSelected = () => {
-//     Swal.fire({
-//         icon: 'success',
-//         title: 'บันทึกสำเร็จ',
-//         timer: 1200,
-//         showConfirmButton: false
-//     });
-//     selectMode.value = false;
-//     emit('selectModeChanged', false);
-// };
 
 const handleSubmit = async () => {
     if (formData.value.device_id.length === 0) {
@@ -194,12 +295,13 @@ const handleSubmit = async () => {
 
     isSubmitting.value = true;
     try {
+
         let payload;
         if (hideType.value) {
             payload = {
                 option: "user selected",
                 device_id: formData.value.device_id,
-                user_id: selectedIds.value
+                user_id: selectedIds.value.map(obj => obj._id)
             };
         } else {
             payload = formData.value;

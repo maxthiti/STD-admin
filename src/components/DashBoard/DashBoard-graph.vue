@@ -166,22 +166,34 @@ function buildBarChart(start, end) {
     const map = {}
     rawStats.value.forEach(s => { map[`${s.role}_${s.date}`] = s })
 
+
     const studentOntime = []
     const studentLate = []
+    const studentNotScan = []
     const teacherOntime = []
     const teacherLate = []
+    const teacherNotScan = []
 
     labelsISO.forEach(date => {
         const stu = map[`student_${date}`]
         const tea = map[`teacher_${date}`]
+        // นักเรียน
         const stuLate = stu ? stu.late : 0
-        const stuTotal = stu ? stu.total : 0
-        const teaLate = tea ? tea.late : 0
-        const teaTotal = tea ? tea.total : 0
+        const stuOntime = stu ? stu.ontime ?? Math.max((stu.total ?? 0) - (stu.late ?? 0) - (stu.not_scan ?? 0), 0) : 0
+        // คำนวณไม่ได้สแกน = total_students - stu.total
+        const stuTotal = stu ? stu.total ?? 0 : 0
+        const stuNotScan = Math.max((totals.value.total_students ?? 0) - stuTotal, 0)
+        studentOntime.push(stuOntime)
         studentLate.push(stuLate)
-        studentOntime.push(Math.max(stuTotal - stuLate, 0))
+        studentNotScan.push(stuNotScan)
+        // ครู
+        const teaLate = tea ? tea.late : 0
+        const teaOntime = tea ? tea.ontime ?? Math.max((tea.total ?? 0) - (tea.late ?? 0) - (tea.not_scan ?? 0), 0) : 0
+        const teaTotal = tea ? tea.total ?? 0 : 0
+        const teaNotScan = Math.max((totals.value.total_teachers ?? 0) - teaTotal, 0)
+        teacherOntime.push(teaOntime)
         teacherLate.push(teaLate)
-        teacherOntime.push(Math.max(teaTotal - teaLate, 0))
+        teacherNotScan.push(teaNotScan)
     })
 
     const weekdayLabels = labelsISO.map(d => {
@@ -191,18 +203,23 @@ function buildBarChart(start, end) {
         return thaiDays[dayIdx]
     })
 
+
     const { primary, primaryLight, secondary, secondaryLight } = getThemeColors()
     const black = 'rgba(0,0,0,0.85)'
+    const red = 'rgba(239,68,68,0.85)'
+    const blue = 'rgba(59,130,246,0.7)'
 
     const isTeacher = localStorage.getItem('residentRole') === 'teacher'
     let datasets = [
-        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primary, borderColor: primary, stack: 'student' },
-        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black, stack: 'student' }
+        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primary, borderColor: primary },
+        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black },
+        { label: 'นักเรียน (ไม่ได้สแกน)', data: studentNotScan, backgroundColor: red, borderColor: red }
     ]
     if (!isTeacher) {
         datasets.push(
-            { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondary, borderColor: secondary, stack: 'teacher' },
-            { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black, stack: 'teacher' }
+            { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondary, borderColor: secondary },
+            { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black },
+            { label: 'ครู (ไม่ได้สแกน)', data: teacherNotScan, backgroundColor: red, borderColor: red }
         )
     }
 
@@ -234,12 +251,18 @@ function buildBarChart(start, end) {
                             return 'รวม: ' + Math.round(total)
                         }
                     }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'end',
+                    color: '#222',
+                    font: { weight: 'bold', size: 12 },
+                    formatter: (value) => value > 0 ? value : ''
                 }
             },
             scales: {
-                x: { stacked: true },
+                x: { stacked: false },
                 y: {
-                    stacked: true,
                     beginAtZero: true,
                     ticks: {
                         precision: 0,
@@ -247,7 +270,8 @@ function buildBarChart(start, end) {
                     }
                 }
             }
-        }
+        },
+        plugins: [window.ChartDataLabels]
     })
 }
 
@@ -261,7 +285,9 @@ watch(() => props.date, (newDate) => {
 
 onMounted(async () => {
     const Chart = (await import('chart.js/auto')).default
+    const ChartDataLabels = (await import('chartjs-plugin-datalabels')).default
     window.Chart = Chart
+    window.ChartDataLabels = ChartDataLabels
     selectedDate.value = props.date
     const date = new Date(props.date)
     const monday = getMonday(date)

@@ -1,4 +1,10 @@
 <template>
+    <div class="flex justify-end mb-2">
+        <button v-if="role === 'teacher'" class="btn btn-sm btn-primary" :disabled="loadingExportDoc"
+            @click="exportDocxLeaveReport">
+            ส่งออกสรุปการออกงาน
+        </button>
+    </div>
     <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg overflow-x-auto">
         <table class="table table-zebra w-full">
             <thead>
@@ -105,6 +111,10 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType, WidthType, BorderStyle, ImageRun } from 'docx'
+import { saveAs } from 'file-saver'
+import reportApi from '../../api/report.js'
+const loadingExportDoc = ref(false)
 
 const props = defineProps({
     data: {
@@ -114,6 +124,15 @@ const props = defineProps({
     pagination: {
         type: Object,
         required: true
+    },
+    dateRange: {
+        type: Object,
+        required: true
+    },
+    role: {
+        type: String,
+        required: false,
+        default: 'student'
     }
 })
 
@@ -180,6 +199,270 @@ const getInitials = (name) => {
     }
     return parts[0][0] || '?'
 }
+
+async function exportDocxLeaveReport() {
+    if (loadingExportDoc.value) return
+    loadingExportDoc.value = true
+    try {
+        let pictureBuffer = null;
+        try {
+            const res = await fetch('/brand.jpg');
+            if (res.ok) pictureBuffer = await res.arrayBuffer();
+        } catch (e) { pictureBuffer = null; }
+
+        const [stats, missed] = await Promise.all([
+            reportApi.getDailyStats(props.dateRange.start, props.dateRange.end),
+            reportApi.getMissedReport({ date: props.dateRange.end, role: 'teacher' }),
+        ]);
+        const totalTeachers = stats?.data?.total_teachers || 0;
+        const notCheckOut = missed?.data?.length || 0;
+
+        const font = { name: 'TH SarabunPSK' };
+        const leaveTable = new Table({
+            rows: [
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({
+                                children: [new TextRun({ text: `ข้าราชการครู ครูอัตราจ้าง จำนวน ${totalTeachers} คน`, font, size: 32 })],
+                            })],
+                            columnSpan: 3,
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        })
+                    ]
+                }),
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({
+                                children: [new TextRun({ text: `ไม่ลงเวลากลับ ${notCheckOut} คน`, font, size: 32 })],
+                            })],
+                            columnSpan: 3,
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        })
+                    ]
+                }),
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: 'ไม่ลงเวลากลับ', font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: `ข้าราชการครู ${notCheckOut} คน`, font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: '', font, size: 32 })] })],
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        })
+                    ]
+                }),
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: 'ขออนุญาตออกนอกบริเวณ', font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            rowSpan: 2,
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: `ไม่กลับมาลงเวลา ${notCheckOut} คน`, font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: '', font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        })
+                    ]
+                }),
+                new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: `กลับมาลงเวลา ${totalTeachers - notCheckOut} คน`, font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            rowSpan: 2,
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: '', font, size: 32 })], alignment: AlignmentType.CENTER })],
+                            verticalAlign: 'center',
+                            borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } }
+                        }),
+                    ]
+                })
+            ],
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            layout: 'fixed',
+            margins: { top: 113, bottom: 113, left: 113, right: 113 },
+            columnWidths: [1650, 1800, 6000],
+        });
+
+        const doc = new Document({
+            styles: {
+                default: {
+                    document: {
+                        run: font
+                    }
+                }
+            },
+            sections: [{
+                properties: {},
+                children: [
+                    new Table({
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [
+                                            new Paragraph({
+                                                children: pictureBuffer ? [
+                                                    new ImageRun({ data: pictureBuffer, transformation: { width: 100, height: 100 } })
+                                                ] : [new TextRun({ text: '', font })]
+                                            })
+                                        ],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        height: { value: 500, rule: 'atLeast' },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'บันทึกข้อความ', font, bold: true, size: 48 })], alignment: AlignmentType.CENTER })],
+                                        columnSpan: 3,
+                                        width: { size: 85, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    })
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'ส่วนราชการ', font, bold: true, size: 32 })] })],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'กลุ่มบริหารงานบุคคล โรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })] })],
+                                        columnSpan: 3,
+                                        width: { size: 85, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    })
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'ที่', font, bold: true, size: 32 })] })],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: '.....................................', font, size: 32 })] })],
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'วันที่', font, bold: true, size: 32 })] })],
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: '.....................................', font, size: 32 })] })],
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'เรื่อง', font, bold: true, size: 32 })] })],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'สรุปรายงานการลงเวลากลับของลูกจ้างประจำและบุคลากรทางการศึกษา', font, size: 32 })] })],
+                                        columnSpan: 3,
+                                        width: { size: 85, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    })
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'เรียน', font, bold: true, size: 32 })] })],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'ผู้อำนวยการโรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })] })],
+                                        columnSpan: 3,
+                                        width: { size: 85, type: WidthType.PERCENTAGE },
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    })
+                                ]
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({ text: `  ด้วยงานปฏิบัติราชการของบุคลากรทางการศึกษา ได้จัดทำสรุปรายงานการลงเวลากลับของข้าราชการครู ประจำวันที่ ${props.dateRange ? formatDateRangeTH(props.dateRange.start, props.dateRange.end) : ''} ดังนี้`, font, size: 32 })],
+                                        })],
+                                        columnSpan: 4,
+                                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
+                                    }),
+                                ]
+                            })
+                        ],
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        margins: { top: 113, bottom: 113, left: 113, right: 113 },
+                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE }, insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE } }
+                    }),
+                    new Paragraph({ text: '', spacing: { after: 200 } }),
+                    leaveTable,
+                    new Paragraph({ text: '', spacing: { after: 200 } }),
+                    new Paragraph({ children: [new TextRun({ text: '   จึงเรียนมาเพื่อโปรดทราบ', font, size: 32 })] }),
+                    new Paragraph({ text: '', spacing: { after: 200 } }),
+                    new Paragraph({ children: [new TextRun({ text: '(.............................................)', font, size: 32 })], alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: 'ผู้บันทึกข้อมูล', font, size: 32 })], alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ text: '', spacing: { after: 200 } }),
+                    new Paragraph({ children: [new TextRun({ text: '(.............................................)', font, size: 32 })], alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: 'ผู้อำนวยการโรงเรียนจักรคำคณาทร จังหวัดลำพูน', font, size: 32 })], alignment: AlignmentType.RIGHT }),
+                ]
+            }]
+        });
+        const blob = await Packer.toBlob(doc)
+        saveAs(blob, `รายงานการออกงาน_${new Date().toISOString().slice(0, 10)}.docx`)
+    } catch (e) {
+        alert('เกิดข้อผิดพลาดในการส่งออก Word')
+        console.error(e)
+    } finally {
+        loadingExportDoc.value = false
+    }
+}
+function formatDateTHFull(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    const months = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear() + 543;
+    return `${day} ${month} พ.ศ.${year}`;
+}
+
+function formatDateRangeTH(start, end) {
+    if (!start || !end) return '-';
+    if (start === end) {
+        return formatDateTHFull(start);
+    } else {
+        return `${formatDateTHFull(start)} ถึง ${formatDateTHFull(end)}`;
+    }
+}
+
 </script>
 
 <style scoped></style>

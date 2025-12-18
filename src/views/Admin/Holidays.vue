@@ -1,7 +1,7 @@
 <template>
     <div class="flex items-center flex-row justify-between mb-4 gap-4">
         <h1 class="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">จัดการวันหยุด</h1>
-        <button class="btn btn-primary btn-sm ml-2 whitespace-nowrap shrink-0" @click="showCreate = true">+
+        <button v-if="auth.user?.role !== 'viewer'" class="btn btn-primary btn-sm ml-2 whitespace-nowrap shrink-0" @click="showCreate = true">+
             เพิ่มวันหยุด</button>
     </div>
     <div class="flex gap-2 items-center justify-end mb-4">
@@ -38,6 +38,9 @@ import HolidaysTable from '../../components/Holidays/Table.vue'
 import DeleteDialog from '../../components/Holidays/Delete.vue'
 import holidaysApi from '../../api/holidays'
 import Swal from 'sweetalert2'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
 
 const showCreate = ref(false)
 const holidays = ref([])

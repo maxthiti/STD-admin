@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="text-xl sm:text-2xl font-bold text-white">จัดการบุคลากร</h2>
-            <div class="flex gap-2">
+            <div v-if="auth.user?.role !== 'viewer'" class="flex gap-2">
                 <button v-if="auth.user?.role !== 'teacher'" class="btn btn-success btn-sm" @click="openImportModal">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -59,11 +59,12 @@
             </div>
         </div>
 
+
         <TeacherTable :teachers="paginatedTeachers" :loading="loading" :departmentFilter="filterDepartment"
             :positionFilter="filterPosition" :departments="departments" :positions="positions"
             :currentPage="currentPage" :itemsPerPage="itemsPerPage" @filterDepartment="handleFilterDepartment"
             @filterPosition="handleFilterPosition" @edit="openEditModal" @delete="openDeleteModal"
-            @reset="openRePasswordModal" />
+            @reset="openRePasswordModal" @detail="openDetailModal" />
 
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
@@ -92,11 +93,27 @@
         <DeleteModal ref="deleteModalRef" @success="handleDeleteSuccess" />
 
         <RePasswordModal ref="rePasswordModalRef" @success="fetchTeachers" />
+
+        <DetailModal v-if="detailModalVisible && detailTeacher" :visible="detailModalVisible" :teacher="detailTeacher"
+            @close="closeDetailModal" />
     </div>
 </template>
 
 <script setup>
 import ImportExcalModal from '../../components/ListTeacher/ImportExcal.vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import TeacherTable from '../../components/ListTeacher/Table.vue'
+import UpdateModal from '../../components/ListTeacher/Update.vue'
+import CreateModal from '../../components/ListTeacher/Create.vue'
+import DeleteModal from '../../components/ListTeacher/Delete.vue'
+import RePasswordModal from '../../components/ListStudent/RePassword.vue'
+import DetailModal from '../../components/ListTeacher/Detail.vue'
+import { TeacherService } from '../../api/teacher'
+import { DepartmentService } from '../../api/department'
+import { PositionService } from '../../api/position'
+import { useAuthStore } from '../../stores/auth'
+
 const importModalRef = ref(null)
 const openImportModal = () => {
     importModalRef.value?.openModal()
@@ -107,18 +124,22 @@ const handleImportSuccess = async (importedTeachers) => {
         await fetchTeachers()
     }
 }
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+
 const route = useRoute()
-import TeacherTable from '../../components/ListTeacher/Table.vue'
-import UpdateModal from '../../components/ListTeacher/Update.vue'
-import CreateModal from '../../components/ListTeacher/Create.vue'
-import DeleteModal from '../../components/ListTeacher/Delete.vue'
-import RePasswordModal from '../../components/ListStudent/RePassword.vue'
-import { TeacherService } from '../../api/teacher'
-import { DepartmentService } from '../../api/department'
-import { PositionService } from '../../api/position'
-import { useAuthStore } from '../../stores/auth'
+
+const detailModalVisible = ref(false)
+const detailTeacher = ref(null)
+
+const openDetailModal = (teacher) => {
+    detailTeacher.value = teacher
+    detailModalVisible.value = true
+}
+
+const closeDetailModal = () => {
+    detailModalVisible.value = false
+    detailTeacher.value = null
+}
+
 const auth = useAuthStore()
 
 const teacherService = new TeacherService()

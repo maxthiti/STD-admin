@@ -45,6 +45,7 @@
 import { ref } from 'vue'
 import DeviceService from '../../api/device'
 import Swal from 'sweetalert2'
+import { nextTick } from 'vue'
 
 const deleteModal = ref(null)
 const device = ref(null)
@@ -55,8 +56,6 @@ const openModal = (d) => {
     device.value = d
     if (deleteModal.value) deleteModal.value.showModal()
 }
-
-import { nextTick } from 'vue'
 
 const closeModal = async () => {
     if (loading.value) return

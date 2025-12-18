@@ -49,7 +49,7 @@
                         <th class="hidden xl:table-cell">เวลาปัจจุบัน</th>
                         <th class="hidden sm:table-cell">เข้า/ออก</th>
                         <th>สถานะ</th>
-                        <th class="text-center">จัดการ</th>
+                        <th v-if="auth.user?.role !== 'viewer'" class="text-center">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,7 +71,7 @@
                                 :class="isOnline(device.current_time) ? 'inline-block w-3 h-3 rounded-full bg-green-500 mr-2 align-middle' : 'inline-block w-3 h-3 rounded-full bg-red-500 mr-2 align-middle'"
                                 :title="isOnline(device.current_time) ? 'ออนไลน์' : 'ออฟไลน์'"></span>
                         </td>
-                        <td class="text-center">
+                        <td v-if="auth.user?.role !== 'viewer'" class="text-center">
                             <div class="flex gap-2 justify-center">
                                 <button @click="$emit('edit', device)" class="btn btn-sm btn-warning btn-outline">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -98,6 +98,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
 
 const isMobile = ref(window.innerWidth < 1050)
 const handleResize = () => {

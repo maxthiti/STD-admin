@@ -1,3 +1,5 @@
+async function buildPrimaryChart() {
+async function buildCompareChart() {
 <template>
     <div class="p-1 sm:p-2 md:p-6 space-y-2 sm:space-y-4 md:space-y-6 w-full">
         <div class="flex flex-col md:flex-row md:items-center justify-between items-center gap-2 md:gap-4">
@@ -63,8 +65,7 @@
             </div>
         </div>
 
-        <div
-            :class="['grid', compareMode && !isMdOrLess ? 'lg:grid-cols-2' : 'lg:grid-cols-1', 'gap-4 md:gap-6']">
+        <div :class="['grid', compareMode && !isMdOrLess ? 'lg:grid-cols-2' : 'lg:grid-cols-1', 'gap-4 md:gap-6']">
             <div class="space-y-4">
                 <div v-if="primary.data" class="grid grid-cols-2 gap-1 sm:gap-2 md:gap-3">
                     <div class="stat bg-base-100 shadow rounded-lg p-3">
@@ -183,11 +184,12 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import reportApi from '../../api/report.js'
+
 const residentRole = localStorage.getItem('residentRole') || ''
 const teacherGrade = localStorage.getItem('grade') || ''
 const teacherClassroom = localStorage.getItem('classroom') || ''
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
-import reportApi from '../../api/report.js'
 
 const compareMode = ref(false)
 const primaryLoading = ref(false)
@@ -464,7 +466,6 @@ function computeStats(dailyStats) {
 function formatLabelDate(dateStr) {
     if (!dateStr) return ''
     const [year, month, day] = dateStr.split('-')
-    // ถ้าหน้าจอ md หรือน้อยกว่า ให้แสดงแค่ วันที่/เดือน
     if (window.innerWidth <= 768) {
         return `${day}/${month}`
     }
@@ -484,10 +485,17 @@ function buildPrimaryChart() {
     const map = {}
     dailyStats.forEach(s => { map[`${s.role}_${s.date}`] = s })
 
+
     const studentOntime = []
     const studentLate = []
     const teacherOntime = []
     const teacherLate = []
+
+    const studentNotScan = []
+    const teacherNotScan = []
+
+    const totalStudents = primary.value.data?.total_students || 0
+    const totalTeachers = primary.value.data?.total_teachers || 0
 
     dates.forEach(date => {
         const stu = map[`student_${date}`]
@@ -500,18 +508,27 @@ function buildPrimaryChart() {
         studentOntime.push(Math.max(stuTotal - stuLate, 0))
         teacherLate.push(teaLate)
         teacherOntime.push(Math.max(teaTotal - teaLate, 0))
+        const notScanStudent = Math.max(totalStudents - stuTotal, 0)
+        const notScanTeacher = Math.max(totalTeachers - teaTotal, 0)
+        studentNotScan.push(notScanStudent)
+        teacherNotScan.push(notScanTeacher)
     })
 
     const { primary: primaryColor, secondary: secondaryColor } = getThemeColors()
     const black = 'rgba(0,0,0,0.85)'
     const blue = 'rgba(59, 130, 246, 0.9)'
     const yellow = 'rgba(234, 179, 8, 0.9)'
+    const red = 'rgba(220,38,38,0.85)'
+
+
 
     let datasets = [
-        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primaryColor, borderColor: primaryColor, stack: 'student' },
-        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black, stack: 'student' },
-        { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondaryColor, borderColor: secondaryColor, stack: 'teacher' },
-        { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black, stack: 'teacher' }
+        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primaryColor, borderColor: primaryColor },
+        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black },
+        { label: 'นักเรียน (ไม่ได้สแกน)', data: studentNotScan, backgroundColor: red, borderColor: red },
+        { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondaryColor, borderColor: secondaryColor },
+        { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black },
+        { label: 'ครู (ไม่ได้สแกน)', data: teacherNotScan, backgroundColor: red, borderColor: red }
     ]
 
     if (primary.value.chartType === 'line') {
@@ -541,9 +558,9 @@ function buildPrimaryChart() {
             const isLate = /สาย/.test(ds.label)
             const alpha = isLate ? 0.22 : 0.18
             ds.backgroundColor = toFill(ds.borderColor, alpha)
-            delete ds.stack
         })
     }
+
 
     primaryChart = new ChartLib(primaryChartRef.value, {
         type: primary.value.chartType,
@@ -562,12 +579,20 @@ function buildPrimaryChart() {
                             return `${ctx.dataset.label}: ${Math.round(v)}`
                         }
                     }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'end',
+                    color: '#222',
+                    font: { weight: 'bold', size: 12 },
+                    formatter: (value) => value > 0 ? value : '',
+                    display: true
                 }
             },
             scales: {
-                x: { stacked: primary.value.chartType !== 'line' ? true : false },
+                x: { stacked: false },
                 y: {
-                    stacked: primary.value.chartType !== 'line' ? true : false,
+                    stacked: false,
                     beginAtZero: true,
                     ticks: {
                         precision: 0,
@@ -575,7 +600,8 @@ function buildPrimaryChart() {
                     }
                 }
             }
-        }
+        },
+        plugins: window.ChartDataLabels ? [window.ChartDataLabels] : []
     })
 }
 
@@ -592,10 +618,17 @@ function buildCompareChart() {
     const map = {}
     dailyStats.forEach(s => { map[`${s.role}_${s.date}`] = s })
 
+
     const studentOntime = []
     const studentLate = []
     const teacherOntime = []
     const teacherLate = []
+
+    const studentNotScan = []
+    const teacherNotScan = []
+
+    const totalStudents = compare.value.data?.total_students || 0
+    const totalTeachers = compare.value.data?.total_teachers || 0
 
     dates.forEach(date => {
         const stu = map[`student_${date}`]
@@ -608,20 +641,27 @@ function buildCompareChart() {
         studentOntime.push(Math.max(stuTotal - stuLate, 0))
         teacherLate.push(teaLate)
         teacherOntime.push(Math.max(teaTotal - teaLate, 0))
+        const notScanStudent = Math.max(totalStudents - stuTotal, 0)
+        const notScanTeacher = Math.max(totalTeachers - teaTotal, 0)
+        studentNotScan.push(notScanStudent)
+        teacherNotScan.push(notScanTeacher)
     })
 
     const { primary: primaryColor, secondary: secondaryColor } = getThemeColors()
     const black = 'rgba(0,0,0,0.85)'
     const blue = 'rgba(59, 130, 246, 0.9)'
-    // const blueLight = 'rgba(147, 197, 253, 0.9)'
     const yellow = 'rgba(234, 179, 8, 0.9)'
-    // const yellowLight = 'rgba(253, 224, 71, 0.9)'
+    const red = 'rgba(220,38,38,0.85)'
+
+
 
     let datasets = [
-        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primaryColor, borderColor: primaryColor, stack: 'student' },
-        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black, stack: 'student' },
-        { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondaryColor, borderColor: secondaryColor, stack: 'teacher' },
-        { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black, stack: 'teacher' }
+        { label: 'นักเรียน (ตรงเวลา)', data: studentOntime, backgroundColor: primaryColor, borderColor: primaryColor },
+        { label: 'นักเรียน (สาย)', data: studentLate, backgroundColor: black, borderColor: black },
+        { label: 'นักเรียน (ไม่ได้สแกน)', data: studentNotScan, backgroundColor: red, borderColor: red },
+        { label: 'ครู (ตรงเวลา)', data: teacherOntime, backgroundColor: secondaryColor, borderColor: secondaryColor },
+        { label: 'ครู (สาย)', data: teacherLate, backgroundColor: black, borderColor: black },
+        { label: 'ครู (ไม่ได้สแกน)', data: teacherNotScan, backgroundColor: red, borderColor: red }
     ]
 
     if (compare.value.chartType === 'line') {
@@ -651,9 +691,10 @@ function buildCompareChart() {
             const isLate = /สาย/.test(ds.label)
             const alpha = isLate ? 0.22 : 0.18
             ds.backgroundColor = toFill(ds.borderColor, alpha)
-            delete ds.stack
         })
     }
+
+    // ...ไม่ต้องโหลด datalabels plugin ที่นี่แล้ว (โหลดใน onMounted)
 
     compareChart = new ChartLib(compareChartRef.value, {
         type: compare.value.chartType,
@@ -672,12 +713,20 @@ function buildCompareChart() {
                             return `${ctx.dataset.label}: ${Math.round(v)}`
                         }
                     }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'end',
+                    color: '#222',
+                    font: { weight: 'bold', size: 12 },
+                    formatter: (value) => value > 0 ? value : '',
+                    display: true
                 }
             },
             scales: {
-                x: { stacked: compare.value.chartType === 'bar' },
+                x: { stacked: false },
                 y: {
-                    stacked: compare.value.chartType === 'bar',
+                    stacked: false,
                     beginAtZero: true,
                     ticks: {
                         precision: 0,
@@ -685,7 +734,8 @@ function buildCompareChart() {
                     }
                 }
             }
-        }
+        },
+        plugins: window.ChartDataLabels ? [window.ChartDataLabels] : []
     })
 }
 
@@ -706,7 +756,9 @@ onUnmounted(() => {
 
 onMounted(async () => {
     const Chart = (await import('chart.js/auto')).default
+    const ChartDataLabels = (await import('chartjs-plugin-datalabels')).default
     window.Chart = Chart
+    window.ChartDataLabels = ChartDataLabels
     initializeCurrentWeek()
     fetchPrimaryStats()
 })

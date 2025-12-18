@@ -7,7 +7,7 @@
                         <tr>
                             <th class="bg-primary text-primary-content">ชื่อวันหยุด</th>
                             <th class="bg-primary text-primary-content">วันที่</th>
-                            <th class="bg-primary text-primary-content text-center">จัดการ</th>
+                            <th v-if="auth.user?.role !== 'viewer'" class="bg-primary text-primary-content text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,7 +25,7 @@
                             class="hover">
                             <td>{{ item.summary }}</td>
                             <td>{{ formatDisplayDate(item.date) }}</td>
-                            <td>
+                            <td v-if="auth.user?.role !== 'viewer'">
                                 <div class="flex gap-2 justify-center">
                                     <button class="btn btn-sm btn-error btn-outline" @click="$emit('delete', item)"
                                         title="ลบ">
@@ -57,8 +57,11 @@
 </template>
 
 <script setup>
-
 import { ref, computed, watch } from 'vue';
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
+
 const props = defineProps({
     holidays: {
         type: Array,

@@ -2,9 +2,9 @@
     <div class="space-y-6">
         <div class="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
             <h1 class="text-lg md:text-3xl font-bold text-white">จัดการเชื่อมต่ออุปกรณ์</h1>
-            <div class="w-full sm:w-auto flex justify-end">
+            <div v-if="auth.user?.role !== 'viewer'" class="w-full sm:w-auto flex justify-end">
                 <CreateModeling v-if="auth.user?.role !== 'teacher'" @created="fetchData"
-                    @selectModeChanged="selectMode = $event" :selected-ids="selectedIds" />
+                    @selectModeChanged="handleSelectModeChanged" :selected-ids="selectedIds" />
             </div>
         </div>
 
@@ -239,8 +239,15 @@ const resetFilters = () => {
     fetchData();
 };
 
-function handleSelectedIds(ids) {
-    selectedIds.value = ids;
+function handleSelectedIds(selectedObjs) {
+    selectedIds.value = selectedObjs;
+}
+
+function handleSelectModeChanged(val) {
+    selectMode.value = val;
+    if (!val) {
+        selectedIds.value = [];
+    }
 }
 
 function searchByNameOrUserid() {

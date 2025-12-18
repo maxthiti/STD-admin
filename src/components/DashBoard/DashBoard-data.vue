@@ -14,7 +14,7 @@
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
                 <h3 class="font-bold text-lg mb-4">รายการเข้าเรียน{{ attendanceRole === 'teacher' ? 'ครู' : 'นักเรียน'
-                }} วันที่ {{ displayDate }}</h3>
+                    }} วันที่ {{ displayDate }}</h3>
                 <div v-if="attendanceRole === 'student'">
                     <Attendance :role="'student'" :date="selectedDate" v-if="residentRole !== 'teacher'" />
                     <Attendance :role="'student'" :date="selectedDate" v-else :fixed-grade="localGrade"
@@ -51,10 +51,12 @@
                 <form method="dialog">
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
-                <h3 class="font-bold text-lg mb-4">รายการขาด{{ missedRole === 'teacher' ? 'ครู' : 'นักเรียน' }} วันที่
+                <h3 class="font-bold text-lg mb-4">รายการที่ไม่ได้สแกน{{ missedRole === 'teacher' ? 'ครู' : 'นักเรียน'
+                    }} วันที่
                     {{ displayDate }}</h3>
 
-                <MissedTable :data="missedData" :pagination="missedPagination" @page-change="handleMissedPageChange" />
+                <MissedTable :data="missedData" :pagination="missedPagination"
+                    :dateRange="{ start: selectedDate, end: selectedDate }" @page-change="handleMissedPageChange" />
             </div>
             <form method="dialog" class="modal-backdrop">
                 <button>close</button>
@@ -125,7 +127,7 @@
                                 </div>
                             </div>
                             <div class="stat relative border-l pl-4">
-                                <div class="stat-title">ขาด</div>
+                                <div class="stat-title">ไม่ได้สแกน</div>
                                 <div class="stat-value text-error">{{ studentAbsent }}</div>
                                 <div class="stat-desc absolute bottom-2 right-2">
                                     <button @click="showStudentMissedTable" class="btn btn-xs btn-error btn-plain">
@@ -162,7 +164,7 @@
                                 </div>
                             </div>
                             <div class="stat group relative border-l pl-4" ref="teacherAbsentStatRef">
-                                <div class="stat-title">ขาด</div>
+                                <div class="stat-title">ไม่ได้สแกน</div>
                                 <div class="stat-value text-error">{{ teacherAbsent }}</div>
                                 <div class="stat-desc absolute bottom-2 right-2">
                                     <button @click="showTeacherMissedTable" class="btn btn-xs btn-error btn-plain">
@@ -211,7 +213,7 @@
                                 </div>
                             </div>
                             <div class="stat relative border-l pl-4">
-                                <div class="stat-title">ขาด</div>
+                                <div class="stat-title">ไม่ได้สแกน</div>
                                 <div class="stat-value text-error">{{ studentAbsent }}</div>
                                 <div class="stat-desc absolute bottom-2 right-2">
                                     <button @click="showStudentMissedTable" class="btn btn-xs btn-error btn-plain">
@@ -230,7 +232,6 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-const studentCardRef = ref(null)
 import lottie from 'lottie-web'
 import reportApi from '../../api/report.js'
 import { ClassRoomService } from '../../api/class-room.js'
@@ -242,7 +243,7 @@ import { useAuthStore } from '../../stores/auth'
 
 const auth = useAuthStore()
 const emit = defineEmits(['dateChange'])
-
+const studentCardRef = ref(null)
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 const loading = ref(false)
 

@@ -47,6 +47,21 @@
                     </label>
                 </div>
 
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">สิทธิ์ผู้ใช้ (Role) <span class="text-error">*</span></span>
+                    </label>
+                    <select v-model="form.role" class="select select-bordered w-full"
+                        :class="{ 'select-error': errors.role }" required>
+                        <option disabled value="">เลือกสิทธิ์ผู้ใช้</option>
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                    <label v-if="errors.role" class="label">
+                        <span class="label-text-alt text-error">{{ errors.role }}</span>
+                    </label>
+                </div>
+
                 <div v-if="errorMessage" class="alert alert-error">
                     <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
                         viewBox="0 0 24 24">
@@ -74,13 +89,14 @@
 </template>
 
 <script setup>
+import { reactive, ref, watch } from 'vue'
+import { AccountService } from '../../api/account'
+
 const passwordVisible = ref(false)
 
 const togglePassword = () => {
     passwordVisible.value = !passwordVisible.value
 }
-import { reactive, ref, watch } from 'vue'
-import { AccountService } from '../../api/account'
 
 const props = defineProps({
     isOpen: {
@@ -100,25 +116,30 @@ const accountService = new AccountService()
 const loading = ref(false)
 const errorMessage = ref('')
 
+
 const form = reactive({
     username: '',
     password: '',
-    name: ''
+    name: '',
+    role: ''
 })
 
 const errors = reactive({
     username: '',
     password: '',
-    name: ''
+    name: '',
+    role: ''
 })
 
 const resetForm = () => {
     form.username = ''
     form.password = ''
     form.name = ''
+    form.role = ''
     errors.username = ''
     errors.password = ''
     errors.name = ''
+    errors.role = ''
     errorMessage.value = ''
 }
 
@@ -127,19 +148,25 @@ const validateForm = () => {
     errors.username = ''
     errors.password = ''
     errors.name = ''
+    errors.role = ''
 
-    if (!form.username || form.username.length < 3) {
-        errors.username = 'Username ต้องมีอย่างน้อย 3 ตัวอักษร'
+    if (!form.username || form.username.length < 4) {
+        errors.username = 'Username ต้องมีอย่างน้อย 4 ตัวอักษร'
         isValid = false
     }
 
-    if (!form.password || form.password.length < 6) {
-        errors.password = 'Password ต้องมีอย่างน้อย 6 ตัวอักษร'
+    if (!form.password || form.password.length < 4) {
+        errors.password = 'Password ต้องมีอย่างน้อย 4 ตัวอักษร'
         isValid = false
     }
 
     if (!form.name || form.name.length < 2) {
         errors.name = 'กรุณากรอกชื่อ-นามสกุล'
+        isValid = false
+    }
+
+    if (!form.role || (form.role !== 'admin' && form.role !== 'viewer')) {
+        errors.role = 'กรุณาเลือกสิทธิ์ผู้ใช้'
         isValid = false
     }
 
@@ -156,7 +183,8 @@ const handleSubmit = async () => {
         await accountService.createAdmin({
             username: form.username,
             password: form.password,
-            name: form.name
+            name: form.name,
+            role: form.role
         })
 
         emit('success')

@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { StudentService } from '../../api/student'
 import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
@@ -146,7 +146,6 @@ function mapHeader(header, row) {
 const excelFile = ref(null)
 const imageFiles = ref([])
 const previewData = ref([])
-import { computed } from 'vue'
 const currentPage = ref(1)
 const pageSize = 5
 const pagedPreviewData = computed(() => {

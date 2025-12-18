@@ -109,6 +109,10 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import ReModel from './ReModel.vue';
+import DeleteModeling from './Delete.vue';
+
 const getInitials = (name) => {
     if (!name) return '?';
     const parts = name.trim().split(/\s+/);
@@ -127,9 +131,6 @@ const getPictureUrl = (pic) => {
     if (pic.startsWith('http')) return pic;
     return `${imgProfileUrl}${pic}`;
 };
-import { ref } from 'vue';
-import ReModel from './ReModel.vue';
-import DeleteModeling from './Delete.vue';
 
 const props = defineProps({
     item: {

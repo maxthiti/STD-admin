@@ -49,7 +49,8 @@
         </div>
 
         <div v-else>
-            <MissedTable :data="paginatedData" :pagination="paginationData" @page-change="goToPage" />
+            <MissedTable :data="paginatedData" :pagination="paginationData" :role="filters.role"
+                :dateRange="{ start: filters.date, end: filters.date }" @page-change="goToPage" />
         </div>
     </div>
 </template>

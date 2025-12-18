@@ -15,14 +15,14 @@
                         <tr>
                             <th class="w-5 md:w-16 px-2 py-1">#</th>
                             <th class="px-2 py-1">ชื่อแผนก</th>
-                            <th v-if="auth.user?.role !== 'teacher'" class="w-10 md:w-24 px-2 py-1 text-center">จัดการ</th>
+                            <th v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" class="w-10 md:w-24 px-2 py-1 text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(dept, index) in departments" :key="dept._id">
                             <td class="px-2 py-1">{{ index + 1 }}</td>
-                            <td class="font-medium px-2 py-1">{{ dept.name }}</td>
-                            <td v-if="auth.user?.role !== 'teacher'" class="px-2 py-1">
+                            <td class="font-medium px-2 py-2">{{ dept.name }}</td>
+                            <td v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" class="px-2 py-1">
                                 <div class="flex gap-1 sm:gap-2 justify-center">
                                     <button @click="$emit('delete', dept)"
                                         class="btn btn-xs sm:btn-sm btn-error btn-outline" title="ลบ">

@@ -32,15 +32,33 @@
                             <span class="badge badge-outline badge-sm">ห้อง {{ student.room }}</span>
                         </div>
                         <div class="flex items-center justify-between mt-2">
-                            <button class="btn btn-ghost btn-xs"
-                                :title="student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
-                                @click="emitReset(student)">
+                            <template v-if="auth.user?.role !== 'viewer'">
+                                <button class="btn btn-ghost btn-xs"
+                                    :title="student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
+                                    @click="emitReset(student)">
+                                    <span :class="student.has_password ? 'bg-green-500' : 'bg-red-500'"
+                                        class="inline-block w-3 h-3 rounded-full"></span>
+                                    <span class="ml-2 text-xs">{{ student.has_password ? 'มีรหัสผ่าน' :
+                                        'ยังไม่มีรหัสผ่าน' }}</span>
+                                </button>
+                            </template>
+                            <template v-else>
                                 <span :class="student.has_password ? 'bg-green-500' : 'bg-red-500'"
                                     class="inline-block w-3 h-3 rounded-full"></span>
                                 <span class="ml-2 text-xs">{{ student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'
-                                }}</span>
-                            </button>
-                            <div class="flex gap-2">
+                                    }}</span>
+                            </template>
+                            <div v-if="auth.user?.role !== 'viewer'" class="flex gap-2">
+                                <button class="btn btn-sm btn-info btn-outline" @click="emitDetail(student)"
+                                    title="ดูรายละเอียด">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
                                 <button class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
                                     title="แก้ไข">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -72,7 +90,8 @@
                             <th class="bg-primary text-primary-content">ระดับชั้น</th>
                             <th class="bg-primary text-primary-content hidden md:table-cell">ห้อง</th>
                             <th class="bg-primary text-primary-content text-center">สถานะ</th>
-                            <th class="bg-primary text-primary-content text-center">จัดการ</th>
+                            <th v-if="auth.user?.role !== 'viewer'" class="bg-primary text-primary-content text-center">
+                                จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,7 +116,7 @@
                                             <div v-else
                                                 class="w-full h-full bg-secondary text-secondary-content flex items-center justify-center">
                                                 <span class="text-sm font-semibold">{{ getInitials(student.name)
-                                                    }}</span>
+                                                }}</span>
                                                 <svg class="ml-1 w-4 h-4 text-base-content/50" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -116,15 +135,31 @@
                             </td>
                             <td class="hidden md:table-cell">{{ student.room }}</td>
                             <td class="text-center">
-                                <button class="btn btn-ghost btn-xs"
-                                    :title="student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
-                                    @click="emitReset(student)">
+                                <template v-if="auth.user?.role !== 'viewer'">
+                                    <button class="btn btn-ghost btn-xs"
+                                        :title="student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
+                                        @click="emitReset(student)">
+                                        <span :class="student.has_password ? 'bg-green-500' : 'bg-red-500'"
+                                            class="inline-block w-3 h-3 rounded-full"></span>
+                                    </button>
+                                </template>
+                                <template v-else>
                                     <span :class="student.has_password ? 'bg-green-500' : 'bg-red-500'"
                                         class="inline-block w-3 h-3 rounded-full"></span>
-                                </button>
+                                </template>
                             </td>
-                            <td>
+                            <td v-if="auth.user?.role !== 'viewer'">
                                 <div class="flex gap-2 justify-center">
+                                    <button class="btn btn-sm btn-info btn-outline" @click="emitDetail(student)"
+                                        title="ดูรายละเอียด">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
                                     <button class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
                                         title="แก้ไข">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -152,6 +187,8 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '../../stores/auth'
+const auth = useAuthStore()
 const props = defineProps({
     students: {
         type: Array,
@@ -171,7 +208,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['edit', 'delete', 'reset'])
+const emit = defineEmits(['edit', 'delete', 'reset', 'detail'])
 
 const getInitials = (name) => {
     if (!name) return '?'
@@ -199,6 +236,10 @@ const emitDelete = (student) => {
 
 const emitReset = (student) => {
     emit('reset', student)
+}
+
+const emitDetail = (student) => {
+    emit('detail', student)
 }
 </script>
 

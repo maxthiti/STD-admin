@@ -13,7 +13,7 @@
                     <th class="text-center">ตำแหน่ง</th>
                     <th class="text-center">ห้องเรียน/แผนก</th>
                     <th class="text-center">สถานะการเชื่อมต่อ</th>
-                    <th class="text-center">จัดการ</th>
+                    <th v-if="auth.user?.role !== 'viewer'" class="text-center">จัดการ</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,7 +24,8 @@
                 </tr>
                 <tr v-for="(item, index) in data" :key="item._id" class="hover">
                     <td v-if="selectMode" class="text-center">
-                        <input type="checkbox" :value="item._id" v-model="selectedIdsLocal" />
+                        <input type="checkbox" :checked="isSelected(item)"
+                            @change="toggleSelect(item, $event.target.checked)" />
                     </td>
                     <td class="text-center">{{ (page - 1) * limit + index + 1 }}</td>
                     <td>
@@ -63,7 +64,7 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td v-if="auth.user?.role !== 'viewer'">
                         <div class="flex justify-center gap-2">
                             <DetailModeling :item="item" @updated="$emit('updated')" />
                             <button class="btn btn-xs btn-warning" @click="handleEdit(item)" title="แก้ไข">
@@ -87,7 +88,8 @@
         <div v-for="(item, index) in data" :key="item._id" class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">
             <div class="flex justify-between items-start">
                 <div v-if="selectMode" class="mr-2 flex items-center">
-                    <input type="checkbox" :value="item._id" v-model="selectedIdsLocal" />
+                    <input type="checkbox" :checked="isSelected(item)"
+                        @change="toggleSelect(item, $event.target.checked)" />
                 </div>
                 <div class="flex-1">
                     <div class="badge badge-primary badge-sm mb-2">{{ (page - 1) * limit + index + 1 }}</div>
@@ -185,22 +187,6 @@
 </template>
 
 <script setup>
-const getInitials = (name) => {
-    if (!name) return '?';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 3) {
-        return (parts[1][0] || '') + (parts[2][0] || '');
-    }
-    if (parts.length === 2) {
-        return (parts[0][0] || '') + (parts[1][0] || '');
-    }
-    return parts[0][0] || '?';
-};
-const detailItem = ref(null);
-// const openDetail = (item) => {
-//     detailItem.value = item;
-// };
-
 import { ref, watch, onMounted } from 'vue';
 import DetailModeling from './Detail.vue';
 import UpdateTeacher from '../ListTeacher/Update.vue';
@@ -208,6 +194,9 @@ import UpdateStudent from '../ListStudent/Update.vue';
 import { ClassRoomService } from '../../api/class-room.js';
 import { DepartmentService } from '../../api/department.js';
 import { PositionService } from '../../api/position.js';
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
 
 const classrooms = ref([])
 const departments = ref([])
@@ -294,34 +283,56 @@ const props = defineProps({
 
 const emit = defineEmits(['updated', 'selectedIds']);
 
-const selectedIdsLocal = ref([]);
+
 const selectedAll = ref(false);
 
-watch(() => props.selectedIds, (val) => {
-    selectedIdsLocal.value = [...val];
-}, { immediate: true });
+function isSelected(item) {
+    return props.selectedIds.some(obj => obj._id === item._id);
+}
 
-watch(selectedIdsLocal, (val) => {
-    if (JSON.stringify(val) !== JSON.stringify(props.selectedIds)) {
-        emit('selectedIds', val);
+function toggleSelect(item, checked) {
+    let newArr = Array.isArray(props.selectedIds) ? [...props.selectedIds] : [];
+    if (checked) {
+        if (!newArr.some(obj => obj._id === item._id)) {
+            newArr.push({
+                _id: item._id,
+                name: item.name,
+                userid: item.userid,
+                picture: item.picture || null
+            });
+        }
+    } else {
+        newArr = newArr.filter(obj => obj._id !== item._id);
     }
-});
+    emit('selectedIds', newArr);
+}
 
 watch(() => props.selectMode, (val) => {
     if (!val) {
-        selectedIdsLocal.value = [];
         selectedAll.value = false;
     }
 });
 
 const toggleSelectAll = (checked) => {
+    let newArr = Array.isArray(props.selectedIds) ? [...props.selectedIds] : [];
     if (checked) {
-        selectedIdsLocal.value = props.data.map(item => item._id);
+        props.data.forEach(item => {
+            if (!newArr.some(obj => obj._id === item._id)) {
+                newArr.push({
+                    _id: item._id,
+                    name: item.name,
+                    userid: item.userid,
+                    picture: item.picture || null
+                });
+            }
+        });
         selectedAll.value = true;
     } else {
-        selectedIdsLocal.value = [];
+        const idsInData = props.data.map(item => item._id);
+        newArr = newArr.filter(obj => !idsInData.includes(obj._id));
         selectedAll.value = false;
     }
+    emit('selectedIds', newArr);
 };
 
 const statusLabel = (s) => {
@@ -339,6 +350,19 @@ const statusColorClass = (s) => {
     if (s === 5) return 'bg-warning';
     return 'bg-base-300';
 }
+
+const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 3) {
+        return (parts[1][0] || '') + (parts[2][0] || '');
+    }
+    if (parts.length === 2) {
+        return (parts[0][0] || '') + (parts[1][0] || '');
+    }
+    return parts[0][0] || '?';
+};
+const detailItem = ref(null);
 </script>
 
 <style scoped></style>

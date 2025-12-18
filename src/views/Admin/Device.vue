@@ -6,7 +6,7 @@
                     <h1 class="text-xl sm:text-3xl font-bold text-primary">จัดการอุปกรณ์</h1>
                     <p class="text-sm sm:text-base text-base-content/60 mt-1">ระบบจัดการข้อมูลอุปกรณ์</p>
                 </div>
-                <button @click="openCreateModal" class="btn btn-primary gap-2">
+                <button v-if="auth.user?.role !== 'viewer'" @click="openCreateModal" class="btn btn-primary gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 sm:h-5 w-3 sm:w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -45,6 +45,16 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '../../stores/auth'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import Table from '../../components/Device/Table.vue'
+import CreateModal from '../../components/Device/Create.vue'
+import UpdateModal from '../../components/Device/Update.vue'
+import DeleteModal from '../../components/Device/Delete.vue'
+import DeviceService from '../../api/device'
+import Swal from 'sweetalert2'
+
+const auth = useAuthStore()
 const showDeleteModal = ref(false)
 
 const openDeleteModal = (device) => {
@@ -57,13 +67,6 @@ const openDeleteModal = (device) => {
 const closeDeleteModal = () => {
     showDeleteModal.value = false
 }
-import { ref, onMounted, nextTick, onUnmounted } from 'vue'
-import Table from '../../components/Device/Table.vue'
-import CreateModal from '../../components/Device/Create.vue'
-import UpdateModal from '../../components/Device/Update.vue'
-import DeleteModal from '../../components/Device/Delete.vue'
-import DeviceService from '../../api/device'
-import Swal from 'sweetalert2'
 
 const devices = ref([])
 const createModal = ref(null)

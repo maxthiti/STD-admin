@@ -31,6 +31,9 @@ export class AccountService {
       params.append("username", adminData.username);
       params.append("password", adminData.password);
       params.append("name", adminData.name);
+      if (adminData.role) {
+        params.append("role", adminData.role);
+      }
 
       let config = {
         method: "post",

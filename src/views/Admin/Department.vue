@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-xl sm:text-2xl font-bold text-white">จัดการแผนก</h1>
-            <button v-if="auth.user?.role !== 'teacher'" class="btn btn-primary" @click="openCreateModal">
+            <button v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" class="btn btn-primary" @click="openCreateModal">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

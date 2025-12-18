@@ -1,59 +1,226 @@
 <template>
-    <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg overflow-x-auto">
-        <table class="table table-zebra w-full">
-            <thead>
-                <tr class="bg-primary text-primary-content">
-                    <th class="text-center">รหัส</th>
-                    <th class="text-center">โปรไฟล์</th>
-                    <th>ชื่อ-สกุล</th>
-                    <th class="text-center">ตำแหน่ง</th>
-                    <th class="text-center">ชั้นเรียน/แผนก</th>
-                    <th class="text-center">เข้า</th>
-                    <th class="text-center">ออก</th>
-                    <th class="text-center">รายละเอียด</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-if="data.length === 0">
-                    <td colspan="8" class="text-center py-8 text-base-content/60">
-                        ไม่พบข้อมูล
-                    </td>
-                </tr>
-                <tr v-for="item in data" :key="item._id" class="hover">
-                    <td class="text-center">{{ item.userid }}</td>
-                    <td class="text-center">
-                        <div v-if="item.picture" class="avatar cursor-pointer inline-flex"
-                            @click="openImage(item.picture)">
-                            <div class="w-10 h-10 rounded">
-                                <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
-                                    @error="item.picture = null" />
+    <div>
+        <div class="flex justify-end mb-2">
+            <button class="btn btn-sm btn-success" :disabled="loadingExport" @click="exportAllToExcel">
+                <span v-if="loadingExport" class="loading loading-spinner loading-xs mr-2"></span>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                ส่งออก Excel
+            </button>
+        </div>
+        <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg overflow-x-auto">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr class="bg-primary text-primary-content">
+                        <th class="text-center">รหัส</th>
+                        <th class="text-center">โปรไฟล์</th>
+                        <th>ชื่อ-สกุล</th>
+                        <th class="text-center">ตำแหน่ง</th>
+                        <th class="text-center">ชั้นเรียน/แผนก</th>
+                        <th class="text-center">วันที่</th>
+                        <th class="text-center">เข้า</th>
+                        <th class="text-center">ออก</th>
+                        <th class="text-center">รายละเอียด</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="data.length === 0">
+                        <td colspan="9" class="text-center py-8 text-base-content/60">
+                            ไม่พบข้อมูล
+                        </td>
+                    </tr>
+                    <template v-for="item in data" :key="item._id">
+                        <template v-if="item.attendances && item.attendances.length > 0">
+                            <tr class="hover" :key="item._id + '-first'">
+                                <td class="text-center">{{ item.userid }}</td>
+                                <td class="text-center">
+                                    <div v-if="item.picture" class="avatar cursor-pointer inline-flex"
+                                        @click="openImage(item.picture)">
+                                        <div class="w-10 h-10 rounded">
+                                            <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
+                                                @error="item.picture = null" />
+                                        </div>
+                                    </div>
+                                    <div v-else class="avatar placeholder inline-flex">
+                                        <div
+                                            class="bg-neutral text-neutral-content w-10 h-10 rounded flex items-center justify-center">
+                                            <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.name }}</td>
+                                <td class="text-center">{{ item.position }}</td>
+                                <td class="text-center">
+                                    <span v-if="item.department">{{ item.department }}</span>
+                                    <span v-else>{{ item.grade }}/{{ item.classroom }}</span>
+                                </td>
+                                <td class="text-center">{{ formatDate(item.attendances[0].date) }}</td>
+                                <td class="text-center">
+                                    <span v-if="extractEntryExitAttendance(item.attendances[0]).entry"
+                                        class="badge badge-success badge-sm">{{
+                                            extractEntryExitAttendance(item.attendances[0]).entry.time }}</span>
+                                    <span v-else class="badge badge-error badge-sm">ไม่มีเข้า</span>
+                                </td>
+                                <td class="text-center">
+                                    <span v-if="extractEntryExitAttendance(item.attendances[0]).exit"
+                                        class="badge badge-success badge-sm">{{
+                                            extractEntryExitAttendance(item.attendances[0]).exit.time }}</span>
+                                    <span v-else class="badge badge-error badge-sm">ไม่มีออก</span>
+                                </td>
+                                <td class="text-center">
+                                    <button @click="$emit('viewDetail', item, item.attendances[0])"
+                                        class="btn btn-sm btn-info btn-outline">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <template v-for="(att, attIdx) in item.attendances" :key="att.date + '-' + attIdx">
+                                <tr v-if="attIdx > 0" class="hover">
+                                    <td class="text-center"></td>
+                                    <td class="text-center"></td>
+                                    <td></td>
+                                    <td class="text-center"></td>
+                                    <td class="text-center"></td>
+                                    <td class="text-center">{{ formatDate(att.date) }}</td>
+                                    <td class="text-center">
+                                        <span v-if="extractEntryExitAttendance(att).entry"
+                                            class="badge badge-success badge-sm">{{
+                                                extractEntryExitAttendance(att).entry.time }}</span>
+                                        <span v-else class="badge badge-error badge-sm">ไม่มีเข้า</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span v-if="extractEntryExitAttendance(att).exit"
+                                            class="badge badge-success badge-sm">{{
+                                                extractEntryExitAttendance(att).exit.time }}</span>
+                                        <span v-else class="badge badge-error badge-sm">ไม่มีออก</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button @click="$emit('viewDetail', item, att)"
+                                            class="btn btn-sm btn-info btn-outline">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                        <tr v-else class="hover">
+                            <td class="text-center">{{ item.userid }}</td>
+                            <td class="text-center">
+                                <div v-if="item.picture" class="avatar cursor-pointer inline-flex"
+                                    @click="openImage(item.picture)">
+                                    <div class="w-10 h-10 rounded">
+                                        <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile"
+                                            @error="item.picture = null" />
+                                    </div>
+                                </div>
+                                <div v-else class="avatar placeholder inline-flex">
+                                    <div
+                                        class="bg-neutral text-neutral-content w-10 h-10 rounded flex items-center justify-center">
+                                        <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ item.name }}</td>
+                            <td class="text-center">{{ item.position }}</td>
+                            <td class="text-center">
+                                <span v-if="item.department">{{ item.department }}</span>
+                                <span v-else>{{ item.grade }}/{{ item.classroom }}</span>
+                            </td>
+                            <td class="text-center">-</td>
+                            <td class="text-center"><span class="badge badge-error badge-sm">ไม่มีเข้า</span></td>
+                            <td class="text-center"><span class="badge badge-error badge-sm">ไม่มีออก</span></td>
+                            <td class="text-center">
+                                <button @click="$emit('viewDetail', item)" class="btn btn-sm btn-info btn-outline">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="lg:hidden space-y-4">
+            <div v-if="data.length === 0"
+                class="text-center py-8 text-base-content/60 bg-base-100 rounded-lg shadow-lg">
+                ไม่พบข้อมูล
+            </div>
+            <div v-for="item in data" :key="item._id" class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="badge badge-primary badge-sm mb-2">{{ item.userid }}</div>
+                        <h3 class="font-bold text-lg">{{ item.name }}</h3>
+                        <p class="text-sm text-base-content/70">{{ item.position }}</p>
+                    </div>
+                    <div>
+                        <div v-if="item.picture" class="avatar cursor-pointer" @click="openImage(item.picture)">
+                            <div class="w-12 h-12 rounded">
+                                <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile" />
                             </div>
                         </div>
-                        <div v-else class="avatar placeholder inline-flex">
+                        <div v-else class="avatar placeholder">
                             <div
-                                class="bg-neutral text-neutral-content w-10 h-10 rounded flex items-center justify-center">
+                                class="bg-neutral text-neutral-content w-12 h-12 rounded flex items-center justify-center">
                                 <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
                             </div>
                         </div>
-                    </td>
-                    <td>{{ item.name }}</td>
-                    <td class="text-center">{{ item.position }}</td>
-                    <td class="text-center">
-                        <span v-if="item.department">{{ item.department }}</span>
-                        <span v-else>{{ item.grade }}/{{ item.classroom }}</span>
-                    </td>
-                    <td class="text-center">
-                        <span v-if="extractEntryExit(item).entry" class="badge badge-success badge-sm">{{
-                            extractEntryExit(item).entry.time }}</span>
-                        <span v-else class="badge badge-error badge-sm">ไม่มีเข้า</span>
-                    </td>
-                    <td class="text-center">
-                        <span v-if="extractEntryExit(item).exit" class="badge badge-success badge-sm">{{
-                            extractEntryExit(item).exit.time }}</span>
-                        <span v-else class="badge badge-error badge-sm">ไม่มีออก</span>
-                    </td>
-                    <td class="text-center">
-                        <button @click="$emit('viewDetail', item)" class="btn btn-sm btn-info btn-outline">
+                    </div>
+                </div>
+
+                <div class="divider my-2"></div>
+
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                        <span class="text-base-content/60">{{ item.department ? 'แผนก:' : 'ชั้นเรียน:' }}</span>
+                        <p class="font-medium">{{ item.department || `${item.grade}/${item.classroom}` }}</p>
+                    </div>
+                </div>
+
+                <div class="divider my-2"></div>
+
+                <template v-if="item.attendances && item.attendances.length > 0">
+                    <div v-for="(att, attIdx) in item.attendances" :key="att.date + '-' + attIdx"
+                        class="mb-4 bg-base-200 rounded-lg p-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-base-content/80">{{ formatDate(att.date) }}</span>
+                        </div>
+                        <div class="flex gap-2 mb-2">
+                            <div class="flex-1 text-center">
+                                <span class="text-xs text-base-content/60 block">เข้า</span>
+                                <span v-if="extractEntryExitAttendance(att).entry"
+                                    class="badge badge-success badge-sm">{{
+                                        extractEntryExitAttendance(att).entry.time }}</span>
+                                <span v-else class="badge badge-error badge-sm">ไม่มีเข้า</span>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <span class="text-xs text-base-content/60 block">ออก</span>
+                                <span v-if="extractEntryExitAttendance(att).exit"
+                                    class="badge badge-success badge-sm">{{
+                                        extractEntryExitAttendance(att).exit.time }}</span>
+                                <span v-else class="badge badge-error badge-sm">ไม่มีออก</span>
+                            </div>
+                        </div>
+                        <button @click="$emit('viewDetail', item, att)" class="btn btn-sm btn-info btn-outline w-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -61,74 +228,33 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
+                            ดูรายละเอียด
                         </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="lg:hidden space-y-4">
-        <div v-if="data.length === 0" class="text-center py-8 text-base-content/60 bg-base-100 rounded-lg shadow-lg">
-            ไม่พบข้อมูล
-        </div>
-        <div v-for="item in data" :key="item._id" class="bg-base-100 rounded-lg shadow-lg p-4 space-y-3">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <div class="badge badge-primary badge-sm mb-2">{{ item.userid }}</div>
-                    <h3 class="font-bold text-lg">{{ item.name }}</h3>
-                    <p class="text-sm text-base-content/70">{{ item.position }}</p>
-                </div>
-                <div>
-                    <div v-if="item.picture" class="avatar cursor-pointer" @click="openImage(item.picture)">
-                        <div class="w-12 h-12 rounded">
-                            <img :src="`${imgProBaseUrl}${item.picture}`" alt="profile" />
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="flex gap-2 mb-2">
+                        <div class="flex-1 text-center">
+                            <span class="text-xs text-base-content/60 block">เข้า</span>
+                            <span class="badge badge-error badge-sm">ไม่มีเข้า</span>
+                        </div>
+                        <div class="flex-1 text-center">
+                            <span class="text-xs text-base-content/60 block">ออก</span>
+                            <span class="badge badge-error badge-sm">ไม่มีออก</span>
                         </div>
                     </div>
-                    <div v-else class="avatar placeholder">
-                        <div class="bg-neutral text-neutral-content w-12 h-12 rounded flex items-center justify-center">
-                            <span class="text-base font-bold">{{ getInitials(item.name) }}</span>
-                        </div>
-                    </div>
-                </div>
+                    <button @click="$emit('viewDetail', item)" class="btn btn-sm btn-info btn-outline w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        ดูรายละเอียด
+                    </button>
+                </template>
             </div>
-
-            <div class="divider my-2"></div>
-
-            <div class="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                    <span class="text-base-content/60">{{ item.department ? 'แผนก:' : 'ชั้นเรียน:' }}</span>
-                    <p class="font-medium">{{ item.department || `${item.grade}/${item.classroom}` }}</p>
-                </div>
-            </div>
-
-            <div class="divider my-2"></div>
-
-            <div class="grid grid-cols-2 gap-4 text-center">
-                <div>
-                    <p class="text-xs text-base-content/60 mb-1">เข้า</p>
-                    <span v-if="extractEntryExit(item).entry" class="badge badge-success badge-sm">{{
-                        extractEntryExit(item).entry.time }}</span>
-                    <span v-else class="badge badge-error badge-sm">ไม่มีเข้า</span>
-                </div>
-                <div>
-                    <p class="text-xs text-base-content/60 mb-1">ออก</p>
-                    <span v-if="extractEntryExit(item).exit" class="badge badge-success badge-sm">{{
-                        extractEntryExit(item).exit.time }}</span>
-                    <span v-else class="badge badge-error badge-sm">ไม่มีออก</span>
-                </div>
-            </div>
-
-            <button @click="$emit('viewDetail', item)" class="btn btn-sm btn-info btn-outline w-full mt-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                ดูรายละเอียด
-            </button>
         </div>
     </div>
 
@@ -182,7 +308,122 @@
 </template>
 
 <script setup>
+import ExcelJS from 'exceljs'
+import { saveAs } from 'file-saver'
+import reportApi from '../../api/report.js'
 import { ref, computed } from 'vue'
+
+const loadingExport = ref(false)
+async function exportAllToExcel() {
+    if (loadingExport.value) return
+    loadingExport.value = true
+    try {
+        const filters = props.filters || {}
+        const params = {
+            start: filters.start,
+            end: filters.end,
+            role: filters.role,
+            grade: filters.grade,
+            classroom: filters.classroom,
+            page: 1,
+            limit: 50,
+        }
+        let allData = []
+        let totalPages = 1
+        do {
+            const res = await reportApi.getAttendanceReport(params)
+            if (res && res.data) {
+                allData = allData.concat(res.data)
+                totalPages = res.total_pages || 1
+                params.page++
+            } else {
+                break
+            }
+        } while (params.page <= totalPages)
+
+        function formatDateTH(dateStr) {
+            if (!dateStr) return '-'
+            const d = new Date(dateStr)
+            return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' })
+        }
+
+        function getStatus(att) {
+            if (!att || !att.timeStamps || att.timeStamps.length === 0) return '-'
+            const first = att.timeStamps.map(ts => ts.timestamp).sort()[0]
+            if (!first) return '-'
+            const time = first.split(' ')[1]
+            if (time > '08:01:00') return 'มาสาย'
+            return 'มาปกติ'
+        }
+
+        const rows = []
+        allData.forEach(item => {
+            if (item.attendances && item.attendances.length > 0) {
+                item.attendances.forEach(att => {
+                    rows.push({
+                        'รหัส': item.userid,
+                        'ชื่อ-สกุล': item.name,
+                        'ตำแหน่ง': item.position,
+                        'ชั้นเรียน/แผนก': item.department ? item.department : `${item.grade}/${item.classroom}`,
+                        'วันที่': formatDateTH(att.date),
+                        'เวลาเข้าทำงาน': (att.timeStamps && att.timeStamps.length > 0) ? att.timeStamps.map(ts => ts.timestamp).sort()[0].split(' ')[1] : '-',
+                        'เวลาออกงาน': (att.timeStamps && att.timeStamps.length > 1) ? att.timeStamps.map(ts => ts.timestamp).sort().slice(-1)[0].split(' ')[1] : '-',
+                        'สถานะ': getStatus(att),
+                    })
+                })
+            } else {
+                rows.push({
+                    'รหัส': item.userid,
+                    'ชื่อ-สกุล': item.name,
+                    'ตำแหน่ง': item.position,
+                    'ชั้นเรียน/แผนก': item.department ? item.department : `${item.grade}/${item.classroom}`,
+                    'วันที่': '-',
+                    'เวลาเข้าทำงาน': '-',
+                    'เวลาออกงาน': '-',
+                    'สถานะ': '-',
+                })
+            }
+        })
+
+        const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('AttendanceDetail')
+
+        const dateRangeText = filters.start && filters.end ? `(${formatDateTH(filters.start)} - ${formatDateTH(filters.end)})` : ''
+        worksheet.addRow([`รายงานข้อมูลการเข้า-ออก ${dateRangeText}`])
+        worksheet.mergeCells('A1:H1')
+        worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' }
+        worksheet.getCell('A1').font = { bold: true }
+
+        const header = ['รหัส', 'ชื่อ-สกุล', 'ตำแหน่ง', 'ชั้นเรียน/แผนก', 'วันที่', 'เวลาเข้าทำงาน', 'เวลาออกงาน', 'สถานะ']
+        worksheet.addRow(header)
+
+        rows.forEach(row => {
+            worksheet.addRow(header.map(h => row[h]))
+        })
+
+        worksheet.columns = [
+            { width: 10 },
+            { width: 40 },
+            { width: 40 },
+            { width: 40 },
+            { width: 15 },
+            { width: 15 },
+            { width: 15 },
+            { width: 10 },
+        ]
+        worksheet.getRow(2).alignment = { horizontal: 'center', vertical: 'middle' }
+        worksheet.getColumn(1).alignment = { horizontal: 'center', vertical: 'middle' }
+        worksheet.getRow(2).font = { bold: true }
+
+        const buffer = await workbook.xlsx.writeBuffer()
+        saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `AttendanceDetail_${filters.start || ''}_${filters.end || ''}.xlsx`)
+    } catch (e) {
+        alert('เกิดข้อผิดพลาดในการส่งออก Excel')
+        console.error(e)
+    } finally {
+        loadingExport.value = false
+    }
+}
 const props = defineProps({
     data: {
         type: Array,
@@ -191,6 +432,9 @@ const props = defineProps({
     pagination: {
         type: Object,
         required: true
+    },
+    filters: {
+        type: Object,
     }
 })
 
@@ -205,33 +449,6 @@ const openImage = (image) => {
     selectedImage.value = image
     imageModal.value?.showModal()
 }
-
-// const visiblePages = computed(() => {
-//     const current = props.pagination.page
-//     const total = props.pagination.total_pages
-//     const delta = 2
-//     const pages = []
-
-//     for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
-//         pages.push(i)
-//     }
-
-//     if (current - delta > 2) {
-//         pages.unshift('...')
-//     }
-//     if (current + delta < total - 1) {
-//         pages.push('...')
-//     }
-
-//     if (total > 0) {
-//         pages.unshift(1)
-//         if (total > 1) {
-//             pages.push(total)
-//         }
-//     }
-
-//     return pages.filter((p, idx, arr) => p !== '...' || arr[idx - 1] !== '...')
-// })
 
 const displayedPages = computed(() => {
     const total = props.pagination.total_pages
@@ -249,11 +466,16 @@ const displayedPages = computed(() => {
     return pages
 })
 
+
 const extractEntryExit = (item) => {
     if (!item.attendances || item.attendances.length === 0) return { entry: null, exit: null }
     const attendance = item.attendances[0]
     if (!attendance.timeStamps || attendance.timeStamps.length === 0) return { entry: null, exit: null }
+    return extractEntryExitAttendance(attendance)
+}
 
+const extractEntryExitAttendance = (attendance) => {
+    if (!attendance.timeStamps || attendance.timeStamps.length === 0) return { entry: null, exit: null }
     const stamps = attendance.timeStamps.map(ts => ({
         raw: ts.timestamp,
         hour: parseInt(ts.timestamp.split(' ')[1].split(':')[0]),
@@ -261,10 +483,19 @@ const extractEntryExit = (item) => {
         image: ts.image,
         location: ts.location
     }))
-
     const entry = stamps.filter(s => s.hour < 12).sort((a, b) => a.raw.localeCompare(b.raw))[0] || null
     const exit = stamps.filter(s => s.hour >= 12).sort((a, b) => a.raw.localeCompare(b.raw))[0] || null
     return { entry, exit }
+}
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return '-'
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    })
 }
 
 const getInitials = (name) => {

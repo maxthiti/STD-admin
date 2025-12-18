@@ -111,14 +111,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { StudentService } from '../../api/student'
+import { useAuthStore } from '../../stores/auth'
+
+const auth = useAuthStore()
 const imgProfileUrl = import.meta.env.VITE_IMG_PROFILE_URL;
 const getPictureUrl = (pic) => {
     if (!pic) return '';
     if (pic.startsWith('http')) return pic;
     return `${imgProfileUrl}${pic}`;
 };
-import { useAuthStore } from '../../stores/auth'
-const auth = useAuthStore()
 
 const modalRef = ref(null)
 const loading = ref(false)

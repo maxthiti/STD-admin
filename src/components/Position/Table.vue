@@ -15,14 +15,14 @@
                         <tr>
                             <th class="w-10 md:w-20">#</th>
                             <th>ชื่อตำแหน่ง</th>
-                            <th v-if="auth.user?.role !== 'teacher'" class="w-10 md:w-24 text-center">จัดการ</th>
+                            <th v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" class="w-10 md:w-24 text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(position, index) in positions" :key="position._id">
                             <td>{{ index + 1 }}</td>
                             <td class="font-medium">{{ position.name }}</td>
-                            <td v-if="auth.user?.role !== 'teacher'">
+                            <td v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'">
                                 <div class="flex justify-center">
                                     <button @click="$emit('delete', position)" class="btn btn-ghost btn-sm btn-square"
                                         title="ลบ">
