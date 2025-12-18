@@ -27,6 +27,8 @@ export class ClassRoomService {
 
   async createClassRoom(data) {
     try {
+      const payload = { ...data };
+      if (!payload.adviser2) delete payload.adviser2;
       let config = {
         method: "post",
         maxBodyLength: Infinity,
@@ -35,7 +37,7 @@ export class ClassRoomService {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.token}`,
         },
-        data: JSON.stringify(data),
+        data: JSON.stringify(payload),
       };
 
       const response = await axios.request(config);
@@ -69,6 +71,7 @@ export class ClassRoomService {
     try {
       const params = new URLSearchParams();
       params.append("adviser", data.adviser);
+      if (data.adviser2 !== undefined) params.append("adviser2", data.adviser2);
 
       let config = {
         method: "patch",

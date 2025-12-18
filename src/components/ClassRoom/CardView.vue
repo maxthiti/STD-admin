@@ -41,20 +41,39 @@
                                     <div class="text-xs text-secondary font-medium">{{ getGradeLabel(classroom.grade) }}
                                     </div>
                                 </div>
-                                <div v-if="classroom.adviser && classroom.adviser.name">
+                                <div
+                                    v-if="(classroom.adviser && classroom.adviser.name) || (classroom.adviser2 && classroom.adviser2.name)">
                                     <template v-if="auth.user?.role !== 'viewer'">
                                         <div @click="$emit('edit', classroom)"
                                             class="mt-2 pt-2 border-t border-primary/20 cursor-pointer hover:bg-primary/10 rounded">
                                             <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
-                                            <div class="text-xs font-semibold text-primary mt-1 line-clamp-2">{{
-                                                classroom.adviser.name }}</div>
+                                            <div class="text-xs font-semibold text-primary mt-1">
+                                                <template v-if="classroom.adviser && classroom.adviser.name">
+                                                    {{ classroom.adviser.name }}<span v-if="classroom.adviser.position">
+                                                        ({{ classroom.adviser.position }})</span>
+                                                </template>
+                                                <template v-if="classroom.adviser2 && classroom.adviser2.name">
+                                                    <br />{{ classroom.adviser2.name }}<span
+                                                        v-if="classroom.adviser2.position"> ({{
+                                                        classroom.adviser2.position }})</span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </template>
                                     <template v-else>
                                         <div class="mt-2 pt-2 border-t border-primary/20">
                                             <div class="text-xs text-base-content/70">ครูประจำชั้น</div>
-                                            <div class="text-xs font-semibold text-primary mt-1 line-clamp-2">{{
-                                                classroom.adviser.name }}</div>
+                                            <div class="text-xs font-semibold text-primary mt-1">
+                                                <template v-if="classroom.adviser && classroom.adviser.name">
+                                                    {{ classroom.adviser.name }}<span v-if="classroom.adviser.position">
+                                                        ({{ classroom.adviser.position }})</span>
+                                                </template>
+                                                <template v-if="classroom.adviser2 && classroom.adviser2.name">
+                                                    <br />{{ classroom.adviser2.name }}<span
+                                                        v-if="classroom.adviser2.position"> ({{
+                                                        classroom.adviser2.position }})</span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>

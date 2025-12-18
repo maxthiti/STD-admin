@@ -12,7 +12,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import Sidebar from '../components/SideBar.vue'
+import Sidebar from '../components/Sidebar.vue'
 import Navbar from '../components/Navbar.vue'
 
 const sidebarRef = ref(null)

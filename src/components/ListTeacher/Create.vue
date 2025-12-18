@@ -89,7 +89,7 @@
                             <button v-if="formData.position" type="button"
                                 class="btn btn-ghost btn-xs absolute right-2 top-2" @click="clearPosition">ลบ</button>
                             <ul v-if="positionOpen"
-                                class="bg-base-100 rounded-box shadow-lg border absolute z-[1000] top-full left-0 mt-2 pt-1 w-full max-h-60 overflow-y-auto">
+                                class="bg-base-100 rounded-box shadow-lg border absolute z-[1000] bottom-full left-0 mt-2 pt-1 w-full max-h-60 overflow-y-auto">
                                 <li v-if="!filteredPositions.length" class="px-3 py-2 text-sm opacity-70">
                                     ไม่พบตำแหน่งที่ตรงกับคำค้นหา
                                 </li>
@@ -114,7 +114,7 @@
                             <button v-if="formData.department" type="button"
                                 class="btn btn-ghost btn-xs absolute right-2 top-2" @click="clearDepartment">ลบ</button>
                             <ul v-if="departmentOpen"
-                                class="bg-base-100 rounded-box shadow-lg border absolute z-[999] top-full left-0 mt-2 pt-1 w-full max-h-60 overflow-y-auto">
+                                class="bg-base-100 rounded-box shadow-lg border absolute z-[999] bottom-full left-0 mt-2 pt-1 w-full max-h-60 overflow-y-auto">
                                 <li v-if="!filteredDepartments.length" class="px-3 py-2 text-sm opacity-70">
                                     ไม่พบแผนกที่ตรงกับคำค้นหา
                                 </li>

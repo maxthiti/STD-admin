@@ -2,7 +2,8 @@
     <div class="space-y-6">
         <div class="flex flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="text-xl sm:text-2xl font-bold text-white">จัดการห้องเรียน</h2>
-            <button v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" @click="openCreateModal" class="btn btn-primary btn-sm">
+            <button v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" @click="openCreateModal"
+                class="btn btn-primary btn-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -125,7 +126,8 @@ const handleCreateSuccess = async (formData) => {
         await classRoomService.createClassRoom({
             grade: formData.grade,
             classroom: formData.classroom,
-            adviser: formData.adviser
+            adviser: formData.adviser,
+            adviser2: formData.adviser2 || ''
         })
         await fetchClassRooms()
         const { default: Swal } = await import('sweetalert2')
@@ -156,7 +158,8 @@ const handleCreateSuccess = async (formData) => {
 const handleUpdateSuccess = async (formData) => {
     try {
         await classRoomService.updateClassRoom(formData.id, {
-            adviser: formData.adviser
+            adviser: formData.adviser,
+            adviser2: formData.adviser2 || ''
         })
         await fetchClassRooms()
         const { default: Swal } = await import('sweetalert2')
