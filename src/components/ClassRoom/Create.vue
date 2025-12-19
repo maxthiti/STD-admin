@@ -4,24 +4,25 @@
             <h3 class="font-bold text-lg mb-4">เพิ่มห้องเรียน</h3>
             <form @submit.prevent="handleSubmit" class="space-y-4">
 
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">ชั้นปี</span>
-                    </label>
-                    <select v-model="formData.grade" class="select select-bordered" required
-                        @change="handleGradeChange">
-                        <option value="">เลือกชั้นปี</option>
-                        <option v-for="grade in availableGrades" :key="grade.value" :value="grade.value">{{ grade.label
-                        }}</option>
-                    </select>
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">ห้อง</span>
-                    </label>
-                    <input v-model.number="formData.classroom" type="number" min="1" max="99"
-                        class="input input-bordered" :placeholder="nextClassroomNumberText" required />
+                <div class="flex flex-row gap-4">
+                    <div class="form-control flex-1">
+                        <label class="label">
+                            <span class="label-text">ชั้นปี</span>
+                        </label>
+                        <select v-model="formData.grade" class="select select-bordered w-full" required
+                            @change="handleGradeChange">
+                            <option value="">เลือกชั้นปี</option>
+                            <option v-for="grade in availableGrades" :key="grade.value" :value="grade.value">{{
+                                grade.label }}</option>
+                        </select>
+                    </div>
+                    <div class="form-control flex-1">
+                        <label class="label">
+                            <span class="label-text">ห้อง</span>
+                        </label>
+                        <input v-model.number="formData.classroom" type="number" min="1" max="99"
+                            class="input input-bordered w-full" :placeholder="nextClassroomNumberText" required />
+                    </div>
                 </div>
 
                 <div class="form-control">

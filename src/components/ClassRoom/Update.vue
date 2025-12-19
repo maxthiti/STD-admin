@@ -4,18 +4,19 @@
             <h3 class="font-bold text-lg mb-4">แก้ไขห้องเรียน</h3>
             <form @submit.prevent="handleSubmit" class="space-y-4">
 
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">ชั้นปี</span>
-                    </label>
-                    <input type="text" :value="formData.grade" class="input input-bordered" disabled />
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">ห้อง</span>
-                    </label>
-                    <input type="text" :value="formData.classroom" class="input input-bordered" disabled />
+                <div class="flex flex-row gap-4">
+                    <div class="form-control flex-1">
+                        <label class="label">
+                            <span class="label-text">ชั้นปี</span>
+                        </label>
+                        <input type="text" :value="formData.grade" class="input input-bordered w-full" disabled />
+                    </div>
+                    <div class="form-control flex-1">
+                        <label class="label">
+                            <span class="label-text">ห้อง</span>
+                        </label>
+                        <input type="text" :value="formData.classroom" class="input input-bordered w-full" disabled />
+                    </div>
                 </div>
 
                 <div class="form-control">

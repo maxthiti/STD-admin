@@ -48,7 +48,7 @@
                                 <span class="ml-2 text-xs">{{ student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'
                                     }}</span>
                             </template>
-                            <div v-if="auth.user?.role !== 'viewer'" class="flex gap-2">
+                            <div class="flex gap-2">
                                 <button class="btn btn-sm btn-info btn-outline" @click="emitDetail(student)"
                                     title="ดูรายละเอียด">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -59,7 +59,7 @@
                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                 </button>
-                                <button class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
+                                <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
                                     title="แก้ไข">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -67,7 +67,7 @@
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <button class="btn btn-sm btn-error btn-outline" @click="emitDelete(student)"
+                                <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-error btn-outline" @click="emitDelete(student)"
                                     title="ลบ">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -90,7 +90,7 @@
                             <th class="bg-primary text-primary-content">ระดับชั้น</th>
                             <th class="bg-primary text-primary-content hidden md:table-cell">ห้อง</th>
                             <th class="bg-primary text-primary-content text-center">สถานะ</th>
-                            <th v-if="auth.user?.role !== 'viewer'" class="bg-primary text-primary-content text-center">
+                            <th class="bg-primary text-primary-content text-center">
                                 จัดการ</th>
                         </tr>
                     </thead>
@@ -148,7 +148,7 @@
                                         class="inline-block w-3 h-3 rounded-full"></span>
                                 </template>
                             </td>
-                            <td v-if="auth.user?.role !== 'viewer'">
+                            <td>
                                 <div class="flex gap-2 justify-center">
                                     <button class="btn btn-sm btn-info btn-outline" @click="emitDetail(student)"
                                         title="ดูรายละเอียด">
@@ -160,7 +160,7 @@
                                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
-                                    <button class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
+                                    <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
                                         title="แก้ไข">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
@@ -168,7 +168,7 @@
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button class="btn btn-sm btn-error btn-outline" @click="emitDelete(student)"
+                                    <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-error btn-outline" @click="emitDelete(student)"
                                         title="ลบ">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
