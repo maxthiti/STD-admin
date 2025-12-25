@@ -61,8 +61,9 @@
                             <span v-else>{{ item.department || '-' }}</span>
                         </td>
                         <td class="text-center">{{ totalDays }}</td>
-                        <td class="text-center text-green-600">{{ countPresent(item.attendances) }}</td>
-                        <td class="text-center text-red-500">{{ totalDays - countPresent(item.attendances) }}</td>
+                        <td class="text-center text-green-600">{{ countPresentNormal(item.attendances) }}</td>
+                        <td class="text-center text-red-500">{{ totalDays - countPresentNormal(item.attendances) -
+                            countLate(item.attendances) }}</td>
                         <td class="text-center text-blue-500">{{ countLate(item.attendances) }}</td>
                     </tr>
                 </tbody>
@@ -107,11 +108,12 @@
                     </div>
                     <div>
                         <span class="text-base-content/60">มาปกติ</span>
-                        <p class="font-medium text-green-600">{{ countPresent(item.attendances) }}</p>
+                        <p class="font-medium text-green-600">{{ countPresentNormal(item.attendances) }}</p>
                     </div>
                     <div>
                         <span class="text-base-content/60">ไม่ได้สแกน</span>
-                        <p class="font-medium text-red-500">{{ totalDays - countPresent(item.attendances) }}</p>
+                        <p class="font-medium text-red-500">{{ totalDays - countPresentNormal(item.attendances) -
+                            countLate(item.attendances) }}</p>
                     </div>
                     <div>
                         <span class="text-base-content/60">มาสาย</span>
@@ -198,8 +200,8 @@ async function exportDocxReport() {
             return h.date
         }))
 
-        function getDateRangeArray(start, end) {
-            return [start]
+        function getDateRangeArray(start, end, holidaysArr = []) {
+            return getWorkingDays(start, end, holidaysArr)
         }
 
         const groupMap = {}
@@ -214,7 +216,7 @@ async function exportDocxReport() {
             const attendedDates = new Set(
                 (item.attendances || []).map(att => att.date)
             )
-            const allDates = getDateRangeArray(params.start, params.end)
+            const allDates = getDateRangeArray(params.start, params.end, holidays.map(h => h.date))
             allDates.forEach(dateStr => {
                 if (attendedDates.has(dateStr)) return
                 if (holidaySet.has(dateStr)) {
@@ -339,7 +341,7 @@ async function exportDocxReport() {
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
                                     }),
                                     new TableCell({
-                                        children: [new Paragraph({ children: [new TextRun({ text: 'งานบุคคล โรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })] })],
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'งานบุคคล โรงเรียนจักรคำคณาทร จังหวัดลำพูน', font, size: 32 })] })],
                                         columnSpan: 3,
                                         width: { size: 85, type: WidthType.PERCENTAGE },
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
@@ -390,7 +392,7 @@ async function exportDocxReport() {
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
                                     }),
                                     new TableCell({
-                                        children: [new Paragraph({ children: [new TextRun({ text: 'ผู้อำนวยการโรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })] })],
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'ผู้อำนวยการโรงเรียนจักรคำคณาทร จังหวัดลำพูน', font, size: 32 })] })],
                                         columnSpan: 3,
                                         width: { size: 85, type: WidthType.PERCENTAGE },
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
@@ -494,7 +496,7 @@ async function exportDocxReport() {
                     new Paragraph({ text: '', spacing: { after: 200 } }),
                     new Paragraph({ children: [new TextRun({ text: 'ลงชื่อ....................................................ผู้บันทึกข้อมูล', font, size: 32 })], alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: 'ลงชื่อ....................................................รองผู้อำนวยการโรงเรียน ผู้ตรวจสอบข้อมูล', font, size: 32 })], alignment: AlignmentType.RIGHT }),
-                    new Paragraph({ children: [new TextRun({ text: 'ลงชื่อ....................................................ผู้อำนวยการโรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })], alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: 'ลงชื่อ....................................................ผู้อำนวยการโรงเรียนจักรคำคณาทร จังหวัดลำพูน', font, size: 32 })], alignment: AlignmentType.RIGHT }),
                 ]
             }]
         })
@@ -595,17 +597,26 @@ async function exportAllToExcel() {
             }
         } while (params.page <= totalPages)
 
-        const totalDays = Math.floor((new Date(props.dateRange.end) - new Date(props.dateRange.start)) / (1000 * 60 * 60 * 24)) + 1
+        // โหลดวันหยุดใหม่ (sync กับ holidaysArr)
+        let holidaysRaw = []
+        try {
+            const res = await holidaysApi.getHolidaysByRange(props.dateRange.start, props.dateRange.end)
+            holidaysRaw = Array.isArray(res.data) ? res.data.map(h => h.date) : (res.data || [])
+        } catch (e) {
+            holidaysRaw = []
+        }
+        const workingDaysArr = getWorkingDays(props.dateRange.start, props.dateRange.end, holidaysRaw)
+        const totalDaysVal = workingDaysArr.length
         const rows = allData.map(item => {
-            const present = item.attendances ? item.attendances.length : 0
+            const presentNormal = countPresentNormal(item.attendances)
             const late = countLate(item.attendances)
             return {
                 'รหัส': item.userid,
                 'ชื่อ - นามสกุล': item.name,
                 [props.role === 'student' ? 'ชั้น/ห้อง' : 'หน่วยงาน']: props.role === 'student' ? (item.grade && item.classroom ? `${item.grade}/${item.classroom}` : '-') : (item.department || '-'),
-                'ลงเวลา': totalDays,
-                'มาปกติ': present,
-                'ไม่ได้สแกน': totalDays - present,
+                'ลงเวลา': totalDaysVal,
+                'มาปกติ': presentNormal,
+                'ไม่ได้สแกน': totalDaysVal - presentNormal - late,
                 'มาสาย': late,
             }
         })
@@ -691,15 +702,61 @@ const displayedPages = vueComputed(() => {
     return pages
 })
 
+
+// ฟังก์ชันคำนวณวันทำงานจริง (ไม่รวมวันหยุดและเสาร์-อาทิตย์)
+function getWorkingDays(startStr, endStr, holidaysArr = []) {
+    const start = new Date(startStr)
+    const end = new Date(endStr)
+    const holidaySet = new Set(holidaysArr.map(d => {
+        if (typeof d === 'string' && d.includes('/')) {
+            const [day, month, year] = d.split('/')
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+        }
+        return d
+    }))
+    let days = []
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dayOfWeek = d.getDay()
+        const dateStr = d.toISOString().slice(0, 10)
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue // 0=อาทิตย์, 6=เสาร์
+        if (holidaySet.has(dateStr)) continue
+        days.push(dateStr)
+    }
+    return days
+}
+
+// holidaysArr จะถูกโหลด async ใน mounted
+
+const holidaysArr = ref([])
+
+async function loadHolidays() {
+    try {
+        const res = await holidaysApi.getHolidaysByRange(props.dateRange.start, props.dateRange.end)
+        holidaysArr.value = Array.isArray(res.data) ? res.data.map(h => h.date) : (res.data || [])
+    } catch (e) {
+        holidaysArr.value = []
+    }
+}
+
+loadHolidays()
+
 const totalDays = computed(() => {
-    const start = new Date(props.dateRange.start)
-    const end = new Date(props.dateRange.end)
-    return Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1
+    return getWorkingDays(props.dateRange.start, props.dateRange.end, holidaysArr.value).length
 })
 
-function countPresent(attendances) {
+// มาปกติ = มาและไม่สาย
+function countPresentNormal(attendances) {
     if (!attendances) return 0
-    return attendances.length
+    let count = 0
+    attendances.forEach(att => {
+        if (!att.timeStamps || att.timeStamps.length === 0) return
+        const first = att.timeStamps.map(ts => ts.timestamp).sort()[0]
+        if (first) {
+            const time = first.split(' ')[1]
+            if (time <= '08:01:00') count++
+        }
+    })
+    return count
 }
 
 function countLate(attendances) {

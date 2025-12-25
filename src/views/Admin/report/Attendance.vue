@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import ReportTable from '../../../components/Report/AttendanceTable.vue'
 import ReportTableAmount from '../../../components/Report/AttendanceTable-amount.vue'
 import AttendanceDetail from '../../../components/Report/AttendanceDetail.vue'

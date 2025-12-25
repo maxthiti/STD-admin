@@ -599,6 +599,11 @@ function buildPrimaryChart() {
                         callback: (v) => Math.round(v)
                     }
                 }
+            },
+            layout: {
+                padding: {
+                    top: 24,
+                }
             }
         },
         plugins: window.ChartDataLabels ? [window.ChartDataLabels] : []
@@ -694,8 +699,6 @@ function buildCompareChart() {
         })
     }
 
-    // ...ไม่ต้องโหลด datalabels plugin ที่นี่แล้ว (โหลดใน onMounted)
-
     compareChart = new ChartLib(compareChartRef.value, {
         type: compare.value.chartType,
         data: { labels: dates.map(formatLabelDate), datasets },
@@ -732,6 +735,11 @@ function buildCompareChart() {
                         precision: 0,
                         callback: (v) => Math.round(v)
                     }
+                }
+            },
+            layout: {
+                padding: {
+                    top: 24,
                 }
             }
         },

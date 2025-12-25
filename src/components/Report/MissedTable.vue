@@ -2,7 +2,7 @@
     <div class="flex justify-end mb-2">
         <button v-if="role === 'teacher'" class="btn btn-sm btn-primary" :disabled="loadingExportDoc"
             @click="exportDocxLeaveReport">
-            ส่งออกสรุปการออกงาน
+            เอกสารสรุปการออกงาน
         </button>
     </div>
     <div class="hidden lg:block bg-base-100 rounded-lg shadow-lg overflow-x-auto">
@@ -345,7 +345,7 @@ async function exportDocxLeaveReport() {
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
                                     }),
                                     new TableCell({
-                                        children: [new Paragraph({ children: [new TextRun({ text: 'กลุ่มบริหารงานบุคคล โรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })] })],
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'กลุ่มบริหารงานบุคคล โรงเรียนจักรคำคณาทร จังหวัดลำพูน', font, size: 32 })] })],
                                         columnSpan: 3,
                                         width: { size: 85, type: WidthType.PERCENTAGE },
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
@@ -396,7 +396,7 @@ async function exportDocxLeaveReport() {
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
                                     }),
                                     new TableCell({
-                                        children: [new Paragraph({ children: [new TextRun({ text: 'ผู้อำนวยการโรงเรียนจักษุศิลปะคณะการ จังหวัดลำพูน', font, size: 32 })] })],
+                                        children: [new Paragraph({ children: [new TextRun({ text: 'ผู้อำนวยการโรงเรียนจักรคำคณาทร จังหวัดลำพูน', font, size: 32 })] })],
                                         columnSpan: 3,
                                         width: { size: 85, type: WidthType.PERCENTAGE },
                                         borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }

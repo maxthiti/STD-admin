@@ -28,7 +28,7 @@
                             </router-link>
                         </div>
                         <div class="h-80">
-                            <canvas ref="barChartRef"></canvas>
+                            <canvas class="z-50" ref="barChartRef"></canvas>
                         </div>
                     </div>
                 </div>
@@ -156,11 +156,15 @@ function buildBarChart(start, end) {
     if (!ChartLib) return
 
     const startDate = new Date(start)
+    const todayISO = new Date().toISOString().split('T')[0]
     const labelsISO = []
     for (let i = 0; i < 7; i++) {
         const d = new Date(startDate)
         d.setDate(startDate.getDate() + i)
-        labelsISO.push(d.toISOString().split('T')[0])
+        const dISO = d.toISOString().split('T')[0]
+        if (dISO <= todayISO) {
+            labelsISO.push(dISO)
+        }
     }
 
     const map = {}
@@ -177,16 +181,13 @@ function buildBarChart(start, end) {
     labelsISO.forEach(date => {
         const stu = map[`student_${date}`]
         const tea = map[`teacher_${date}`]
-        // นักเรียน
         const stuLate = stu ? stu.late : 0
         const stuOntime = stu ? stu.ontime ?? Math.max((stu.total ?? 0) - (stu.late ?? 0) - (stu.not_scan ?? 0), 0) : 0
-        // คำนวณไม่ได้สแกน = total_students - stu.total
         const stuTotal = stu ? stu.total ?? 0 : 0
         const stuNotScan = Math.max((totals.value.total_students ?? 0) - stuTotal, 0)
         studentOntime.push(stuOntime)
         studentLate.push(stuLate)
         studentNotScan.push(stuNotScan)
-        // ครู
         const teaLate = tea ? tea.late : 0
         const teaOntime = tea ? tea.ontime ?? Math.max((tea.total ?? 0) - (tea.late ?? 0) - (tea.not_scan ?? 0), 0) : 0
         const teaTotal = tea ? tea.total ?? 0 : 0
@@ -256,7 +257,7 @@ function buildBarChart(start, end) {
                     anchor: 'end',
                     align: 'end',
                     color: '#222',
-                    font: { weight: 'bold', size: 12 },
+                    font: { weight: 'bold', size: 10 },
                     formatter: (value) => value > 0 ? value : ''
                 }
             },
@@ -268,6 +269,11 @@ function buildBarChart(start, end) {
                         precision: 0,
                         callback: (v) => Math.round(v)
                     }
+                }
+            },
+            layout: {
+                padding: {
+                    top: 24,
                 }
             }
         },

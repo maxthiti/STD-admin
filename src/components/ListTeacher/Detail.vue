@@ -41,7 +41,12 @@
                         <tr v-for="(week, widx) in calendar" :key="widx">
                             <td v-for="(day, didx) in week" :key="didx">
                                 <div v-if="day">
-                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7">
+                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7"
+                                        v-if="getHolidayTitle(day)" :title="getHolidayTitle(day)">
+                                        {{ day.getDate() }}
+                                    </span>
+                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7"
+                                        v-else>
                                         {{ day.getDate() }}
                                     </span>
                                 </div>
@@ -169,7 +174,6 @@ const fetchAttendance = async () => {
         } else {
             attendances.value = []
         }
-        // Fetch holidays for this range
         const holidaysRes = await holidaysApi.getHolidaysByRange(start, end)
         holidays.value = Array.isArray(holidaysRes.data) ? holidaysRes.data : []
     } catch (e) {
@@ -178,6 +182,13 @@ const fetchAttendance = async () => {
     } finally {
         loading.value = false
     }
+}
+
+function getHolidayTitle(dateObj) {
+    if (!dateObj) return ''
+    const dstr = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0')
+    const holiday = holidays.value.find(h => h.date === dstr)
+    return holiday ? holiday.summary : ''
 }
 
 watch([selectedMonth, selectedYear, () => props.visible], ([m, y, vis]) => {
