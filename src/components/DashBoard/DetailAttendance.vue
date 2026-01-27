@@ -48,6 +48,9 @@
                             <div class="p-3">
                                 <p class="text-sm font-semibold text-blue-700 text-center mb-1">{{
                                     formatTime(ts.timeStamp) }}</p>
+                                <p v-if="ts.similarity !== undefined" class="text-xs text-gray-500 text-center">
+                                    ความเหมือน: {{ ts.similarity }}%
+                                </p>
                             </div>
                         </div>
                     </div>

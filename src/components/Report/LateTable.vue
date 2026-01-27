@@ -54,7 +54,7 @@
                                 <td class="text-center">{{ item.position }}</td>
                                 <td class="text-center">
                                     <span v-if="item.position === 'นักเรียน'">{{ item.grade }}/{{ item.classroom
-                                        }}</span>
+                                    }}</span>
                                     <span v-else>-</span>
                                 </td>
                                 <td class="text-center">{{ formatDate(item.late_dates[0].date) }}</td>
@@ -80,13 +80,17 @@
                                                     class="w-14 h-14 rounded object-cover cursor-pointer border border-base-200"
                                                     @click="viewImage(item.late_dates[0].timeStamps[0].imageUrl)"
                                                     @error="item.late_dates[0]._imgError = true" />
+                                                <p v-if="item.late_dates[0].timeStamps[0].similarity !== undefined"
+                                                    class="text-xs text-gray-500 text-center mt-1 w-full">
+                                                    ความเหมือน: {{ item.late_dates[0].timeStamps[0].similarity }}%
+                                                </p>
                                             </template>
                                             <template v-else>
                                                 <div class="avatar placeholder inline-flex">
                                                     <div
                                                         class="bg-neutral text-neutral-content w-14 h-14 rounded flex items-center justify-center">
                                                         <span class="text-base font-bold">{{ getInitials(item.name)
-                                                        }}</span>
+                                                            }}</span>
                                                     </div>
                                                 </div>
                                             </template>
@@ -124,13 +128,17 @@
                                                         class="w-14 h-14 rounded object-cover cursor-pointer border border-base-200"
                                                         @click="viewImage(late.timeStamps[0].imageUrl)"
                                                         @error="late._imgError = true" />
+                                                    <p v-if="late.timeStamps[0].similarity !== undefined"
+                                                        class="text-xs text-gray-500 text-center mt-1 w-full">
+                                                        ความเหมือน: {{ late.timeStamps[0].similarity }}%
+                                                    </p>
                                                 </template>
                                                 <template v-else>
                                                     <div class="avatar placeholder inline-flex">
                                                         <div
                                                             class="bg-neutral text-neutral-content w-14 h-14 rounded flex items-center justify-center">
                                                             <span class="text-base font-bold">{{ getInitials(item.name)
-                                                                }}</span>
+                                                            }}</span>
                                                         </div>
                                                     </div>
                                                 </template>
@@ -225,10 +233,15 @@
                             </div>
                         </div>
                         <div v-if="late.timeStamps && late.timeStamps.length > 0" class="flex justify-center">
-                            <div v-if="late.timeStamps[0].imageUrl && !late._imgError">
+                            <div v-if="late.timeStamps[0].imageUrl && !late._imgError"
+                                class="flex flex-col items-center">
                                 <img :src="`${imgProBaseUrl}${late.timeStamps[0].imageUrl}`" alt="late snapshot"
                                     class="h-20 object-cover rounded-md cursor-pointer"
                                     @click="viewImage(late.timeStamps[0].imageUrl)" @error="late._imgError = true" />
+                                <p v-if="late.timeStamps[0].similarity !== undefined"
+                                    class="text-xs text-gray-500 text-center mt-1 w-full">
+                                    ความเหมือน: {{ late.timeStamps[0].similarity }}%
+                                </p>
                             </div>
                             <div v-else
                                 class="avatar placeholder flex items-center justify-center h-20 w-20 bg-neutral text-neutral-content rounded-md">

@@ -202,7 +202,7 @@
                         <div class="stats stats-vertical lg:stats-horizontal bg-base-100 w-full">
                             <div class="stat relative">
                                 <div class="stat-title">เข้า</div>
-                                <div class="stat-value text-primary">{{ student.total }}</div>
+                                <div class="stat-value text-primary">{{ student.total - student.late }}</div>
                                 <div class="stat-desc absolute bottom-2 right-2">
                                     <button @click="showAttendanceTable" class="btn btn-xs btn-primary btn-plain">
                                         คลิก
