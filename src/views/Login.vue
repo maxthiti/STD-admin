@@ -1,18 +1,21 @@
 <template>
     <main class="min-h-screen grid place-items-center login-bg p-2 sm:p-4">
-        <section class="w-full max-w-md sm:max-w-md mx-auto">
+        <section class="w-full max-w-md sm:max-w-md mx-auto" style="max-width: 420px;">
             <div class="card bg-base-100 shadow-xl animate-form">
                 <div class="card-body p-4 sm:p-6">
                     <div class="flex flex-col items-center mb-4 animate-logo">
                         <img :src="logoUrl" alt="Chakkam Khanathon School Logo" class="school-logo mb-2" />
+                        <!-- <div class="school-logo mb-2 flex items-center justify-center bg-gradient-to-r from-blue-500 to-yellow-400"
+                            style="width: 100px; height: 100px; border-radius: 24px;">
+                        </div> -->
+
                         <h2 class="school-title text-blue-900 font-bold text-xl sm:text-2xl text-center drop-shadow">
-                            โรงเรียนจักรคำคณาทร
+                            โรงเรียน
                         </h2>
                         <div class="text-blue-900 font-medium text-base sm:text-lg text-center drop-shadow mb-1">
-                            จังหวัดลำพูน
+                            จังหวัด
                         </div>
                     </div>
-                    <!-- <h2 class="card-title justify-center text-2xl text-blue-900">เข้าสู่ระบบ</h2> -->
 
                     <form @submit.prevent="onSubmit" class="space-y-4">
                         <div class="form-control">
@@ -28,15 +31,17 @@
                             <label class="label">
                                 <span class="label-text">รหัสผ่าน</span>
                             </label>
-                            <label class="input input-bordered flex items-center gap-2">
+                            <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" v-model.trim="form.password"
-                                    class="grow" placeholder="••••••••" autocomplete="current-password" />
-                                <button type="button" class="btn btn-ghost btn-sm"
-                                    @click="showPassword = !showPassword">
+                                    class="input input-bordered w-full pr-16" placeholder="••••••••"
+                                    autocomplete="current-password" />
+                                <button type="button"
+                                    class="absolute top-1/2 right-4 -translate-y-1/2 btn btn-ghost btn-xs font-medium text-blue-900"
+                                    @click="showPassword = !showPassword" style="min-width: 44px;">
                                     <span v-if="showPassword">ซ่อน</span>
                                     <span v-else>แสดง</span>
                                 </button>
-                            </label>
+                            </div>
                             <p v-if="errors.password" class="mt-1 text-error text-sm">{{ errors.password }}</p>
                         </div>
 
@@ -82,7 +87,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import { UserService } from '../api/User.js'
-import logoUrl from '../assets/Chakkam_Khanathon_School_logo.png'
+import logoUrl from '../assets/swing.png'
 import CryptoJS from '../utils/crypto.js'
 
 const router = useRouter()
@@ -261,10 +266,10 @@ async function onSubmit() {
 }
 
 .school-logo {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
-    border-radius: 16px;
+    border-radius: 24px;
     animation: logo-pulse-smooth 2.2s ease-in-out infinite;
 }
 
@@ -352,7 +357,7 @@ async function onSubmit() {
 
 @media (max-width: 640px) {
     .card-body {
-        padding: 1rem !important;
+        padding: 1.5rem !important;
     }
 
     .card-title {
@@ -372,12 +377,16 @@ async function onSubmit() {
     }
 
     .school-logo {
-        width: 64px;
-        height: 64px;
+        width: 80px;
+        height: 80px;
     }
 
     .school-title {
         font-size: 1.1rem;
+    }
+
+    section {
+        max-width: 95vw !important;
     }
 }
 </style>

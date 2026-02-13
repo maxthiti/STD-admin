@@ -21,12 +21,14 @@
         <div class="p-4 border-b overflow-hidden bg-gradient-to-r from-primary/5 to-secondary/5">
             <div class="flex items-center gap-2">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img src="/src/assets/Chakkam_Khanathon_School_logo.png" alt="CKK Logo"
+                    <img src="/src/assets/swing.png" alt="CKK Logo"
                         class="w-full h-full object-contain" />
+                    <!-- <div class="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-yellow-400">
+                    </div> -->
                 </div>
                 <div v-show="isExpanded" class="transition-opacity duration-300">
-                    <h2 class="text-lg font-bold text-primary whitespace-nowrap">โรงเรียนจักรคำคณาทร</h2>
-                    <p class="text-sm text-secondary font-medium whitespace-nowrap">จังหวัดลำพูน</p>
+                    <h2 class="text-lg font-bold text-primary whitespace-nowrap">โรงเรียน</h2>
+                    <p class="text-sm text-secondary font-medium whitespace-nowrap">จังหวัด</p>
                 </div>
             </div>
         </div>

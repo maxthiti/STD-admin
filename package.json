@@ -1,5 +1,5 @@
 {
-  "name": "front-CKK",
+  "name": "front-std",
   "private": true,
   "version": "1.2.2",
   "type": "module",
@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy:production": "scp -r -P 2222 dist/* solutiondd@49.231.182.46:/var/www/ckkadmin"
+    "deploy:production": "scp -r -P 3322 dist/* root@203.159.95.249:/var/www/std.zoftdd.com"
   },
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
