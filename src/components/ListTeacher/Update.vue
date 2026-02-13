@@ -94,6 +94,14 @@
 
                     <div class="form-control w-full">
                         <label class="label">
+                            <span class="label-text">RFID (ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.rfid" type="text" class="input input-bordered w-full"
+                            autocomplete="off" />
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label">
                             <span class="label-text">รูปภาพ (ถ้าต้องการเปลี่ยน)</span>
                         </label>
                         <input ref="fileInputRef" type="file" @change="handleFileChange" accept="image/jpeg,image/jpg"
@@ -145,7 +153,8 @@ const formData = ref({
     position: '',
     department: '',
     status: '',
-    picture: null
+    picture: null,
+    rfid: ''
 })
 
 const props = defineProps({
@@ -176,7 +185,8 @@ const openModal = async (teacher) => {
         position: teacher.position,
         department: teacher.department,
         status: 'ปกติ',
-        picture: null
+        picture: null,
+        rfid: teacher.rfid || ''
     }
 
     if (teacher.picture) {
@@ -220,7 +230,8 @@ const closeModal = () => {
         position: '',
         department: '',
         status: '',
-        picture: null
+        picture: null,
+        rfid: ''
     }
 }
 

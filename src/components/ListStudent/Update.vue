@@ -94,6 +94,11 @@
                             </option>
                         </select>
                     </div>
+
+                    <div class="form-control">
+                        <label class="label"><span class="label-text">RFID (ไม่บังคับ)</span></label>
+                        <input v-model="formData.rfid" type="text" class="input input-bordered" autocomplete="off" />
+                    </div>
                 </div>
 
                 <div class="modal-action">
@@ -137,7 +142,8 @@ const formData = ref({
     last_name: '',
     grade: '',
     classroom: '',
-    picture: null
+    picture: null,
+    rfid: ''
 })
 
 const props = defineProps({
@@ -205,7 +211,8 @@ const openModal = async (student) => {
         last_name: parsed.last,
         grade: student.grade || '',
         classroom: student.room || '',
-        picture: null
+        picture: null,
+        rfid: student.rfid || ''
     }
     currentImage.value = getPictureUrl(student.picture) || ''
     previewImage.value = ''

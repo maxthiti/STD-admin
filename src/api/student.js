@@ -39,7 +39,9 @@ export class StudentService {
       data.append("last_name", formData.last_name);
       data.append("grade", formData.grade);
       data.append("classroom", formData.classroom);
-
+      if (formData.rfid) {
+      data.append("rfid", formData.rfid);
+      }
       if (formData.picture) {
         data.append("picture", formData.picture);
       }
@@ -72,6 +74,7 @@ export class StudentService {
       if (formData.last_name) data.append("last_name", formData.last_name);
       if (formData.grade) data.append("grade", formData.grade);
       if (formData.classroom) data.append("classroom", formData.classroom);
+      if (formData.rfid) data.append("rfid", formData.rfid);
       if (formData.picture) data.append("picture", formData.picture);
 
       let config = {

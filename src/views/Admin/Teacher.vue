@@ -224,7 +224,8 @@ const fetchTeachers = async () => {
                 email: teacher.userid + '@ckk.ac.th',
                 phone: teacher.phone || '-',
                 picture: teacher.picture ? imageBaseUrl + teacher.picture : '',
-                has_password: teacher.has_password
+                has_password: teacher.has_password,
+                rfid: teacher.rfid || ''
             }))
         }
     } catch (error) {

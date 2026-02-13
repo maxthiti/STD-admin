@@ -138,6 +138,14 @@
                             <option value="พักงาน">พักงาน</option>
                         </select>
                     </div>
+
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">RFID (ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.rfid" type="text" class="input input-bordered w-full"
+                            autocomplete="off" />
+                    </div>
                 </div>
 
                 <div class="modal-action">
@@ -179,7 +187,8 @@ const formData = ref({
     position: '',
     department: '',
     status: '',
-    picture: null
+    picture: null,
+    rfid: ''
 })
 
 const props = defineProps({
@@ -273,7 +282,8 @@ const openModal = () => {
         position: '',
         department: '',
         status: '',
-        picture: null
+        picture: null,
+        rfid: ''
     }
     previewImage.value = ''
     fileName.value = ''
@@ -295,7 +305,8 @@ const closeModal = () => {
         position: '',
         department: '',
         status: '',
-        picture: null
+        picture: null,
+        rfid: ''
     }
     previewImage.value = ''
     fileName.value = ''

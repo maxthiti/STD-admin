@@ -294,7 +294,8 @@ const fetchStudents = async () => {
                 room: student.classroom,
                 phone: student.phone || '-',
                 picture: student.picture ? imageBaseUrl + student.picture : '',
-                has_password: student.has_password
+                has_password: student.has_password,
+                rfid: student.rfid || ''
             }))
             if (response.data.length > 0) {
                 lastFetchedGrade.value = response.data[0].grade
