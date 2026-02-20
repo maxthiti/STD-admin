@@ -39,7 +39,7 @@
                         </div>
                         <div class="flex flex-col gap-2 mt-2">
                             <div>
-                                <template v-if="auth.user?.role !== 'teacher'">
+                                <template v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'">
                                     <button class="btn btn-ghost btn-xs"
                                         :title="teacher.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
                                         @click="emitReset(teacher)">

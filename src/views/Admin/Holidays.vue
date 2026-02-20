@@ -1,8 +1,12 @@
 <template>
-    <div class="flex items-center flex-row justify-between mb-4 gap-4">
-        <h1 class="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">จัดการวันหยุด</h1>
-        <button v-if="auth.user?.role !== 'viewer'" class="btn btn-primary btn-sm ml-2 whitespace-nowrap shrink-0" @click="showCreate = true">+
-            เพิ่มวันหยุด</button>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-4 max-[570px]:pt-14">
+        <h1 class="text-xl sm:text-2xl font-bold text-white whitespace-nowrap mb-2 sm:mb-0">จัดการวันหยุด</h1>
+        <div class="flex gap-2">
+            <ImportHolidays v-if="auth.user?.role !== 'viewer'" @imported="onImportHolidays" class="" />
+            <button v-if="auth.user?.role !== 'viewer'" class="btn btn-primary btn-sm whitespace-nowrap shrink-0"
+                @click="showCreate = true">+
+                เพิ่มวันหยุด</button>
+        </div>
     </div>
     <div class="flex gap-2 items-center justify-end mb-4">
         <select v-model="filterType" class="select select-bordered select-sm min-w-[80px] max-w-[120px] text-xs sm:text-base">
@@ -36,6 +40,7 @@ import { ref, watch, onMounted } from 'vue'
 import Create from '../../components/Holidays/Create.vue'
 import HolidaysTable from '../../components/Holidays/Table.vue'
 import DeleteDialog from '../../components/Holidays/Delete.vue'
+import ImportHolidays from '../../components/Holidays/Import.vue'
 import holidaysApi from '../../api/holidays'
 import Swal from 'sweetalert2'
 import { useAuthStore } from '../../stores/auth'
@@ -114,6 +119,36 @@ async function fetchHolidays() {
     } catch (e) {
         // handle error
     }
+}
+
+function onImportHolidays(importedHolidays) {
+    if (!Array.isArray(importedHolidays) || importedHolidays.length === 0) return
+    const save = async () => {
+        try {
+            let all = [...importedHolidays]
+            let successCount = 0
+            while (all.length > 0) {
+                const batch = all.splice(0, 100)
+                await holidaysApi.createHoliday(batch)
+                successCount += batch.length
+            }
+            await fetchHolidays()
+            Swal.fire({
+                icon: 'success',
+                title: `นำเข้าวันหยุดสำเร็จ ${successCount} รายการ`,
+                showConfirmButton: false,
+                timer: 1500
+            })
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'นำเข้าวันหยุดไม่สำเร็จ',
+                text: e?.response?.data?.message || 'เกิดข้อผิดพลาด',
+                showConfirmButton: true
+            })
+        }
+    }
+    save()
 }
 
 watch([filterType, dateInput, monthInput, yearInput], fetchHolidays)

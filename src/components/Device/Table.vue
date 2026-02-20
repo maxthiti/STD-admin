@@ -19,7 +19,7 @@
                             {{ formatStatus(device.status) }}
                         </span>
                     </div>
-                    <div class="flex gap-2 justify-end mt-2">
+                    <div v-if="auth.user?.role !== 'viewer'" class="flex gap-2 justify-end mt-2">
                         <button @click="$emit('edit', device)" class="btn btn-xs btn-warning btn-outline">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">

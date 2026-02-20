@@ -1,44 +1,45 @@
 <template>
-    <dialog ref="detailModal" class="modal">
+    <dialog ref="infoModal" class="modal">
         <div class="modal-box max-w-3xl">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
-
             <div class="border-b-2 border-blue-200 pb-4 mb-6">
                 <h3 class="text-xl font-bold text-blue-900">รายละเอียดการเข้า-ออก</h3>
             </div>
-
-            <div v-if="selectedItem">
+            <div v-if="user">
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
                     <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
                         <p class="text-xs text-blue-600 mb-1">รหัส</p>
-                        <p class="font-semibold text-blue-900">{{ selectedItem.userid }}</p>
+                        <p class="font-semibold text-blue-900">{{ user.userid || user.code || user.id }}</p>
                     </div>
                     <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                         <p class="text-xs text-yellow-600 mb-1">ชื่อ-สกุล</p>
-                        <p class="font-semibold text-yellow-900">{{ selectedItem.name }}</p>
+                        <p class="font-semibold text-yellow-900">{{ user.name }}</p>
                     </div>
-                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div v-if="type === 'teacher'" class="bg-blue-50 p-3 rounded-lg border border-blue-200">
                         <p class="text-xs text-blue-600 mb-1">ตำแหน่ง</p>
-                        <p class="font-semibold text-blue-900">{{ selectedItem.position }}</p>
+                        <p class="font-semibold text-blue-900">{{ user.position }}</p>
                     </div>
-                    <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                        <p class="text-xs text-yellow-600 mb-1">{{ selectedItem.department ? 'แผนก' : 'ชั้นเรียน' }}</p>
-                        <p class="font-semibold text-yellow-900">
-                            {{ selectedItem.department || `${selectedItem.grade}/${selectedItem.classroom}` }}
-                        </p>
+                    <div v-if="type === 'teacher'" class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                        <p class="text-xs text-yellow-600 mb-1">แผนก</p>
+                        <p class="font-semibold text-yellow-900">{{ user.department }}</p>
+                    </div>
+                    <div v-if="type === 'student'" class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <p class="text-xs text-blue-600 mb-1">ระดับชั้น</p>
+                        <p class="font-semibold text-blue-900">{{ user.grade }}</p>
+                    </div>
+                    <div v-if="type === 'student'" class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                        <p class="text-xs text-yellow-600 mb-1">ห้อง</p>
+                        <p class="font-semibold text-yellow-900">{{ user.classroom || user.room }}</p>
                     </div>
                 </div>
-
-                <div v-if="selectedAttendance">
+                <div v-if="attendance">
                     <div class="mb-4">
-                        <h4 class="font-semibold text-gray-700">บันทึกเวลา - {{
-                            formatDate(selectedAttendance.date) }}</h4>
+                        <h4 class="font-semibold text-gray-700">บันทึกเวลา - {{ formatDate(attendance.date) }}</h4>
                     </div>
-
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div v-for="(ts, idx) in selectedAttendance.timeStamps" :key="idx"
+                        <div v-for="(ts, idx) in attendance.timeStamps" :key="idx"
                             class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer border border-gray-200"
                             @click="openImageModal(ts.image)">
                             <div class="w-full h-36 rounded-t-lg flex items-center justify-center bg-gray-100 relative">
@@ -47,7 +48,7 @@
                                     @error="imageErrorHandler($event, idx)" v-show="!imageError[idx]" />
                                 <span v-if="!ts.image || imageError[idx]"
                                     class="text-4xl font-bold text-blue-700 select-none z-10">
-                                    {{ getInitials(selectedItem.name) }}
+                                    {{ getInitials(user.name) }}
                                 </span>
                             </div>
                             <div class="p-3">
@@ -70,7 +71,6 @@
             <button>close</button>
         </form>
     </dialog>
-
     <dialog ref="imageModal" class="modal">
         <div class="modal-box max-w-7xl w-full p-0">
             <form method="dialog">
@@ -88,30 +88,30 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-
-// const imgBaseUrl = import.meta.env.VITE_APP_IMG_URL
+const props = defineProps({
+    user: { type: Object, required: true },
+    attendance: { type: Object, default: null },
+    type: { type: String, default: 'student' },
+})
 const imgBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
-
-const detailModal = ref(null)
+const infoModal = ref(null)
 const imageModal = ref(null)
-const selectedItem = ref(null)
-const selectedAttendance = ref(null)
 const selectedImage = ref(null)
 const imageError = reactive({})
 
-const openModal = (item, attendance = null) => {
-    selectedItem.value = item
-    selectedAttendance.value = attendance
-    detailModal.value.showModal()
+const open = () => {
+    infoModal.value.showModal()
     Object.keys(imageError).forEach(k => delete imageError[k])
 }
-
+const close = () => {
+    infoModal.value.close()
+}
 const openImageModal = (image) => {
     selectedImage.value = image
     imageModal.value.showModal()
 }
-
 const formatDate = (dateStr) => {
+    if (!dateStr) return ''
     const date = new Date(dateStr)
     return date.toLocaleDateString('th-TH', {
         year: 'numeric',
@@ -119,15 +119,13 @@ const formatDate = (dateStr) => {
         day: 'numeric'
     })
 }
-
 const formatTime = (timestamp) => {
+    if (!timestamp) return ''
     return timestamp.split(' ')[1] || timestamp
 }
-
 const imageErrorHandler = (event, idx) => {
     imageError[idx] = true
 }
-
 const getInitials = (name) => {
     if (!name) return ''
     const parts = name.trim().split(' ')
@@ -138,10 +136,7 @@ const getInitials = (name) => {
     }
     return ''
 }
-
-defineExpose({
-    openModal
-})
+defineExpose({ open, close })
 </script>
 
 <style scoped></style>

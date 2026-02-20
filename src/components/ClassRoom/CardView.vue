@@ -64,7 +64,7 @@
                                         ยังไม่มี Telegram
                                     </span>
                                 </div>
-                                <div @click="$emit('edit', classroom)"
+                                <div @click="auth.user?.role !== 'viewer' && $emit('edit', classroom)"
                                     :class="[auth.user?.role !== 'viewer' ? 'cursor-pointer hover:bg-primary/10' : '', 'mt-2 pt-2 border-t border-primary/20 rounded']">
                                     <div class="text-xs text-base-content/70">ครูที่ปรึกษา</div>
                                     <div class="text-xs font-semibold text-primary mt-1">

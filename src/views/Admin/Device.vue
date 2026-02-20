@@ -1,6 +1,6 @@
 <template>
-    <div class="min-h-screen bg-base-200 p-4 sm:p-6">
-        <div class="w-full">
+    <div class="max-[570px]:pt-14">
+        <div class="w-full bg-base-200 min-h-full rounded-lg shadow-md p-6">
             <div class="flex flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                     <h1 class="text-xl sm:text-3xl font-bold text-primary">จัดการอุปกรณ์</h1>

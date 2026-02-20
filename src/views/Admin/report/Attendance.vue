@@ -1,5 +1,5 @@
 <template>
-    <div class="p-0 md:p-6 space-y-6">
+    <div class="p-0 md:p-6 space-y-6 max-[570px]:pt-14">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center text-white gap-2">
             <h1 class="text-lg md:text-3xl font-bold">ตารางเข้า-ออก</h1>
             <div class="flex flex-row gap-2 items-stretch md:items-center justify-end md:justify-center">
@@ -88,7 +88,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        ค้นหา
+                        <span class="hidden sm:inline">ค้นหา</span>
                     </button>
                     <button @click="resetFilters" class="btn btn-sm btn-outline">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
@@ -96,7 +96,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        รีเซ็ต
+                        <span class="hidden sm:inline">รีเซ็ต</span>
                     </button>
                 </div>
                 <button @click="toggleTableType" class="btn btn-sm btn-secondary">

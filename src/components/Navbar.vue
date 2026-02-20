@@ -1,5 +1,5 @@
 <template>
-    <header class="navbar bg-base-100 shadow-md px-6">
+    <header class="navbar bg-base-100 shadow-md px-6 max-[570px]:fixed max-[570px]:top-0 max-[570px]:left-0 max-[570px]:w-full max-[570px]:z-30">
         <button @click="toggleMobileMenu" class="btn btn-ghost btn-circle mr-2 max-[570px]:flex hidden">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">

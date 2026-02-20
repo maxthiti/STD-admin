@@ -156,7 +156,7 @@
                 </div>
             </div>
 
-            <div class="mt-3">
+            <div v-if="auth.user?.role !== 'viewer'" class="mt-3">
                 <div class="divider my-2"></div>
                 <div class="flex justify-end gap-2">
                     <DetailModeling :item="item" @updated="$emit('updated')" />

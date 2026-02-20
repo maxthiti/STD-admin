@@ -12,25 +12,36 @@
     </dialog>
 </template>
 <script setup>
+import { ref, computed, watch } from 'vue'
+import StudentDetail from '../ListStudent/Detail.vue'
+import TeacherDetail from '../ListTeacher/Detail.vue'
+
 const props = defineProps({
     student: { type: Object, required: true },
     role: { type: String, default: 'student' }
 })
-import { ref, computed, watch } from 'vue'
+
 watch(() => props.student, (val) => {
     if (val) detailModal.value?.showModal()
 })
-import StudentDetail from '../ListStudent/Detail.vue'
-import TeacherDetail from '../ListTeacher/Detail.vue'
+
 const detailModal = ref(null)
 const emit = defineEmits(['close'])
 
 const detailComponent = computed(() => {
+    if (props.useAttendanceInfo) return AttendanceInfo
     if (props.role === 'teacher') return TeacherDetail
     return StudentDetail
 })
 
 const detailProps = computed(() => {
+    if (detailComponent.value === AttendanceInfo) {
+        return {
+            user: props.student,
+            attendance: props.student.attendance || null,
+            type: props.role || 'student',
+        }
+    }
     if (detailComponent.value === TeacherDetail) {
         return { teacher: props.student, visible: true }
     }
@@ -38,7 +49,6 @@ const detailProps = computed(() => {
 })
 
 function openModal(student, role = 'student') {
-    // set props via expose (parent set props)
     detailModal.value?.showModal()
 }
 

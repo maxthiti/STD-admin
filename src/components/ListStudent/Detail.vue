@@ -41,11 +41,17 @@
                         <tr v-for="(week, widx) in calendar" :key="widx">
                             <td v-for="(day, didx) in week" :key="didx">
                                 <div v-if="day">
-                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7"
-                                        v-if="getHolidayTitle(day)" :title="getHolidayTitle(day)">
+                                    <span
+                                        :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7 cursor-pointer'"
+                                        v-if="getAttendanceMap[dateToStr(day)] && getAttendanceMap[dateToStr(day)].timeStamps && getAttendanceMap[dateToStr(day)].timeStamps.length > 0"
+                                        @click="openAttendanceInfo(day)">
                                         {{ day.getDate() }}
                                     </span>
-                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7"
+                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
+                                        v-else-if="getHolidayTitle(day)" :title="getHolidayTitle(day)">
+                                        {{ day.getDate() }}
+                                    </span>
+                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
                                         v-else>
                                         {{ day.getDate() }}
                                     </span>
@@ -55,6 +61,8 @@
                     </tbody>
                 </table>
             </div>
+            <AttendanceInfo ref="attendanceInfoRef" :user="student" :attendance="selectedAttendanceInfo"
+                type="student" />
             <div class="flex gap-4 mt-4 text-xs">
                 <div class="flex items-center gap-1"><span class="inline-block w-4 h-4 rounded-full bg-blue-500"></span>
                     มาเรียน</div>
@@ -73,6 +81,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import reportApi from '../../api/report'
 import holidaysApi from '../../api/holidays'
+import AttendanceInfo from '../AttendanceInfo.vue'
+
 const props = defineProps({
     student: { type: Object, required: true },
     visible: { type: Boolean, default: false },
@@ -94,6 +104,8 @@ const studentRoom = computed(() => props.student.room || props.student.classroom
 const attendances = ref([])
 const holidays = ref([])
 const loading = ref(false)
+const attendanceInfoRef = ref(null)
+const selectedAttendanceInfo = ref(null)
 
 const calendar = computed(() => {
     const year = selectedYear.value
@@ -139,6 +151,24 @@ const getAttendanceMap = computed(() => {
     })
     return map
 })
+
+const dateToStr = (dateObj) => {
+    if (!dateObj) return ''
+    return (
+        dateObj.getFullYear() +
+        '-' + String(dateObj.getMonth() + 1).padStart(2, '0') +
+        '-' + String(dateObj.getDate()).padStart(2, '0')
+    )
+}
+
+const openAttendanceInfo = (dateObj) => {
+    const dstr = dateToStr(dateObj)
+    const att = getAttendanceMap.value[dstr]
+    if (att && att.timeStamps && att.timeStamps.length > 0) {
+        selectedAttendanceInfo.value = att
+        attendanceInfoRef.value.open()
+    }
+}
 
 const getPictureUrl = (pic) => {
     if (!pic) return ''

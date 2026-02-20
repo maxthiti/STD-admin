@@ -1,9 +1,7 @@
 <template>
     <div v-if="visible" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-40">
         <div class="bg-base-100 rounded-lg shadow-lg w-full max-w-2xl p-6 relative m-4">
-            <button class="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost" @click="$emit('close')">
-                ✕
-            </button>
+            <button class="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost" @click="$emit('close')">✕</button>
             <div class="flex items-center gap-4 mb-4">
                 <div class="avatar">
                     <div class="w-16 h-16 rounded-full">
@@ -41,11 +39,17 @@
                         <tr v-for="(week, widx) in calendar" :key="widx">
                             <td v-for="(day, didx) in week" :key="didx">
                                 <div v-if="day">
-                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7"
-                                        v-if="getHolidayTitle(day)" :title="getHolidayTitle(day)">
+                                    <span
+                                        :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7 cursor-pointer'"
+                                        v-if="getAttendanceMap[dateToStr(day)] && getAttendanceMap[dateToStr(day)].timeStamps && getAttendanceMap[dateToStr(day)].timeStamps.length > 0"
+                                        @click="openAttendanceInfo(day)">
                                         {{ day.getDate() }}
                                     </span>
-                                    <span :class="getDayClass(day)" class="inline-block w-7 h-7 rounded-full leading-7"
+                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
+                                        v-else-if="getHolidayTitle(day)" :title="getHolidayTitle(day)">
+                                        {{ day.getDate() }}
+                                    </span>
+                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
                                         v-else>
                                         {{ day.getDate() }}
                                     </span>
@@ -65,6 +69,8 @@
                 <div class="flex items-center gap-1"><span class="inline-block w-4 h-4 rounded-full bg-gray-400"></span>
                     วันหยุด</div>
             </div>
+            <AttendanceInfo ref="attendanceInfoRef" :user="teacher" :attendance="selectedAttendanceInfo"
+                type="teacher" />
         </div>
     </div>
 </template>
@@ -73,6 +79,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import reportApi from '../../api/report'
 import holidaysApi from '../../api/holidays'
+import AttendanceInfo from '../AttendanceInfo.vue'
 
 const props = defineProps({
     teacher: { type: Object, required: true },
@@ -95,6 +102,8 @@ const teacherCode = computed(() => props.teacher.code || props.teacher.userid ||
 const attendances = ref([])
 const holidays = ref([])
 const loading = ref(false)
+const attendanceInfoRef = ref(null)
+const selectedAttendanceInfo = ref(null)
 
 const calendar = computed(() => {
     const year = selectedYear.value
@@ -143,6 +152,24 @@ const getAttendanceMap = computed(() => {
     })
     return map
 })
+
+const dateToStr = (dateObj) => {
+    if (!dateObj) return ''
+    return (
+        dateObj.getFullYear() +
+        '-' + String(dateObj.getMonth() + 1).padStart(2, '0') +
+        '-' + String(dateObj.getDate()).padStart(2, '0')
+    )
+}
+
+const openAttendanceInfo = (dateObj) => {
+    const dstr = dateToStr(dateObj)
+    const att = getAttendanceMap.value[dstr]
+    if (att && att.timeStamps && att.timeStamps.length > 0) {
+        selectedAttendanceInfo.value = att
+        attendanceInfoRef.value.open()
+    }
+}
 
 const getDayClass = (dateObj) => {
     if (!dateObj) return ''
