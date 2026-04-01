@@ -114,11 +114,11 @@
         <!-- Pagination -->
         <div v-if="pagination.total_pages > 1" class="flex flex-wrap justify-center mt-4 gap-2">
             <button class="btn btn-xs sm:btn-sm" @click="changePage(pagination.page - 1)"
-                :disabled="pagination.page === 1">«</button>
+                :disabled="pagination.page === 1">‹</button>
             <button v-for="page in displayedPages" :key="page" class="btn btn-xs sm:btn-sm"
                 :class="{ 'btn-active': page === pagination.page }" @click="changePage(page)">{{ page }}</button>
             <button class="btn btn-xs sm:btn-sm" @click="changePage(pagination.page + 1)"
-                :disabled="pagination.page === pagination.total_pages">»</button>
+                :disabled="pagination.page === pagination.total_pages">›</button>
         </div>
         <DetailAttendance ref="detailRef" :role="props.role" />
     </div>

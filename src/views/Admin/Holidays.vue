@@ -1,5 +1,9 @@
 <template>
+<<<<<<< HEAD
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-4 max-[570px]:pt-14">
+=======
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-4">
+>>>>>>> source_ckk/main
         <h1 class="text-xl sm:text-2xl font-bold text-white whitespace-nowrap mb-2 sm:mb-0">จัดการวันหยุด</h1>
         <div class="flex gap-2">
             <ImportHolidays v-if="auth.user?.role !== 'viewer'" @imported="onImportHolidays" class="" />
@@ -9,7 +13,8 @@
         </div>
     </div>
     <div class="flex gap-2 items-center justify-end mb-4">
-        <select v-model="filterType" class="select select-bordered select-sm min-w-[80px] max-w-[120px] text-xs sm:text-base">
+        <select v-model="filterType"
+            class="select select-bordered select-sm min-w-[80px] max-w-[120px] text-xs sm:text-base">
             <option value="month">เดือน</option>
             <option value="day">วัน</option>
             <option value="year">ปี</option>

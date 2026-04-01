@@ -19,6 +19,16 @@
                     <div class="font-bold text-lg">{{ student.name }}</div>
                     <div class="text-sm text-base-content/70">รหัส: {{ studentCode }}</div>
                     <div class="text-sm">ระดับชั้น: {{ student.grade }} ห้อง {{ studentRoom }}</div>
+                    <div class="mt-1">
+                        <button v-if="canOpenConduct" type="button" class="badge badge-sm font-semibold cursor-pointer"
+                            :class="getScoreBadgeClass(studentScore)" @click="goToConduct"
+                            title="ไปหน้าบันทึกพฤติกรรมของนักเรียนคนนี้">
+                            คะแนน {{ studentScore }}
+                        </button>
+                        <span v-else class="badge badge-sm font-semibold" :class="getScoreBadgeClass(studentScore)">
+                            คะแนน {{ studentScore }}
+                        </span>
+                    </div>
                 </div>
             </div>
             <div class="mb-2 font-semibold flex items-center gap-2">
@@ -44,6 +54,7 @@
                                     <span
                                         :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7 cursor-pointer'"
                                         v-if="getAttendanceMap[dateToStr(day)] && getAttendanceMap[dateToStr(day)].timeStamps && getAttendanceMap[dateToStr(day)].timeStamps.length > 0"
+<<<<<<< HEAD
                                         @click="openAttendanceInfo(day)">
                                         {{ day.getDate() }}
                                     </span>
@@ -53,6 +64,17 @@
                                     </span>
                                     <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
                                         v-else>
+=======
+                                        @click="openAttendanceInfo(day)" :title="getDayTitle(day)">
+                                        {{ day.getDate() }}
+                                    </span>
+                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
+                                        v-else-if="getHolidayTitle(day)" :title="getDayTitle(day)">
+                                        {{ day.getDate() }}
+                                    </span>
+                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
+                                        v-else :title="getDayTitle(day)">
+>>>>>>> source_ckk/main
                                         {{ day.getDate() }}
                                     </span>
                                 </div>
@@ -72,6 +94,9 @@
                     ไม่ได้สแกน</div>
                 <div class="flex items-center gap-1"><span class="inline-block w-4 h-4 rounded-full bg-gray-400"></span>
                     วันหยุด</div>
+                <div class="flex items-center gap-1"><span
+                        class="inline-block w-4 h-4 rounded-full bg-violet-300"></span>
+                    ปิดเทอม/ช่วงพิเศษ</div>
             </div>
         </div>
     </div>
@@ -79,14 +104,25 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
 import reportApi from '../../api/report'
 import holidaysApi from '../../api/holidays'
+<<<<<<< HEAD
 import AttendanceInfo from '../AttendanceInfo.vue'
 
+=======
+import { AcademicCalendarService } from '../../api/academiccalendar'
+import AttendanceInfo from '../AttendanceInfo.vue'
+
+const emit = defineEmits(['close'])
+>>>>>>> source_ckk/main
 const props = defineProps({
     student: { type: Object, required: true },
     visible: { type: Boolean, default: false },
 })
+const router = useRouter()
+const auth = useAuthStore()
 const today = new Date()
 const monthsTH = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
 const daysShort = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
@@ -100,12 +136,22 @@ const yearOptions = computed(() => {
 
 const studentCode = computed(() => props.student.code || props.student.userid || props.student.id || '-')
 const studentRoom = computed(() => props.student.room || props.student.classroom || '-')
+const studentScore = computed(() => {
+    const value = Number(props.student?.score)
+    return Number.isFinite(value) ? value : 100
+})
+const canOpenConduct = computed(() => auth.user?.role !== 'viewer')
 
 const attendances = ref([])
 const holidays = ref([])
+const academicTerms = ref([])
 const loading = ref(false)
 const attendanceInfoRef = ref(null)
 const selectedAttendanceInfo = ref(null)
+<<<<<<< HEAD
+=======
+const academicCalendarService = new AcademicCalendarService()
+>>>>>>> source_ckk/main
 
 const calendar = computed(() => {
     const year = selectedYear.value
@@ -161,6 +207,55 @@ const dateToStr = (dateObj) => {
     )
 }
 
+<<<<<<< HEAD
+=======
+const normalizeDateInput = (value) => {
+    if (!value) return ''
+    return String(value).substring(0, 10)
+}
+
+const isTermOneOrTwo = (termName) => {
+    const name = String(termName || '').toLowerCase()
+    return /(เทอม\s*1|term\s*1|semester\s*1|ภาคเรียน\s*ที่?\s*1|เทอม\s*2|term\s*2|semester\s*2|ภาคเรียน\s*ที่?\s*2)/i.test(name)
+}
+
+const getAcademicTermStatus = (dateObj) => {
+    const dstr = dateToStr(dateObj)
+    if (!dstr) return { inTerm: false, label: 'ปิดเทอม' }
+
+    const matchedTerm = academicTerms.value.find((term) => {
+        const start = normalizeDateInput(term.start_date)
+        const end = normalizeDateInput(term.end_date)
+        if (!start || !end) return false
+        return dstr >= start && dstr <= end
+    })
+
+    if (!matchedTerm) return { inTerm: false, label: 'ปิดเทอม' }
+
+    if (isTermOneOrTwo(matchedTerm.term)) {
+        return { inTerm: true, label: matchedTerm.term || 'ช่วงเวลาเรียน' }
+    }
+
+    return { inTerm: false, label: matchedTerm.term || 'ปิดเทอม' }
+}
+
+const getHolidayTitle = (dateObj) => {
+    if (!dateObj) return ''
+    const dstr = dateToStr(dateObj)
+    const holiday = holidays.value.find(h => h.date === dstr)
+    return holiday ? holiday.summary : ''
+}
+
+const getDayTitle = (dateObj) => {
+    if (!dateObj) return ''
+    const holidayTitle = getHolidayTitle(dateObj)
+    if (holidayTitle) return holidayTitle
+
+    const termStatus = getAcademicTermStatus(dateObj)
+    return termStatus.label || 'ปิดเทอม'
+}
+
+>>>>>>> source_ckk/main
 const openAttendanceInfo = (dateObj) => {
     const dstr = dateToStr(dateObj)
     const att = getAttendanceMap.value[dstr]
@@ -176,11 +271,33 @@ const getPictureUrl = (pic) => {
     return `${import.meta.env.VITE_IMG_PROFILE_URL || ''}${pic}`
 }
 
+const goToConduct = () => {
+    if (!canOpenConduct.value) return
+    const studentId = props.student?.id || props.student?._id
+    if (!studentId) return
+    emit('close')
+    router.push({
+        name: 'Conduct',
+        query: {
+            studentId: String(studentId),
+        },
+    })
+}
+
+const getScoreBadgeClass = (score) => {
+    const value = Number(score)
+    if (Number.isNaN(value)) return 'badge-ghost'
+    if (value >= 101) return 'bg-gradient-to-r from-blue-800 to-emerald-500 text-white border-transparent'
+    if (value >= 81) return 'bg-green-600 text-white border-green-700'
+    if (value >= 61) return 'bg-lime-300 text-lime-900 border-lime-400'
+    if (value >= 41) return 'bg-yellow-300 text-yellow-900 border-yellow-400'
+    if (value >= 21) return 'bg-orange-400 text-white border-orange-500'
+    if (value >= 1) return 'bg-red-500 text-white border-red-600'
+    return 'bg-black text-white border-black'
+}
+
 const getDayClass = (dateObj) => {
     if (!dateObj) return ''
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    if (dateObj > now) return ''
     const dstr = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0')
     const att = getAttendanceMap.value[dstr]
     if (att && att.timeStamps && att.timeStamps.length > 0) {
@@ -188,8 +305,21 @@ const getDayClass = (dateObj) => {
         if (firstTime > '08:01') return 'bg-yellow-400 text-black'
         return 'bg-blue-500 text-white'
     }
+
+    const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6
+    if (isWeekend) return ''
+
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    const isFuture = dateObj > now
+    const termStatus = getAcademicTermStatus(dateObj)
+    if (!termStatus.inTerm) return 'bg-violet-300 text-violet-900'
+
     const isHoliday = holidays.value.some(h => h.date === dstr)
     if (isHoliday) return 'bg-gray-400 text-white'
+
+    if (isFuture) return ''
+
     return 'bg-red-500 text-white'
 }
 
@@ -214,24 +344,44 @@ const fetchAttendance = async () => {
         } else {
             attendances.value = []
         }
+
+        const yearsToFetch = [year]
+        // Term 2 can span into Jan-Mar of the next calendar year, so only then we also load previous year.
+        if (month <= 2) {
+            yearsToFetch.push(year - 1)
+        }
+
+        const termSources = await Promise.allSettled(
+            yearsToFetch.map((y) => academicCalendarService.getAcademicCalendarByYear(y))
+        )
+
+        academicTerms.value = termSources.flatMap((result) => {
+            if (result.status !== 'fulfilled') return []
+            const terms = result.value?.data?.terms
+            return Array.isArray(terms) ? terms : []
+        })
+
         const holidaysRes = await holidaysApi.getHolidaysByRange(start, end)
         holidays.value = Array.isArray(holidaysRes.data) ? holidaysRes.data : []
     } catch (e) {
         attendances.value = []
         holidays.value = []
+        academicTerms.value = []
     } finally {
         loading.value = false
     }
 }
 
-function getHolidayTitle(dateObj) {
-    if (!dateObj) return ''
-    const dstr = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0')
-    const holiday = holidays.value.find(h => h.date === dstr)
-    return holiday ? holiday.summary : ''
-}
-
-watch([selectedMonth, selectedYear, () => props.visible], ([m, y, vis]) => {
+watch([
+    () => props.student,
+    selectedMonth,
+    selectedYear,
+    () => props.visible
+], ([student, m, y, vis], [oldStudent]) => {
+    if (student !== oldStudent) {
+        selectedMonth.value = today.getMonth()
+        selectedYear.value = today.getFullYear()
+    }
     if (vis) fetchAttendance()
 })
 

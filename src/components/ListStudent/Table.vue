@@ -30,10 +30,13 @@
                         <div class="flex flex-wrap gap-2 text-sm mt-2">
                             <span class="badge badge-primary badge-sm">{{ student.grade }}</span>
                             <span class="badge badge-outline badge-sm">ห้อง {{ student.room }}</span>
+                            <span class="badge badge-sm font-semibold" :class="getScoreBadgeClass(student.score)">
+                                คะแนน {{ getScoreDisplay(student.score) }}
+                            </span>
                         </div>
                         <div class="flex flex-col gap-2 mt-2">
                             <div>
-                                <template v-if="auth.user?.role !== 'viewer'">
+                                <template v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'">
                                     <button class="btn btn-ghost btn-xs"
                                         :title="student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
                                         @click="emitReset(student)">
@@ -62,7 +65,7 @@
                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                 </button>
-                                <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-warning btn-outline"
+                                <button v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'" class="btn btn-sm btn-warning btn-outline"
                                     @click="emitEdit(student)" title="แก้ไข">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +73,7 @@
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-error btn-outline"
+                                <button v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'" class="btn btn-sm btn-error btn-outline"
                                     @click="emitDelete(student)" title="ลบ">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -92,6 +95,7 @@
                             <th class="bg-primary text-primary-content hidden sm:table-cell">รหัสนักเรียน</th>
                             <th class="bg-primary text-primary-content">ระดับชั้น</th>
                             <th class="bg-primary text-primary-content hidden md:table-cell">ห้อง</th>
+                            <th class="bg-primary text-primary-content text-center">คะแนน</th>
                             <th class="bg-primary text-primary-content text-center">สถานะ</th>
                             <th class="bg-primary text-primary-content text-center">
                                 จัดการ</th>
@@ -99,12 +103,12 @@
                     </thead>
                     <tbody>
                         <tr v-if="loading">
-                            <td colspan="7" class="text-center py-8">
+                            <td colspan="8" class="text-center py-8">
                                 <span class="loading loading-spinner loading-lg text-primary"></span>
                             </td>
                         </tr>
                         <tr v-else-if="students.length === 0">
-                            <td colspan="7" class="text-center py-8 text-base-content/50">
+                            <td colspan="8" class="text-center py-8 text-base-content/50">
                                 ไม่มีข้อมูลนักเรียน
                             </td>
                         </tr>
@@ -138,7 +142,12 @@
                             </td>
                             <td class="hidden md:table-cell">{{ student.room }}</td>
                             <td class="text-center">
-                                <template v-if="auth.user?.role !== 'viewer'">
+                                <span class="badge badge-sm font-semibold" :class="getScoreBadgeClass(student.score)">
+                                    {{ getScoreDisplay(student.score) }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <template v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'">
                                     <button class="btn btn-ghost btn-xs"
                                         :title="student.has_password ? 'มีรหัสผ่าน' : 'ยังไม่มีรหัสผ่าน'"
                                         @click="emitReset(student)">
@@ -163,7 +172,7 @@
                                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
-                                    <button v-if="auth.user?.role !== 'viewer'"
+                                    <button v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'"
                                         class="btn btn-sm btn-warning btn-outline" @click="emitEdit(student)"
                                         title="แก้ไข">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -172,8 +181,9 @@
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button v-if="auth.user?.role !== 'viewer'" class="btn btn-sm btn-error btn-outline"
-                                        @click="emitDelete(student)" title="ลบ">
+                                    <button v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'"
+                                        class="btn btn-sm btn-error btn-outline" @click="emitDelete(student)"
+                                        title="ลบ">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -228,6 +238,23 @@ const getInitials = (name) => {
 
 const getRowNumber = (index) => {
     return (props.currentPage - 1) * props.itemsPerPage + index + 1
+}
+
+const getScoreDisplay = (score) => {
+    const value = Number(score)
+    return Number.isNaN(value) ? '-' : value
+}
+
+const getScoreBadgeClass = (score) => {
+    const value = Number(score)
+    if (Number.isNaN(value)) return 'badge-ghost'
+    if (value >= 101) return 'bg-gradient-to-r from-blue-800 to-emerald-500 text-white border-transparent'
+    if (value >= 81) return 'bg-green-600 text-white border-green-700'
+    if (value >= 61) return 'bg-lime-300 text-lime-900 border-lime-400'
+    if (value >= 41) return 'bg-yellow-300 text-yellow-900 border-yellow-400'
+    if (value >= 21) return 'bg-orange-400 text-white border-orange-500'
+    if (value >= 1) return 'bg-red-500 text-white border-red-600'
+    return 'bg-black text-white border-black'
 }
 
 const emitEdit = (student) => {

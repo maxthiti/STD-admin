@@ -47,6 +47,33 @@
                         class="input input-bordered w-full bg-base-200" disabled />
                 </div> -->
 
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-3">
+                        <input v-model="formData.use_attendance_time" type="checkbox" class="toggle toggle-warning" />
+                        <span class="label-text">เปิดใช้งานช่วงเวลาบันทึกเข้าเรียน</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">เวลาเริ่มเช็คชื่อ</span>
+                            <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.attendance_start_time" type="time" class="input input-bordered w-full"
+                            :disabled="!formData.use_attendance_time" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">เวลาสิ้นสุดเช็คชื่อ</span>
+                            <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.attendance_end_time" type="time" class="input input-bordered w-full"
+                            :disabled="!formData.use_attendance_time" />
+                    </div>
+                </div>
+
                 <div class="modal-action">
                     <button type="button" @click="closeModal" class="btn btn-ghost">ยกเลิก</button>
                     <button type="submit" class="btn btn-warning">
@@ -75,14 +102,27 @@ const emit = defineEmits(['success'])
 const currentDevice = ref(null)
 const formData = ref({
     location: '',
-    gate_type: ''
+    gate_type: '',
+    attendance_start_time: '',
+    attendance_end_time: '',
+    use_attendance_time: false
 })
+
+const parseUseAttendanceTime = (value) => {
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'number') return value === 1
+    if (typeof value === 'string') return value.toLowerCase() === 'true' || value === '1'
+    return false
+}
 
 const openModal = (device) => {
     currentDevice.value = device
     formData.value = {
         location: device.location || '',
-        gate_type: device.gate_type || ''
+        gate_type: device.gate_type || '',
+        attendance_start_time: device.attendance_start_time || '',
+        attendance_end_time: device.attendance_end_time || '',
+        use_attendance_time: parseUseAttendanceTime(device.use_attendance_time)
     }
     if (updateModal.value) {
         updateModal.value.showModal()
@@ -100,7 +140,10 @@ const resetForm = () => {
     currentDevice.value = null
     formData.value = {
         location: '',
-        gate_type: ''
+        gate_type: '',
+        attendance_start_time: '',
+        attendance_end_time: '',
+        use_attendance_time: false
     }
 }
 

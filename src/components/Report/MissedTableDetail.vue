@@ -13,9 +13,15 @@
 </template>
 <script setup>
 import { ref, computed, watch } from 'vue'
+<<<<<<< HEAD
 import StudentDetail from '../ListStudent/Detail.vue'
 import TeacherDetail from '../ListTeacher/Detail.vue'
 
+=======
+import AttendanceInfo from '../AttendanceInfo.vue'
+import StudentDetail from '../ListStudent/Detail.vue'
+import TeacherDetail from '../ListTeacher/Detail.vue'
+>>>>>>> source_ckk/main
 const props = defineProps({
     student: { type: Object, required: true },
     role: { type: String, default: 'student' }

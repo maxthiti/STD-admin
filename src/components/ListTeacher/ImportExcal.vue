@@ -70,9 +70,9 @@
                     </table>
                 </div>
                 <div class="flex justify-center items-center gap-2 mt-2">
-                    <button class="btn btn-xs" @click="currentPage--" :disabled="currentPage === 1">«</button>
+                    <button class="btn btn-xs" @click="currentPage--" :disabled="currentPage === 1">‹</button>
                     <span class="text-xs">หน้า {{ currentPage }} / {{ totalPages }}</span>
-                    <button class="btn btn-xs" @click="currentPage++" :disabled="currentPage === totalPages">»</button>
+                    <button class="btn btn-xs" @click="currentPage++" :disabled="currentPage === totalPages">›</button>
                 </div>
                 <button class="btn btn-success mt-4" @click="handleImport" :disabled="isImporting">
                     <span v-if="isImporting" class="loading loading-spinner"></span>

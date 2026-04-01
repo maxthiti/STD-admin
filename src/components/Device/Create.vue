@@ -51,6 +51,33 @@
                         class="input input-bordered w-full" />
                 </div>
 
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-3">
+                        <input v-model="formData.use_attendance_time" type="checkbox" class="toggle toggle-primary" />
+                        <span class="label-text">เปิดใช้งานช่วงเวลาบันทึกเข้าเรียน</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">เวลาเริ่มเช็คชื่อ</span>
+                            <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.attendance_start_time" type="time" class="input input-bordered w-full"
+                            :disabled="!formData.use_attendance_time" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">เวลาสิ้นสุดเช็คชื่อ</span>
+                            <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.attendance_end_time" type="time" class="input input-bordered w-full"
+                            :disabled="!formData.use_attendance_time" />
+                    </div>
+                </div>
+
                 <div class="modal-action">
                     <button type="button" @click="closeModal" class="btn btn-ghost">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary">
@@ -80,7 +107,10 @@ const formData = ref({
     location: '',
     gate_type: '',
     device_type: '',
-    device_key: ''
+    device_key: '',
+    attendance_start_time: '',
+    attendance_end_time: '',
+    use_attendance_time: false
 })
 
 const openModal = () => {
@@ -102,7 +132,10 @@ const resetForm = () => {
         location: '',
         gate_type: '',
         device_type: '',
-        device_key: ''
+        device_key: '',
+        attendance_start_time: '',
+        attendance_end_time: '',
+        use_attendance_time: false
     }
 }
 

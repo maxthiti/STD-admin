@@ -91,4 +91,24 @@ export class ClassRoomService {
       throw error;
     }
   }
+
+  async promoteClassRoom(data) {
+    try {
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${this.baseUrl}classroom/promote`,
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify(data),
+      };
+      const response = await axios.request(config);
+      return response.data;
+    } catch (error) {
+      console.error("Promote classroom error:", error);
+      throw error;
+    }
+  }
 }

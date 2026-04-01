@@ -76,7 +76,7 @@
                     </div>
 
                     <ul v-show="isExpanded && isPersonnelOpen" class="ml-4 mt-2 space-y-2">
-                        <li v-if="auth.user?.role !== 'teacher'">
+                        <li v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'discipline'">
                             <router-link to="/home/teacher"
                                 class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
                                 :class="submenuClass('/home/teacher')">
@@ -104,7 +104,7 @@
                     </ul>
                 </li>
 
-                <li v-if="auth.user?.role !== 'teacher'">
+                <li v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'discipline'">
                     <div @click="toggleStructure"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer relative group"
                         :class="{ 'bg-primary text-primary-content': isStructureActive }">
@@ -177,10 +177,73 @@
                                 <span class="text-sm">จัดการวันหยุด</span>
                             </router-link>
                         </li>
+                        <li>
+                            <router-link to="/home/academiccalendar"
+                                class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
+                                :class="submenuClass('/home/academiccalendar')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                                <span class="text-sm">ปฏิทินการศึกษา</span>
+                            </router-link>
+                        </li>
                     </ul>
                 </li>
 
-                <li v-if="auth.user?.role !== 'teacher'">
+                <li v-if="auth.user?.role !== 'viewer'">
+                    <div @click="toggleBehaviorMenu"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer relative group"
+                        :class="{ 'bg-primary text-primary-content': isBehaviorMenuActive }">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3l8 4v5c0 5.25-3.75 10-8 10s-8-4.75-8-10V7l8-4z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                        </svg>
+                        <span v-show="isExpanded" class="font-medium whitespace-nowrap">จัดการความประพฤติ</span>
+                        <svg v-show="isExpanded" xmlns="http://www.w3.org/2000/svg"
+                            :class="['h-4 w-4 ml-auto transition-transform', isBehaviorMenuOpen ? 'rotate-180' : '']"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        <div v-show="!isExpanded"
+                            class="absolute left-full ml-2 px-3 py-2 bg-base-300 text-base-content rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                            จัดการความประพฤติ
+                        </div>
+                    </div>
+                    <ul v-show="isExpanded && isBehaviorMenuOpen" class="ml-4 mt-2 space-y-2">
+                        <li>
+                            <router-link to="/home/behavior"
+                                class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
+                                :class="submenuClass('/home/behavior')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h8m-8 4h8M5 7h14" />
+                                </svg>
+                                <span class="text-sm">รายการพฤติกรรม</span>
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link to="/home/conduct"
+                                class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-warning/20 transition-colors"
+                                :class="submenuClass('/home/conduct')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 3l8 4v5c0 5.25-3.75 10-8 10s-8-4.75-8-10V7l8-4z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4" />
+                                </svg>
+                                <span class="text-sm">จัดการคะแนน</span>
+                            </router-link>
+                        </li>
+                    </ul>
+                </li>
+
+                <li v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'discipline'">
                     <div @click="toggleEquipment"
                         class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer relative group"
                         :class="{ 'bg-primary text-primary-content': isEquipmentActive }">
@@ -304,6 +367,18 @@
                             </router-link>
                         </li>
                         <li>
+                            <router-link to="/home/report/at-risk"
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
+                                :class="submenuClass('/home/report/at-risk')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6M5 7h14M5 10h14M7 16h10M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>พฤติกรรมเสี่ยง</span>
+                            </router-link>
+                        </li>
+                        <li>
                             <router-link to="/home/report/stats"
                                 class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors text-sm"
                                 :class="submenuClass('/home/report/stats')">
@@ -418,6 +493,14 @@ const handleMouseLeave = () => {
     if (!isPinned.value) {
         isExpanded.value = false
     }
+}
+
+const isBehaviorMenuOpen = ref(false)
+const isBehaviorMenuActive = computed(() => {
+    return route.path === '/home/behavior'
+})
+const toggleBehaviorMenu = () => {
+    isBehaviorMenuOpen.value = !isBehaviorMenuOpen.value
 }
 
 const toggleMobileMenu = () => {

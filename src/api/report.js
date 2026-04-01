@@ -158,11 +158,28 @@ const getCommingPersonReport = async (params) => {
   }
 };
 
+const getRiskStudentReport = async (params = {}) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${baseUrl}report/riskstudent`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching riskstudent report:", error);
+    throw error;
+  }
+};
+
 export default {
   getAttendanceReport,
   getLateReport,
   getMissedReport,
   getStrangerReport,
+  getRiskStudentReport,
   getDailyStats: async (start, end) => {
     try {
       const token = localStorage.getItem("token");

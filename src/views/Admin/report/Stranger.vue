@@ -41,7 +41,7 @@
             <div v-if="totalPages > 1" class="flex justify-center mt-6">
                 <div class="join shadow-lg">
                     <button @click="goToPage(1)" class="join-item btn btn-sm" :disabled="pagination.page === 1">
-                        «
+                        ‹
                     </button>
 
                     <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
@@ -52,7 +52,7 @@
 
                     <button @click="goToPage(totalPages)" class="join-item btn btn-sm"
                         :disabled="pagination.page === totalPages">
-                        »
+                        ›
                     </button>
                 </div>
             </div>

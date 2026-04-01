@@ -136,7 +136,7 @@
     <div v-if="pagination.total_pages > 1" class="flex justify-center mt-6">
         <div class="join shadow-lg">
             <button @click="$emit('page-change', 1)" class="join-item btn btn-sm" :disabled="pagination.page === 1">
-                «
+                ‹
             </button>
 
             <button v-for="page in visiblePages" :key="page" @click="$emit('page-change', page)"
@@ -146,7 +146,7 @@
 
             <button @click="$emit('page-change', pagination.total_pages)" class="join-item btn btn-sm"
                 :disabled="pagination.page === pagination.total_pages">
-                »
+                ›
             </button>
         </div>
     </div>

@@ -60,13 +60,13 @@
                         <div v-if="basketTotalPages > 1" class="flex justify-center mb-2">
                             <div class="join">
                                 <button class="join-item btn btn-sm" @click="goToBasketPage(basketPage - 1)"
-                                    :disabled="basketPage === 1">«</button>
+                                    :disabled="basketPage === 1">‹</button>
                                 <button v-for="page in basketDisplayedPages" :key="page" class="join-item btn btn-sm"
                                     :class="{ 'btn-active': page === basketPage }" @click="goToBasketPage(page)">
                                     {{ page }}
                                 </button>
                                 <button class="join-item btn btn-sm" @click="goToBasketPage(basketPage + 1)"
-                                    :disabled="basketPage === basketTotalPages">»</button>
+                                    :disabled="basketPage === basketTotalPages">›</button>
                             </div>
                         </div>
                     </div>

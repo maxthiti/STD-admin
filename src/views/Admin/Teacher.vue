@@ -82,7 +82,7 @@
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
                 <button class="join-item btn btn-sm" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
-                    «
+                    ‹
                 </button>
                 <button v-for="page in displayedPages" :key="page" class="join-item btn btn-sm"
                     :class="{ 'btn-active': page === currentPage }" @click="goToPage(page)">
@@ -90,7 +90,7 @@
                 </button>
                 <button class="join-item btn btn-sm" @click="goToPage(currentPage + 1)"
                     :disabled="currentPage === totalPages">
-                    »
+                    ›
                 </button>
             </div>
         </div>
@@ -335,6 +335,13 @@ const handleCreateSuccess = async (formData) => {
             return
         }
         console.error('Create teacher error:', error)
+        if (
+            (error?.response?.status === 409) ||
+            (error?.response?.data?.error && error.response.data.error.includes('duplicate teacher userid'))
+        ) {
+            if (onError) onError(error?.response?.data?.error || 'duplicate teacher userid')
+            return
+        }
         const { default: Swal } = await import('sweetalert2')
         Swal.fire({
             icon: 'error',

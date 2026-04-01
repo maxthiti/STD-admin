@@ -1,7 +1,7 @@
 <template>
     <dialog ref="modalRef" :id="modalId" class="modal">
         <div class="modal-box">
-            <h3 class="font-bold text-lg mb-4 text-primary">เพิ่มผู้ดูแลระบบ</h3>
+            <h3 class="font-bold text-lg mb-4 text-primary">เพิ่มผู้ใช้งาน</h3>
 
             <form @submit.prevent="handleSubmit" class="space-y-4">
                 <div class="form-control">
@@ -55,6 +55,7 @@
                         :class="{ 'select-error': errors.role }" required>
                         <option disabled value="">เลือกสิทธิ์ผู้ใช้</option>
                         <option value="admin">Admin</option>
+                        <option value="discipline">Discipline</option>
                         <option value="viewer">Viewer</option>
                     </select>
                     <label v-if="errors.role" class="label">
@@ -115,6 +116,7 @@ const modalRef = ref(null)
 const accountService = new AccountService()
 const loading = ref(false)
 const errorMessage = ref('')
+const allowedRoles = ['admin', 'discipline', 'viewer']
 
 
 const form = reactive({
@@ -165,7 +167,7 @@ const validateForm = () => {
         isValid = false
     }
 
-    if (!form.role || (form.role !== 'admin' && form.role !== 'viewer')) {
+    if (!allowedRoles.includes(form.role)) {
         errors.role = 'กรุณาเลือกสิทธิ์ผู้ใช้'
         isValid = false
     }
@@ -192,7 +194,7 @@ const handleSubmit = async () => {
         resetForm()
     } catch (error) {
         console.error('Create admin error:', error)
-        errorMessage.value = error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มผู้ดูแลระบบ'
+        errorMessage.value = error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มผู้ใช้งาน'
     } finally {
         loading.value = false
     }

@@ -269,7 +269,7 @@
             <div class="join bg-white">
                 <button class="join-item btn btn-sm bg-transparent border-none"
                     @click="$emit('page-change', pagination.page - 1)" :disabled="pagination.page === 1">
-                    «
+                    ‹
                 </button>
                 <template v-for="page in displayedPages" :key="page">
                     <button class="join-item btn btn-sm border-none"
@@ -281,7 +281,7 @@
                 <button class="join-item btn btn-sm bg-transparent border-none"
                     @click="$emit('page-change', pagination.page + 1)"
                     :disabled="pagination.page === pagination.total_pages">
-                    »
+                    ›
                 </button>
             </div>
         </div>

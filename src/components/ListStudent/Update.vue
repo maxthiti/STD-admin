@@ -49,7 +49,11 @@
                         <input v-model="formData.userid" type="text" class="input input-bordered" required
                             :class="{ 'input-error': useridError }" autocomplete="off" />
                         <label v-if="useridError" class="label"><span class="label-text-alt text-error">{{ useridError
+<<<<<<< HEAD
                                 }}</span></label>
+=======
+                        }}</span></label>
+>>>>>>> source_ckk/main
                     </div>
 
                     <div class="form-control">

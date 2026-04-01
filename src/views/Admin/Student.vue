@@ -2,7 +2,8 @@
     <div class="space-y-6 max-[570px]:pt-14">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="text-xl sm:text-2xl font-bold text-white">จัดการนักเรียน</h2>
-            <div v-if="auth.user?.role !== 'viewer'" class="flex flex-wrap gap-2 w-full sm:w-auto">
+            <div v-if="auth.user?.role !== 'viewer' && auth.user?.role !== 'discipline'"
+                class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button v-if="auth.user?.role !== 'teacher'" class="btn btn-success btn-sm" @click="openImportModal">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -116,7 +117,7 @@
         <div v-if="totalPages > 1" class="flex justify-center">
             <div class="join">
                 <button class="join-item btn btn-sm" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
-                    «
+                    ‹
                 </button>
                 <button v-for="page in displayedPages" :key="page" class="join-item btn btn-sm"
                     :class="{ 'btn-active': page === currentPage }" @click="goToPage(page)">
@@ -124,7 +125,7 @@
                 </button>
                 <button class="join-item btn btn-sm" @click="goToPage(currentPage + 1)"
                     :disabled="currentPage === totalPages">
-                    »
+                    ›
                 </button>
             </div>
         </div>
@@ -292,6 +293,7 @@ const fetchStudents = async () => {
                 code: student.userid,
                 grade: student.grade,
                 room: student.classroom,
+                score: Number.isFinite(Number(student.score)) ? Number(student.score) : 100,
                 phone: student.phone || '-',
                 picture: student.picture ? imageBaseUrl + student.picture : '',
                 has_password: student.has_password,
@@ -374,7 +376,10 @@ const handleCreateSuccess = async (formData) => {
             if (onError) onError(error?.response?.data?.error || 'duplicate student userid')
             return
         }
+<<<<<<< HEAD
         console.error('Create student error:', error)
+=======
+>>>>>>> source_ckk/main
         const { default: Swal } = await import('sweetalert2')
         Swal.fire({
             icon: 'error',

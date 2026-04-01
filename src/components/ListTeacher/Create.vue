@@ -54,7 +54,6 @@
                             required />
                         <div v-if="useridError" class="text-sm text-error mt-1">{{ useridError }}</div>
                     </div>
-
                     <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">คำนำหน้า</span>
@@ -89,10 +88,9 @@
                             <input ref="positionInputRef" v-model="positionQuery" type="text"
                                 class="input input-bordered w-full" placeholder="พิมพ์เพื่อค้นหาและเลือกตำแหน่ง..."
                                 @focus="positionOpen = true" @input="positionOpen = true" required />
-                            <button v-if="formData.position" type="button"
-                                class="btn btn-ghost btn-xs absolute right-2 top-2" @click="clearPosition">ลบ</button>
+                            
                             <ul v-if="positionOpen"
-                                class="bg-base-100 rounded-box shadow-lg border absolute z-[1000] bottom-full left-0 mt-2 pt-1 w-full max-h-60 overflow-y-auto">
+                                class="bg-base-100 rounded-box shadow-lg border absolute z-[1000] top-full left-0 mt-1 w-full max-h-60 overflow-y-auto">
                                 <li v-if="!filteredPositions.length" class="px-3 py-2 text-sm opacity-70">
                                     ไม่พบตำแหน่งที่ตรงกับคำค้นหา
                                 </li>
@@ -114,10 +112,9 @@
                             <input ref="departmentInputRef" v-model="departmentQuery" type="text"
                                 class="input input-bordered w-full" placeholder="พิมพ์เพื่อค้นหาและเลือกแผนก..."
                                 @focus="departmentOpen = true" @input="departmentOpen = true" required />
-                            <button v-if="formData.department" type="button"
-                                class="btn btn-ghost btn-xs absolute right-2 top-2" @click="clearDepartment">ลบ</button>
+                            
                             <ul v-if="departmentOpen"
-                                class="bg-base-100 rounded-box shadow-lg border absolute z-[999] bottom-full left-0 mt-2 pt-1 w-full max-h-60 overflow-y-auto">
+                                class="bg-base-100 rounded-box shadow-lg border absolute z-[999] top-full left-0 mt-1 w-full max-h-60 overflow-y-auto">
                                 <li v-if="!filteredDepartments.length" class="px-3 py-2 text-sm opacity-70">
                                     ไม่พบแผนกที่ตรงกับคำค้นหา
                                 </li>
