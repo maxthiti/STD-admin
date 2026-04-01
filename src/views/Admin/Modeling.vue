@@ -110,9 +110,13 @@
 
             <div v-if="totalPages > 1" class="flex justify-center mt-6">
                 <div class="join">
+                    <button class="join-item btn btn-sm bg-transparent border-none"
+                        @click="changePage(1)" :disabled="currentPage === 1">
+                        «
+                    </button>
                     <button class="join-item btn btn-sm bg-transparent border-none" @click="changePage(currentPage - 1)"
                         :disabled="currentPage === 1">
-                        «
+                        ‹
                     </button>
                     <button v-for="page in visiblePages" :key="page"
                         class="join-item btn btn-sm bg-transparent border-none"
@@ -121,6 +125,10 @@
                     </button>
                     <button class="join-item btn btn-sm bg-transparent border-none" @click="changePage(currentPage + 1)"
                         :disabled="currentPage === totalPages">
+                        ›
+                    </button>
+                    <button class="join-item btn btn-sm bg-transparent border-none"
+                        @click="changePage(totalPages)" :disabled="currentPage === totalPages">
                         »
                     </button>
                 </div>
