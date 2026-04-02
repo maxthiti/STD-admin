@@ -9,7 +9,7 @@
                     title="คะแนนที่ยังสามารถเพิ่มให้นักเรียนคนนี่ได้">คงเหลือ {{ teacherRemainingScore
                     }}</span>
             </div>
-            <ExportDocs v-if="auth.user?.role !== 'teacher'" :studentInfo="studentInfo" :conductList="conductList" />
+            <!-- <ExportDocs v-if="auth.user?.role !== 'teacher'" :studentInfo="studentInfo" :conductList="conductList" /> -->
         </div>
         <div v-if="studentInfo"
             class="bg-gray-100 rounded-[10px] py-[14px] px-[18px] mb-[18px] text-[1.08rem] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">

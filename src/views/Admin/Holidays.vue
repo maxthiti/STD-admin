@@ -1,9 +1,6 @@
 <template>
-<<<<<<< HEAD
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-4 max-[570px]:pt-14">
-=======
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-4">
->>>>>>> source_ckk/main
+    <div
+        class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2 sm:gap-4 max-[570px]:pt-14">
         <h1 class="text-xl sm:text-2xl font-bold text-white whitespace-nowrap mb-2 sm:mb-0">จัดการวันหยุด</h1>
         <div class="flex gap-2">
             <ImportHolidays v-if="auth.user?.role !== 'viewer'" @imported="onImportHolidays" class="" />

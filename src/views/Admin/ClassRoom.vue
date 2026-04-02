@@ -1,10 +1,6 @@
 <template>
     <div class="space-y-6 max-[570px]:pt-14">
-<<<<<<< HEAD
-        <div class="flex flex-row justify-between items-start sm:items-center gap-4">
-=======
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
->>>>>>> source_ckk/main
             <h2 class="text-xl sm:text-2xl font-bold text-white">จัดการห้องเรียน</h2>
             <div class="flex gap-2">
                 <button v-if="auth.user?.role !== 'teacher' && auth.user?.role !== 'viewer'" @click="openCreateModal"

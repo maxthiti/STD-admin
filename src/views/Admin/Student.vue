@@ -376,10 +376,6 @@ const handleCreateSuccess = async (formData) => {
             if (onError) onError(error?.response?.data?.error || 'duplicate student userid')
             return
         }
-<<<<<<< HEAD
-        console.error('Create student error:', error)
-=======
->>>>>>> source_ckk/main
         const { default: Swal } = await import('sweetalert2')
         Swal.fire({
             icon: 'error',

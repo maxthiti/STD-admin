@@ -54,17 +54,6 @@
                                     <span
                                         :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7 cursor-pointer'"
                                         v-if="getAttendanceMap[dateToStr(day)] && getAttendanceMap[dateToStr(day)].timeStamps && getAttendanceMap[dateToStr(day)].timeStamps.length > 0"
-<<<<<<< HEAD
-                                        @click="openAttendanceInfo(day)">
-                                        {{ day.getDate() }}
-                                    </span>
-                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
-                                        v-else-if="getHolidayTitle(day)" :title="getHolidayTitle(day)">
-                                        {{ day.getDate() }}
-                                    </span>
-                                    <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
-                                        v-else>
-=======
                                         @click="openAttendanceInfo(day)" :title="getDayTitle(day)">
                                         {{ day.getDate() }}
                                     </span>
@@ -74,7 +63,6 @@
                                     </span>
                                     <span :class="getDayClass(day) + ' inline-block w-7 h-7 rounded-full leading-7'"
                                         v-else :title="getDayTitle(day)">
->>>>>>> source_ckk/main
                                         {{ day.getDate() }}
                                     </span>
                                 </div>
@@ -108,15 +96,10 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import reportApi from '../../api/report'
 import holidaysApi from '../../api/holidays'
-<<<<<<< HEAD
-import AttendanceInfo from '../AttendanceInfo.vue'
-
-=======
 import { AcademicCalendarService } from '../../api/academiccalendar'
 import AttendanceInfo from '../AttendanceInfo.vue'
 
 const emit = defineEmits(['close'])
->>>>>>> source_ckk/main
 const props = defineProps({
     student: { type: Object, required: true },
     visible: { type: Boolean, default: false },
@@ -148,10 +131,7 @@ const academicTerms = ref([])
 const loading = ref(false)
 const attendanceInfoRef = ref(null)
 const selectedAttendanceInfo = ref(null)
-<<<<<<< HEAD
-=======
 const academicCalendarService = new AcademicCalendarService()
->>>>>>> source_ckk/main
 
 const calendar = computed(() => {
     const year = selectedYear.value
@@ -207,8 +187,6 @@ const dateToStr = (dateObj) => {
     )
 }
 
-<<<<<<< HEAD
-=======
 const normalizeDateInput = (value) => {
     if (!value) return ''
     return String(value).substring(0, 10)
@@ -255,7 +233,6 @@ const getDayTitle = (dateObj) => {
     return termStatus.label || 'ปิดเทอม'
 }
 
->>>>>>> source_ckk/main
 const openAttendanceInfo = (dateObj) => {
     const dstr = dateToStr(dateObj)
     const att = getAttendanceMap.value[dstr]
