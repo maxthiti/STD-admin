@@ -2,8 +2,7 @@
     <div class="p-4 max-w-2xl mx-auto">
         <h2 class="text-xl font-bold mb-2 sm:mb-4">เพิ่มวันหยุด</h2>
         <div class="mb-4 flex justify-end">
-            <button class="btn btn-info btn-sm" @click="openImportDialog"
-                type="button">สร้างวันหยุดตามปฏิทิน</button>
+            <button class="btn btn-info btn-sm" @click="openImportDialog" type="button">สร้างวันหยุดตามปฏิทิน</button>
         </div>
         <form @submit.prevent="addHoliday" class="space-y-4">
             <div v-if="showImportDialog"
@@ -11,10 +10,11 @@
                 <div class="bg-base-100 rounded-lg shadow-lg p-6 w-full max-w-xs relative animate-fade-in">
                     <h3 class="font-bold mb-4">เลือกปีที่ต้องการนำเข้า</h3>
                     <div class="flex flex-col gap-2">
-                        <button class="btn btn-outline" @click="importHolidaysByYear(currentYear)">ปีนี้ ({{ currentYear
+                        <button class="btn btn-outline" @click="importHolidaysByYear(currentYear)">ปีนี้ ({{
+                            currentYearBE
                         }})</button>
-                        <button class="btn btn-outline" @click="importHolidaysByYear(currentYear + 1)">ปีหน้า ({{
-                            currentYear + 1 }})</button>
+                        <button class="btn btn-outline" @click="importHolidaysByYear(nextYear)">ปีหน้า ({{
+                            nextYearBE }})</button>
                     </div>
                     <button class="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost"
                         @click="showImportDialog = false">✕</button>
@@ -91,9 +91,13 @@ import { ref, computed, watch } from 'vue'
 import holidaysApi, { fetchExternalHolidays } from '../../api/holidays'
 import FlatPickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
+import { Thai } from 'flatpickr/dist/l10n/th.js'
 import Swal from 'sweetalert2'
 const showImportDialog = ref(false)
 const currentYear = new Date().getFullYear()
+const currentYearBE = currentYear + 543
+const nextYear = currentYear + 1
+const nextYearBE = nextYear + 543
 const allExternalHolidays = ref([])
 
 async function openImportDialog() {
@@ -190,6 +194,19 @@ const flatpickrConfig = {
     dateFormat: 'Y-m-d',
     altInput: true,
     altFormat: 'd/m/Y',
+    locale: {
+        ...Thai,
+        firstDayOfWeek: 1
+    },
+    formatDate: (date, format) => {
+        const day = String(date.getDate()).padStart(2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const year = date.getFullYear()
+
+        if (format === 'Y-m-d') return `${year}-${month}-${day}`
+        if (format === 'd/m/Y') return `${day}/${month}/${year + 543}`
+        return `${day}/${month}/${year + 543}`
+    },
     enableTime: false,
     allowInput: true
 }
@@ -248,24 +265,39 @@ function formatDate(date) {
 }
 
 function formatDisplayDate(date) {
+    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
+
+    let year
+    let month
+    let day
+
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        const [y, m, d] = date.split('-');
-        return `${d}/${m}/${y}`;
+        const [y, m, d] = date.split('-').map(Number)
+        year = y
+        month = m
+        day = d
+    } else if (typeof date === 'string' && /^\d{8}$/.test(date)) {
+        year = Number(date.slice(0, 4))
+        month = Number(date.slice(4, 6))
+        day = Number(date.slice(6, 8))
+    } else if (typeof date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+        const [d, m, y] = date.split('/').map(Number)
+        year = y
+        month = m
+        day = d
+    } else {
+        const parsed = new Date(date)
+        year = parsed.getFullYear()
+        month = parsed.getMonth() + 1
+        day = parsed.getDate()
     }
-    if (typeof date === 'string' && /^\d{8}$/.test(date)) {
-        const y = date.slice(0, 4);
-        const m = date.slice(4, 6);
-        const d = date.slice(6, 8);
-        return `${d}/${m}/${y}`;
+
+    if (!year || !month || !day || Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+        return '-'
     }
-    if (typeof date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
-        return date;
-    }
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+
+    const buddhistYear = year > 2400 ? year : year + 543
+    return `${day} ${thaiMonths[month - 1]} ${buddhistYear}`
 }
 
 const emit = defineEmits(['saved'])

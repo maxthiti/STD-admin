@@ -90,8 +90,12 @@ const imgBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 
 const formatDate = (dateStr) => {
     if (!dateStr) return '-'
-    const [year, month, day] = dateStr.split('-')
-    return `${day}/${month}/${year}`
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('th-TH-u-ca-buddhist', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    })
 }
 
 const formatTime = (timestamp) => {

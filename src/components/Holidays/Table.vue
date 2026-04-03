@@ -93,7 +93,6 @@ const pagedHolidays = computed(() => {
 });
 watch(() => props.holidays, () => { currentPage.value = 1; });
 
-// Pagination: แสดงเลขหน้าแบบ window
 const visiblePages = computed(() => {
     const windowSize = 5;
     let start = Math.max(1, currentPage.value - Math.floor(windowSize / 2));
@@ -110,18 +109,35 @@ const visiblePages = computed(() => {
 });
 
 function formatDisplayDate(date) {
+    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+    let year;
+    let month;
+    let day;
+
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        const [y, m, d] = date.split('-');
-        return `${d}/${m}/${y}`;
+        const [y, m, d] = date.split('-').map(Number);
+        year = y;
+        month = m;
+        day = d;
+    } else if (typeof date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+        const [d, m, y] = date.split('/').map(Number);
+        year = y;
+        month = m;
+        day = d;
+    } else {
+        const parsed = new Date(date);
+        year = parsed.getFullYear();
+        month = parsed.getMonth() + 1;
+        day = parsed.getDate();
     }
-    if (typeof date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
-        return date;
+
+    if (!year || !month || !day || Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+        return '-';
     }
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+
+    const buddhistYear = year > 2400 ? year : year + 543;
+    return `${day} ${thaiMonths[month - 1]} ${buddhistYear}`;
 }
 </script>
 <style scoped>

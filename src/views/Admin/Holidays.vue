@@ -20,7 +20,7 @@
             class="input input-bordered input-sm text-xs sm:text-base w-auto" />
         <input v-if="filterType === 'month'" type="month" v-model="monthInput"
             class="input input-bordered input-sm text-xs sm:text-base w-auto" />
-        <input v-if="filterType === 'year'" type="number" min="1900" max="2100" v-model="yearInput"
+        <input v-if="filterType === 'year'" type="number" min="2443" max="2643" v-model="yearInputBE"
             class="input input-bordered input-sm w-auto text-xs sm:text-base" />
     </div>
 
@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import Create from '../../components/Holidays/Create.vue'
 import HolidaysTable from '../../components/Holidays/Table.vue'
 import DeleteDialog from '../../components/Holidays/Delete.vue'
@@ -96,6 +96,15 @@ const filterType = ref('year')
 const dateInput = ref(`${yyyy}-${mm}-${dd}`)
 const monthInput = ref(`${yyyy}-${mm}`)
 const yearInput = ref(yyyy)
+const yearInputBE = computed({
+    get: () => yearInput.value + 543,
+    set: (value) => {
+        const parsed = Number(value)
+        if (!Number.isNaN(parsed) && parsed > 0) {
+            yearInput.value = parsed > 2400 ? parsed - 543 : parsed
+        }
+    }
+})
 
 function getRange() {
     if (filterType.value === 'day') {

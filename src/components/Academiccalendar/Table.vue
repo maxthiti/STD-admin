@@ -37,7 +37,9 @@
                                 ไม่มีข้อมูลปฏิทินการศึกษา
                             </td>
                         </tr>
-                        <tr v-else v-for="(item, idx) in terms" :key="idx" class="hover">
+                        <tr v-else v-for="(item, idx) in terms" :key="idx" class="hover cursor-pointer"
+                            :class="{ 'bg-primary/10 ring-1 ring-primary/30': selectedIndex === idx }"
+                            @click="handleSelectTerm(item, idx)">
                             <td>{{ item.term }}</td>
                             <td>
                                 <span class="hidden lg:inline">{{ formatDate(item.start_date) }}</span>
@@ -70,10 +72,11 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['edit', 'delete']);
+const emit = defineEmits(['edit', 'delete', 'select-term']);
 
 const loading = ref(false);
 const terms = ref([]);
+const selectedIndex = ref(0);
 
 const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -94,14 +97,31 @@ const handleEditAll = () => {
     });
 };
 
+const getTermKey = (item, idx) => {
+    const termName = String(item?.term || '').toLowerCase();
+    if (termName.includes('2')) return 'term2';
+    if (termName.includes('1')) return 'term1';
+    return idx === 1 ? 'term2' : 'term1';
+};
+
+const handleSelectTerm = (item, idx) => {
+    selectedIndex.value = idx;
+    emit('select-term', getTermKey(item, idx));
+};
+
 const fetchData = async () => {
     loading.value = true;
     try {
         const service = new AcademicCalendarService();
         const res = await service.getAcademicCalendarByYear(props.year);
         terms.value = res?.data?.terms ?? [];
+        selectedIndex.value = 0;
+        if (terms.value.length > 0) {
+            emit('select-term', getTermKey(terms.value[0], 0));
+        }
     } catch (error) {
         terms.value = [];
+        selectedIndex.value = 0;
     } finally {
         loading.value = false;
     }

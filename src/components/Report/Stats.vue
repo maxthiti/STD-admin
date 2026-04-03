@@ -1,5 +1,3 @@
-async function buildPrimaryChart() {
-async function buildCompareChart() {
 <template>
     <div class="p-1 sm:p-2 md:p-6 space-y-2 sm:space-y-4 md:space-y-6 w-full">
         <div class="flex flex-col md:flex-row md:items-center justify-between items-center gap-2 md:gap-4">
@@ -267,7 +265,11 @@ function formatDate(date) {
 
 function formatDateThai(date) {
     const d = new Date(date)
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
+    return d.toLocaleDateString('th-TH-u-ca-buddhist', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    })
 }
 
 function getThaiMonth(monthIndex) {
@@ -286,7 +288,7 @@ const weekLabel = computed(() => {
 const monthLabel = computed(() => {
     if (viewMode.value !== 'month') return ''
     const date = new Date(currentMonthDate.value)
-    return `${getThaiMonth(date.getMonth())} ${date.getFullYear()}`
+    return `${getThaiMonth(date.getMonth())} ${date.getFullYear() + 543}`
 })
 
 const compareWeekLabel = computed(() => {
@@ -299,7 +301,7 @@ const compareWeekLabel = computed(() => {
 const compareMonthLabel = computed(() => {
     if (viewMode.value !== 'month') return ''
     const date = new Date(compareMonthDate.value)
-    return `${getThaiMonth(date.getMonth())} ${date.getFullYear()}`
+    return `${getThaiMonth(date.getMonth())} ${date.getFullYear() + 543}`
 })
 
 function initializeCurrentWeek() {
@@ -451,8 +453,11 @@ function computeStats(dailyStats) {
 
     const formatDisplayDate = (dateStr) => {
         if (!dateStr || dateStr === '-') return '-'
-        const [year, month, day] = dateStr.split('-')
-        return `${day}/${month}/${year}`
+        return new Date(dateStr).toLocaleDateString('th-TH-u-ca-buddhist', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        })
     }
 
     return {
@@ -465,11 +470,18 @@ function computeStats(dailyStats) {
 
 function formatLabelDate(dateStr) {
     if (!dateStr) return ''
-    const [year, month, day] = dateStr.split('-')
+    const date = new Date(dateStr)
     if (window.innerWidth <= 768) {
-        return `${day}/${month}`
+        return date.toLocaleDateString('th-TH-u-ca-buddhist', {
+            day: 'numeric',
+            month: 'short'
+        })
     }
-    return `${day}/${month}/${year}`
+    return date.toLocaleDateString('th-TH-u-ca-buddhist', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    })
 }
 
 function buildPrimaryChart() {

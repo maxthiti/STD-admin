@@ -8,7 +8,7 @@
                     <label class="label">
                         <span class="label-text">ปีการศึกษา <span class="text-error">*</span></span>
                     </label>
-                    <input v-model.number="academicYear" type="number" placeholder="เช่น 2026"
+                    <input v-model.number="academicYear" type="number" placeholder="เช่น 2569"
                         class="input input-bordered" :class="{ 'input-error': yearError }" required />
                     <label v-if="yearError" class="label">
                         <span class="label-text-alt text-error">{{ yearError }}</span>
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { AcademicCalendarService } from '../../api/academiccalendar'
 
 const props = defineProps({
@@ -118,6 +118,13 @@ const academicCalendarService = new AcademicCalendarService()
 const loading = ref(false)
 const errorMessage = ref('')
 const academicYear = ref(new Date().getFullYear())
+const academicYearBE = computed({
+    get: () => academicYear.value ? academicYear.value + 543 : '',
+    set: (val) => {
+        const parsed = Number(val)
+        academicYear.value = (!Number.isNaN(parsed) && parsed > 0) ? (parsed > 2400 ? parsed - 543 : parsed) : ''
+    }
+})
 const yearError = ref('')
 const formTerms = ref([])
 const fieldErrors = ref([])
@@ -132,8 +139,8 @@ const resetForm = () => {
     academicYear.value = Number(props.year) || new Date().getFullYear()
     yearError.value = ''
     errorMessage.value = ''
-    formTerms.value = [emptyTerm()]
-    fieldErrors.value = [{ term: '', start_date: '', end_date: '' }]
+    formTerms.value = [emptyTerm(), emptyTerm()]
+    fieldErrors.value = [{ term: '', start_date: '', end_date: '' }, { term: '', start_date: '', end_date: '' }]
 }
 
 const addTerm = () => {
@@ -167,7 +174,7 @@ const validateForm = () => {
     yearError.value = ''
     fieldErrors.value = formTerms.value.map(() => ({ term: '', start_date: '', end_date: '' }))
 
-    if (!academicYear.value || academicYear.value < 1900 || academicYear.value > 2100) {
+    if (!academicYear.value || academicYear.value < 1900 || academicYear.value > 2200) {
         yearError.value = 'กรุณากรอกปีการศึกษาที่ถูกต้อง'
         isValid = false
     }

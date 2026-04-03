@@ -344,7 +344,7 @@ async function exportAllToExcel() {
         function formatDateTH(dateStr) {
             if (!dateStr) return '-'
             const d = new Date(dateStr)
-            return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' })
+            return d.toLocaleDateString('th-TH-u-ca-buddhist', { day: 'numeric', month: 'short', year: 'numeric' })
         }
 
         function getStatus(att) {
@@ -491,10 +491,10 @@ const extractEntryExitAttendance = (attendance) => {
 const formatDate = (dateStr) => {
     if (!dateStr) return '-'
     const date = new Date(dateStr)
-    return date.toLocaleDateString('th-TH', {
+    return date.toLocaleDateString('th-TH-u-ca-buddhist', {
         year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+        month: 'short',
+        day: 'numeric'
     })
 }
 

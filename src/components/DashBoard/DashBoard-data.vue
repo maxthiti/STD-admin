@@ -303,11 +303,16 @@ const localClassroom = ref(Number(localStorage.getItem('classroom')) || 0)
 const profileName = ref(localStorage.getItem('profileName') || '')
 
 const displayDate = computed(() => {
-    const d = new Date(selectedDate.value)
-    const dd = String(d.getDate()).padStart(2, '0')
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const yyyy = d.getFullYear()
-    return `${dd}/${mm}/${yyyy}`
+    const [year, month, day] = (selectedDate.value || '').split('-').map(Number)
+    if (!year || !month || !day) return ''
+
+    const thaiMonths = [
+        'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+        'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+    ]
+    const buddhistYear = year + 543
+
+    return `${day} ${thaiMonths[month - 1]} ${buddhistYear}`
 })
 
 const latePagination = computed(() => ({

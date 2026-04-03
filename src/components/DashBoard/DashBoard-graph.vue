@@ -83,7 +83,11 @@ function formatDateISO(d) {
 
 function formatDateThai(date) {
     const d = new Date(date)
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
+    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
+    const day = d.getDate()
+    const month = thaiMonths[d.getMonth()]
+    const buddhistYear = d.getFullYear() + 543
+    return `${day} ${month} ${buddhistYear}`
 }
 
 function getMonday(d) {

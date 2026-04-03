@@ -272,10 +272,10 @@ function openDetail(student) {
 function formatDate(dateStr) {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('th-TH', {
+    return date.toLocaleDateString('th-TH-u-ca-buddhist', {
         year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+        month: 'short',
+        day: 'numeric'
     });
 }
 

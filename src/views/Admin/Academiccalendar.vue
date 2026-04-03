@@ -5,7 +5,7 @@
             <div class="flex gap-2 items-center w-full sm:w-auto">
                 <select v-model="selectedYear"
                     class="select select-bordered select-sm text-xs sm:text-base flex-1 sm:flex-none">
-                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
+                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y + 543 }}</option>
                 </select>
                 <button class="btn btn-primary btn-sm" @click="openCreateModal">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -17,8 +17,10 @@
             </div>
         </div>
 
+        <TermSummary :year="selectedYear" :refresh-key="refreshKey" :selected-term-key="selectedTermKey" />
+
         <AcademicCalendarTable :year="selectedYear" :refresh-key="refreshKey" @edit="handleEdit"
-            @delete="openDeleteModal" />
+            @delete="openDeleteModal" @select-term="handleSelectTerm" />
 
         <CreateModal :is-open="isCreateModalOpen" :year="selectedYear" @close="closeCreateModal"
             @success="handleCreateSuccess" />
@@ -35,6 +37,7 @@
 import { ref } from 'vue'
 import Swal from 'sweetalert2'
 import AcademicCalendarTable from '../../components/Academiccalendar/Table.vue'
+import TermSummary from '../../components/Academiccalendar/TermSummary.vue'
 import CreateModal from '../../components/Academiccalendar/Create.vue'
 import UpdateModal from '../../components/Academiccalendar/Update.vue'
 import DeleteModal from '../../components/Academiccalendar/Delete.vue'
@@ -46,6 +49,7 @@ const isCreateModalOpen = ref(false)
 const isUpdateModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
 const selectedTerms = ref([])
+const selectedTermKey = ref('term1')
 
 const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 
@@ -140,5 +144,9 @@ const handleDeleteSuccess = () => {
 
 const handleRefresh = () => {
     refreshKey.value += 1
+}
+
+const handleSelectTerm = (termKey) => {
+    selectedTermKey.value = termKey === 'term2' ? 'term2' : 'term1'
 }
 </script>
