@@ -8,7 +8,7 @@
                     <label class="label">
                         <span class="label-text">ปีการศึกษา <span class="text-error">*</span></span>
                     </label>
-                    <input v-model.number="academicYear" type="number" placeholder="เช่น 2569"
+                    <input v-model.number="academicYearBE" type="number" placeholder="เช่น 2569"
                         class="input input-bordered" :class="{ 'input-error': yearError }" required />
                     <label v-if="yearError" class="label">
                         <span class="label-text-alt text-error">{{ yearError }}</span>
