@@ -272,18 +272,29 @@ async function handleImport() {
             }
         }
 
+        function cleanLastName(val) {
+            if (val === undefined || val === null || val === '' || (typeof val === 'string' && val.trim() === '')) return '';
+            if (val === '-') return ' ';
+            if (typeof val === 'string' && val.trim() === '-') return ' ';
+            return val;
+        }
+
         const importedTeachers = [];
         const failedTeachers = [];
         for (const teacher of previewData.value) {
+            const cleanedTeacher = {
+                ...teacher,
+                last_name: cleanLastName(teacher.last_name)
+            };
             const formData = {
-                userid: teacher.userid,
-                pre_name: teacher.pre_name,
-                first_name: teacher.first_name,
-                last_name: teacher.last_name,
-                position: teacher.position,
-                department: teacher.department,
+                userid: cleanedTeacher.userid,
+                pre_name: cleanedTeacher.pre_name,
+                first_name: cleanedTeacher.first_name,
+                last_name: cleanedTeacher.last_name,
+                position: cleanedTeacher.position,
+                department: cleanedTeacher.department,
                 status: 'ปกติ',
-                picture: imageMap[teacher.userid] || null
+                picture: imageMap[cleanedTeacher.userid] || null
             };
             try {
                 const response = await teacherService.createTeacher(formData);
@@ -291,15 +302,14 @@ async function handleImport() {
                     importedTeachers.push(response.data);
                 } else {
                     failedTeachers.push({
-                        userid: teacher.userid,
-                        name: `${teacher.pre_name}${teacher.first_name} ${teacher.last_name}`,
+                        userid: cleanedTeacher.userid,
+                        name: `${cleanedTeacher.pre_name}${cleanedTeacher.first_name} ${cleanedTeacher.last_name}`,
                         reason: response.message || 'ไม่ทราบสาเหตุ'
                     });
                 }
             } catch (err) {
                 const apiError = err?.response?.data;
                 let reason = apiError?.error || apiError?.message || err.message || 'ไม่ทราบสาเหตุ';
-                // แปล error ที่พบบ่อย
                 if (apiError?.message === 'Validation error' && apiError?.error?.includes('"pre_name" must be one of')) {
                     reason = 'คำนำหน้าไม่ถูกต้อง กรุณาตรวจสอบ เช่น นาย, นาง, นางสาว, Mr., Ms., Mrs.';
                 } else if (apiError?.message === 'Duplicate data' && apiError?.error?.includes('duplicate teacher userid')) {
@@ -314,8 +324,8 @@ async function handleImport() {
                     reason = 'กรุณากรอกข้อมูลให้ครบถ้วน';
                 }
                 failedTeachers.push({
-                    userid: teacher.userid,
-                    name: `${teacher.pre_name}${teacher.first_name} ${teacher.last_name}`,
+                    userid: cleanedTeacher.userid,
+                    name: `${cleanedTeacher.pre_name}${cleanedTeacher.first_name} ${cleanedTeacher.last_name}`,
                     reason
                 });
             }

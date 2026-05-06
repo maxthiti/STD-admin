@@ -4,12 +4,12 @@
             <div class="card bg-base-100 shadow-xl animate-form">
                 <div class="card-body p-4 sm:p-6">
                     <div class="flex flex-col items-center mb-4 animate-logo">
-                        <img :src="logoUrl" alt="Chakkam Khanathon School Logo" class="school-logo mb-2" />
-                        <h2 class="school-title text-blue-900 font-bold text-xl sm:text-2xl text-center drop-shadow">
-                            โรงเรียนจักรคำคณาทร
+                        <img :src="logoUrl" alt="KSWW School Logo" class="school-logo mb-2" />
+                        <h2 class="school-title font-bold text-xl sm:text-2xl text-center drop-shadow">
+                            โรงเรียนเขาสวนกวางวิทยานุกูล
                         </h2>
                         <div class="text-blue-900 font-medium text-base sm:text-lg text-center drop-shadow mb-1">
-                            จังหวัดลำพูน
+                            จังหวัดขอนแก่น
                         </div>
                     </div>
 
@@ -83,7 +83,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import { UserService } from '../api/User.js'
-import logoUrl from '../assets/Chakkam_Khanathon_School_logo.png'
+import logoUrl from '../assets/KSWW-logo.png'
 import CryptoJS from '../utils/crypto.js'
 
 const router = useRouter()
@@ -105,7 +105,7 @@ onMounted(() => {
     if (savedUsername && savedPassword) {
         form.username = savedUsername
         try {
-            const bytes = CryptoJS.AES.decrypt(savedPassword, 'CKKSchool2025')
+            const bytes = CryptoJS.AES.decrypt(savedPassword, 'KSWWSchool2025')
             form.password = bytes.toString(CryptoJS.enc.Utf8)
         } catch (e) {
             form.password = ''
@@ -214,7 +214,7 @@ async function onSubmit() {
             }
             if (remember.value) {
                 localStorage.setItem('remember_username', form.username)
-                const encrypted = CryptoJS.AES.encrypt(form.password, 'CKKSchool2025').toString()
+                const encrypted = CryptoJS.AES.encrypt(form.password, 'KSWWSchool2025').toString()
                 localStorage.setItem('remember_password', encrypted)
             } else {
                 localStorage.removeItem('remember_username')
@@ -258,7 +258,7 @@ async function onSubmit() {
 
 <style scoped>
 .login-bg {
-    background: linear-gradient(135deg, #1e3a8a 60%, #ffd600 100%);
+    background: linear-gradient(120deg, #1e3a8a 50%, #ffbc40 80%, #ff8a65 100%);
 }
 
 .school-logo {
@@ -284,7 +284,7 @@ async function onSubmit() {
 }
 
 .school-title {
-    color: #ffd600;
+    color: #ffbc40;
     text-shadow: 1px 1px 0 #1e3a8a, 0 2px 8px #1e3a8a33;
     letter-spacing: 1px;
 }
@@ -299,8 +299,9 @@ async function onSubmit() {
     color: #1e3a8a;
 }
 
+
 .btn-primary.login-btn {
-    background: linear-gradient(90deg, #1e3a8a 70%, #ffd600 100%);
+    background: linear-gradient(120deg, #1e3a8a 50%, #ffbc40 80%, #ff8a65 100%);
     color: #fff;
     border: none;
     transition: transform 0.18s cubic-bezier(.68, -0.55, .27, 1.55), box-shadow 0.18s;
@@ -309,8 +310,8 @@ async function onSubmit() {
 
 .btn-primary.login-btn:hover:not(:disabled) {
     transform: scale(1.06);
-    box-shadow: 0 4px 16px #ffd60044;
-    background: linear-gradient(90deg, #1e3a8a 50%, #ffd600 100%);
+    box-shadow: 0 4px 16px #ffbc4044;
+    background: linear-gradient(120deg, #1e3a8a 50%, #ffbc40 80%, #ff8a65 100%);
 }
 
 .input,

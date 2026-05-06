@@ -46,8 +46,8 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-bold mb-4">รายการใบลา</h2>
+        <div class="">
+            <!-- <h2 class="text-lg font-bold mb-4">รายการใบลา</h2> -->
             <LeaveRequest :filters="filters" />
         </div>
     </div>

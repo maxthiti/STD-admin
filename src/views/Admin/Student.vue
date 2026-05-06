@@ -36,27 +36,40 @@
         <div class="card bg-base-100 shadow-md">
             <div class="card-body p-4">
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <div v-if="auth.user?.role !== 'teacher'" class="form-control w-full sm:w-auto">
+                    <div v-if="auth.user?.role !== 'teacher'" class="form-control w-full sm:w-auto"
+                        :class="searchUserid ? 'opacity-50 pointer-events-none' : ''">
                         <label class="label py-1">
                             <span class="label-text text-sm">ชั้นปี</span>
                         </label>
                         <select v-model="selectedGrade" @change="handleGradeChange"
-                            class="select select-bordered select-sm w-full sm:w-32" :disabled="isQueryFilter">
+                            class="select select-bordered select-sm w-full sm:w-32"
+                            :disabled="isQueryFilter || !!searchUserid">
                             <option v-for="grade in availableGrades" :key="grade" :value="grade">{{ grade }}</option>
                         </select>
                     </div>
 
-                    <div v-if="auth.user?.role !== 'teacher'" class="form-control w-full sm:w-auto">
+                    <div v-if="auth.user?.role !== 'teacher'" class="form-control w-full sm:w-auto"
+                        :class="searchUserid ? 'opacity-50 pointer-events-none' : ''">
                         <label class="label py-1">
                             <span class="label-text text-sm">ห้อง</span>
                         </label>
                         <select v-model="selectedClassroom" @change="fetchStudents"
-                            class="select select-bordered select-sm w-full sm:w-24" :disabled="isQueryFilter">
+                            class="select select-bordered select-sm w-full sm:w-24"
+                            :disabled="isQueryFilter || !!searchUserid">
                             <option v-for="room in availableClassrooms" :key="room" :value="room">{{ room }}</option>
                         </select>
                     </div>
 
-                    <div class="form-control w-full sm:flex-1">
+                    <div v-if="auth.user?.role !== 'teacher'" class="w-full sm:flex-1">
+                        <label class="label py-1">
+                            <span class="label-text text-sm">ค้นหารหัส</span>
+                        </label>
+                        <div class="relative flex gap-2">
+                            <input v-model="searchUserid" @input="debouncedSearchByUserid" type="text"
+                                placeholder="กรอกรหัส" class="input input-bordered input-sm w-full" />
+                        </div>
+                    </div>
+                    <div v-else class="form-control w-full sm:flex-1">
                         <label class="label py-1">
                             <span class="label-text text-sm">ค้นหาชื่อ/รหัส</span>
                         </label>
@@ -72,7 +85,6 @@
                             </svg>
                         </div>
                     </div>
-
                     <div class="flex justify-between sm:justify-start w-full sm:w-auto gap-2">
                         <div class="flex items-end">
                             <button @click="resetFilters" class="btn btn-ghost btn-sm">
@@ -177,7 +189,7 @@ const itemsPerPage = ref(5)
 const imageBaseUrl = import.meta.env.VITE_IMG_PROFILE_URL
 const lastFetchedGrade = ref('')
 const lastFetchedClassroom = ref('')
-
+const searchUserid = ref("");
 const detailModalVisible = ref(false)
 const detailStudent = ref(null)
 
@@ -332,6 +344,7 @@ const resetFilters = () => {
         }
     }
     searchQuery.value = ''
+    searchUserid.value = ''
     fetchStudents()
 }
 
@@ -390,6 +403,52 @@ const handleCreateSuccess = async (formData) => {
         loading.value = false
     }
 }
+
+
+const searchByUserid = async () => {
+    if (!searchUserid.value) return;
+    loading.value = true
+    try {
+        const response = await studentService.getStudents(selectedGrade.value, selectedClassroom.value, searchUserid.value);
+        if (response.message === 'Success' && response.data) {
+            students.value = response.data.map(student => ({
+                id: student._id,
+                userid: student.userid,
+                name: student.name,
+                code: student.userid,
+                grade: student.grade,
+                room: student.classroom,
+                score: Number.isFinite(Number(student.score)) ? Number(student.score) : 100,
+                phone: student.phone || '-',
+                picture: student.picture ? imageBaseUrl + student.picture : '',
+                has_password: student.has_password
+            }));
+            currentPage.value = 1;
+        } else {
+            students.value = [];
+        }
+    } catch (error) {
+        students.value = [];
+    } finally {
+        loading.value = false;
+    }
+}
+
+function debounce(fn, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+const debouncedSearchByUserid = debounce(() => {
+    if (searchUserid.value) {
+        searchByUserid();
+    } else {
+        fetchStudents();
+    }
+}, 400);
 
 const openUpdateModal = (student) => {
     updateModalRef.value.openModal(student)

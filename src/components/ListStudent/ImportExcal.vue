@@ -271,6 +271,13 @@ async function handleImport() {
             }
         }
 
+        function cleanLastName(val) {
+            if (val === undefined || val === null || val === '' || (typeof val === 'string' && val.trim() === '')) return '';
+            if (val === '-') return ' ';
+            if (typeof val === 'string' && val.trim() === '-') return ' ';
+            return val;
+        }
+
         const importedStudents = [];
         const failedStudents = [];
         for (const student of previewData.value) {
@@ -281,47 +288,52 @@ async function handleImport() {
                 existing = null;
             }
 
+            const cleanedStudent = {
+                ...student,
+                last_name: cleanLastName(student.last_name)
+            };
+
             let formData = {};
             if (existing && existing.message === 'Success' && existing.data && existing.data._id) {
                 const oldData = existing.data;
                 formData = {
                     ...oldData,
-                    userid: student.userid,
+                    userid: cleanedStudent.userid,
                 };
-                if (student.pre_name) formData.pre_name = student.pre_name;
-                if (student.first_name) formData.first_name = student.first_name;
-                if (student.last_name) formData.last_name = student.last_name;
-                if (student.grade) formData.grade = student.grade;
-                if (student.classroom) formData.classroom = student.classroom;
-                if (imageMap[student.userid]) formData.picture = imageMap[student.userid];
+                if (cleanedStudent.pre_name) formData.pre_name = cleanedStudent.pre_name;
+                if (cleanedStudent.first_name) formData.first_name = cleanedStudent.first_name;
+                if (cleanedStudent.last_name) formData.last_name = cleanedStudent.last_name;
+                if (cleanedStudent.grade) formData.grade = cleanedStudent.grade;
+                if (cleanedStudent.classroom) formData.classroom = cleanedStudent.classroom;
+                if (imageMap[cleanedStudent.userid]) formData.picture = imageMap[cleanedStudent.userid];
                 try {
                     const response = await studentService.updateStudent(oldData._id, formData);
                     if (response.message === 'Success') {
                         importedStudents.push(response.data);
                     } else {
                         failedStudents.push({
-                            userid: student.userid,
-                            name: `${student.pre_name}${student.first_name} ${student.last_name}`,
+                            userid: cleanedStudent.userid,
+                            name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
                             reason: response.message || 'ไม่ทราบสาเหตุ'
                         });
                     }
                 } catch (err) {
-                    console.error(`Error updating student ${student.userid}:`, err);
+                    console.error(`Error updating student ${cleanedStudent.userid}:`, err);
                     failedStudents.push({
-                        userid: student.userid,
-                        name: `${student.pre_name}${student.first_name} ${student.last_name}`,
+                        userid: cleanedStudent.userid,
+                        name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
                         reason: err.response?.data?.error || err.message || 'ไม่ทราบสาเหตุ'
                     });
                 }
             } else {
                 formData = {
-                    userid: student.userid,
-                    pre_name: student.pre_name,
-                    first_name: student.first_name,
-                    last_name: student.last_name,
-                    grade: student.grade,
-                    classroom: student.classroom,
-                    picture: imageMap[student.userid] || null
+                    userid: cleanedStudent.userid,
+                    pre_name: cleanedStudent.pre_name,
+                    first_name: cleanedStudent.first_name,
+                    last_name: cleanedStudent.last_name,
+                    grade: cleanedStudent.grade,
+                    classroom: cleanedStudent.classroom,
+                    picture: imageMap[cleanedStudent.userid] || null
                 };
                 try {
                     const response = await studentService.createStudent(formData);
@@ -329,16 +341,16 @@ async function handleImport() {
                         importedStudents.push(response.data);
                     } else {
                         failedStudents.push({
-                            userid: student.userid,
-                            name: `${student.pre_name}${student.first_name} ${student.last_name}`,
+                            userid: cleanedStudent.userid,
+                            name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
                             reason: response.message || 'ไม่ทราบสาเหตุ'
                         });
                     }
                 } catch (err) {
-                    console.error(`Error creating student ${student.userid}:`, err);
+                    console.error(`Error creating student ${cleanedStudent.userid}:`, err);
                     failedStudents.push({
-                        userid: student.userid,
-                        name: `${student.pre_name}${student.first_name} ${student.last_name}`,
+                        userid: cleanedStudent.userid,
+                        name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
                         reason: err.response?.data?.error || err.message || 'ไม่ทราบสาเหตุ'
                     });
                 }
@@ -353,7 +365,6 @@ async function handleImport() {
             msg += `<div style='max-height:220px;overflow:auto;'><table style='border-collapse:collapse;width:100%;font-size:13px;'>`;
             msg += `<thead><tr style='background:#f3f4f6;'><th style='border:1px solid #ddd;padding:4px;'>รหัส</th><th style='border:1px solid #ddd;padding:4px;'>ชื่อ</th><th style='border:1px solid #ddd;padding:4px;'>สาเหตุ</th></tr></thead><tbody>`;
             msg += failedStudents.map(f => {
-                // แปล error ที่พบบ่อย
                 let reason = f.reason;
                 if (reason === '"last_name" is not allowed to be empty' || reason === 'last_name" is not allowed to be empty') {
                     reason = 'กรุณากรอกนามสกุล';

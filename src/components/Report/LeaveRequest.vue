@@ -4,10 +4,10 @@
             <span class="loading loading-spinner loading-lg"></span>
         </div>
 
-        <div v-else class="overflow-x-auto">
+        <div v-else class="bg-white rounded-lg shadow-lg overflow-x-auto">
             <table class="table table-zebra w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100">
+                    <tr class="bg-primary text-primary-content">
                         <th>รหัส</th>
                         <th>ชื่อ</th>
                         <th class="hidden xl:table-cell">ตำแหน่ง</th>
