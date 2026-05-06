@@ -3,22 +3,46 @@
         <div class="modal-box max-w-2xl overflow-y-auto">
             <h3 class="font-bold text-lg mb-4">แก้ไขข้อมูลบุคลากร</h3>
             <form @submit.prevent="handleSubmit">
-                <div v-if="currentImage || previewImage" class="flex justify-center mb-4">
-                    <div class="relative">
-                        <img :src="previewImage || currentImage" alt="Teacher Image"
-                            class="w-32 h-32 object-cover rounded-lg shadow-md" />
-                        <button type="button" @click="removeNewImage"
-                            class="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold">รูปภาพ <span
+                            class="text-gray-500">(ไม่บังคับ)</span></label>
+
+                    <div v-if="currentImage || previewImage" class="relative flex justify-center mb-2">
+                        <div class="relative">
+                            <img :src="previewImage || currentImage" alt="Preview"
+                                class="w-32 h-32 object-cover rounded-lg shadow-md" />
+                            <button type="button" @click="removeImage"
+                                class="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
+
+                    <div v-if="!currentImage && !previewImage" class="relative">
+                        <label for="pictureInputUpdateTeacher"
+                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                            <span class="flex flex-col items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <span class="text-sm font-medium text-gray-700">เลือกรูปภาพบุคลากร</span>
+                                <span class="text-xs text-gray-500">JPG only (สูงสุด 70KB)</span>
+                            </span>
+                            <input id="pictureInputUpdateTeacher" ref="fileInputRef" type="file"
+                                @change="handleFileChange" accept="image/jpeg,image/jpg"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                        </label>
+                    </div>
+                    <div v-if="fileError" class="text-sm text-error mt-1">{{ fileError }}</div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">รหัสบุคลากร</span>
@@ -96,7 +120,7 @@
                         </select>
                     </div>
 
-                    <div class="form-control w-full">
+                    <!-- <div class="form-control w-full">
                         <label class="label">
                             <span class="label-text">รูปภาพ (ถ้าต้องการเปลี่ยน)</span>
                         </label>
@@ -106,7 +130,7 @@
                             <span class="label-text-alt text-gray-500">JPG only (สูงสุด 70KB)</span>
                         </label>
                         <div v-if="fileError" class="text-sm text-error mt-1">{{ fileError }}</div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="modal-action">
@@ -334,9 +358,9 @@ const isFormValid = computed(() => {
     )
 })
 
-const removeNewImage = () => {
+const removeImage = () => {
     previewImage.value = ''
-    fileError.value = ''
+    currentImage.value = ''
     formData.value.picture = null
     if (fileInputRef.value) {
         fileInputRef.value.value = ''
