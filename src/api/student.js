@@ -7,12 +7,13 @@ export class StudentService {
     this.token = localStorage.getItem("token");
   }
 
-  async getStudents(grade, classroom, userid) {
+  async getStudents(grade, classroom, userid, name) {
     try {
       const params = new URLSearchParams();
       if (grade) params.append("grade", grade);
       if (classroom) params.append("classroom", classroom);
       if (userid) params.append("userid", userid);
+      if (name) params.append("name", name);
 
       let config = {
         method: "get",

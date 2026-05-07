@@ -60,29 +60,14 @@
                         </select>
                     </div>
 
-                    <div v-if="auth.user?.role !== 'teacher'" class="w-full sm:flex-1">
+                    <div class="w-full sm:flex-1">
                         <label class="label py-1">
                             <span class="label-text text-sm">ค้นหารหัส</span>
                         </label>
                         <div class="relative flex gap-2">
                             <input v-model="searchUserid" @input="debouncedSearchByUserid" type="text"
-                                placeholder="กรอกรหัส" class="input input-bordered input-sm w-full" />
-                        </div>
-                    </div>
-                    <div v-else class="form-control w-full sm:flex-1">
-                        <label class="label py-1">
-                            <span class="label-text text-sm">ค้นหาชื่อ/รหัส</span>
-                        </label>
-                        <div class="relative">
-                            <input v-model="searchQuery" @input="handleSearch" type="text"
                                 placeholder="ค้นหาชื่อหรือรหัสนักเรียน..."
                                 class="input input-bordered input-sm w-full" />
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
                         </div>
                     </div>
                     <div class="flex justify-between sm:justify-start w-full sm:w-auto gap-2">
@@ -174,7 +159,6 @@ const openImportModal = () => {
 
 const handleImportSuccess = async (importedStudents) => {
     if (Array.isArray(importedStudents)) {
-        // students.value = [...students.value, ...importedStudents]
         await fetchStudents()
     }
 }
@@ -407,9 +391,16 @@ const handleCreateSuccess = async (formData) => {
 
 const searchByUserid = async () => {
     if (!searchUserid.value) return;
-    loading.value = true
+    loading.value = true;
     try {
-        const response = await studentService.getStudents(selectedGrade.value, selectedClassroom.value, searchUserid.value);
+        let userid = '';
+        let name = '';
+        if (/^\d+$/.test(searchUserid.value)) {
+            userid = searchUserid.value;
+        } else {
+            name = searchUserid.value;
+        }
+        const response = await studentService.getStudents(selectedGrade.value, selectedClassroom.value, userid, name);
         if (response.message === 'Success' && response.data) {
             students.value = response.data.map(student => ({
                 id: student._id,
