@@ -40,7 +40,7 @@
                             <span class="badge"
                                 :class="parseUseAttendanceTime(currentDevice.use_attendance_time) ? 'badge-success' : 'badge-ghost'">
                                 {{ parseUseAttendanceTime(currentDevice.use_attendance_time) ? 'เปิดใช้งาน' :
-                                'ไม่ใช้งาน' }}
+                                    'ไม่ใช้งาน' }}
                             </span>
                         </div>
                     </div>

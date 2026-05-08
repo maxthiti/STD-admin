@@ -135,6 +135,56 @@ const emptyTerm = () => ({
     end_date: ''
 })
 
+const normalizeDateInput = (value) => {
+    if (!value) return ''
+    return String(value).substring(0, 10)
+}
+
+const isDateRangeOverlap = (startA, endA, startB, endB) => {
+    return startA <= endB && startB <= endA
+}
+
+const getAcademicCalendarList = async () => {
+    const res = await academicCalendarService.getAcademicCalendar()
+    if (Array.isArray(res?.data)) return res.data
+    if (Array.isArray(res)) return res
+    if (Array.isArray(res?.data?.data)) return res.data.data
+    return []
+}
+
+const validateOverlapWithExistingCalendars = async () => {
+    const currentYear = Number(academicYear.value)
+    const calendars = await getAcademicCalendarList()
+
+    for (let i = 0; i < formTerms.value.length; i += 1) {
+        const inputTerm = formTerms.value[i]
+        const inputStart = normalizeDateInput(inputTerm.start_date)
+        const inputEnd = normalizeDateInput(inputTerm.end_date)
+
+        if (!inputStart || !inputEnd) continue
+
+        for (const calendar of calendars) {
+            const existingYear = Number(calendar?.academic_year)
+            if (existingYear === currentYear) continue
+
+            const existingTerms = Array.isArray(calendar?.terms) ? calendar.terms : []
+            for (const existingTerm of existingTerms) {
+                const existingStart = normalizeDateInput(existingTerm?.start_date)
+                const existingEnd = normalizeDateInput(existingTerm?.end_date)
+                if (!existingStart || !existingEnd) continue
+
+                if (isDateRangeOverlap(inputStart, inputEnd, existingStart, existingEnd)) {
+                    fieldErrors.value[i].end_date = 'ช่วงวันทับซ้อนกับปฏิทินปีอื่น'
+                    errorMessage.value = `รายการที่ ${i + 1} ทับซ้อนกับปี ${existingYear + 543} (${existingTerm?.term || 'ไม่ระบุรายการ'})`
+                    return false
+                }
+            }
+        }
+    }
+
+    return true
+}
+
 const resetForm = () => {
     academicYear.value = Number(props.year) || new Date().getFullYear()
     yearError.value = ''
@@ -198,7 +248,7 @@ const validateForm = () => {
         if (term.start_date) {
             const startYear = Number(term.start_date.substring(0, 4))
             if (Number(academicYear.value) !== startYear) {
-                yearError.value = `ปีการศึกษาต้องตรงกับปีของวันเริ่มต้น (${startYear})`
+                yearError.value = `ปีการศึกษาต้องตรงกับปีของวันเริ่มต้น (${startYear + 543})`
                 isValid = false
             }
         }
@@ -208,6 +258,22 @@ const validateForm = () => {
             isValid = false
         }
     })
+
+    for (let i = 0; i < formTerms.value.length; i += 1) {
+        const termA = formTerms.value[i]
+        if (!termA.start_date || !termA.end_date) continue
+
+        for (let j = i + 1; j < formTerms.value.length; j += 1) {
+            const termB = formTerms.value[j]
+            if (!termB.start_date || !termB.end_date) continue
+
+            if (isDateRangeOverlap(termA.start_date, termA.end_date, termB.start_date, termB.end_date)) {
+                fieldErrors.value[i].end_date = `ช่วงวันทับซ้อนกับรายการที่ ${j + 1}`
+                fieldErrors.value[j].end_date = `ช่วงวันทับซ้อนกับรายการที่ ${i + 1}`
+                isValid = false
+            }
+        }
+    }
 
     const firstIndexByTerm = new Map()
     formTerms.value.forEach((term, index) => {
@@ -235,6 +301,9 @@ const handleSubmit = async () => {
     errorMessage.value = ''
 
     try {
+        const hasNoOverlapWithExisting = await validateOverlapWithExistingCalendars()
+        if (!hasNoOverlapWithExisting) return
+
         const payloadTerms = formTerms.value.map((term) => ({
             term: term.term.trim(),
             start_date: term.start_date,
@@ -264,7 +333,7 @@ const handleSubmit = async () => {
         }
 
         if (msg === 'Duplicate data') {
-            errorMessage.value = `มีปฏิทินการศึกษาปี ${academicYear.value} อยู่แล้ว กรุณาใช้การแก้ไขแทน`
+            errorMessage.value = `มีปฏิทินการศึกษาปี ${academicYear.value + 543} อยู่แล้ว กรุณาใช้การแก้ไขแทน`
         } else {
             errorMessage.value = error.response?.data?.error || error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มปฏิทินการศึกษา'
         }

@@ -48,7 +48,7 @@
                         <td class="text-center align-center">{{ group[0].position }}</td>
                         <td class="text-center align-center">
                             <span v-if="group[0].position === 'นักเรียน'">{{ group[0].grade }}/{{ group[0].classroom
-                                }}</span>
+                            }}</span>
                             <span v-else>{{ group[0].department || '-' }}</span>
                         </td>
                         <td class="text-center">{{ formatDate(group[0].missed_date) }}</td>

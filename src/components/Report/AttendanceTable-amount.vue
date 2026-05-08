@@ -597,7 +597,6 @@ async function exportAllToExcel() {
             }
         } while (params.page <= totalPages)
 
-        // โหลดวันหยุดใหม่ (sync กับ holidaysArr)
         let holidaysRaw = []
         try {
             const res = await holidaysApi.getHolidaysByRange(props.dateRange.start, props.dateRange.end)
@@ -703,7 +702,6 @@ const displayedPages = vueComputed(() => {
 })
 
 
-// ฟังก์ชันคำนวณวันทำงานจริง (ไม่รวมวันหยุดและเสาร์-อาทิตย์)
 function getWorkingDays(startStr, endStr, holidaysArr = []) {
     const start = new Date(startStr)
     const end = new Date(endStr)
@@ -718,14 +716,12 @@ function getWorkingDays(startStr, endStr, holidaysArr = []) {
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dayOfWeek = d.getDay()
         const dateStr = d.toISOString().slice(0, 10)
-        if (dayOfWeek === 0 || dayOfWeek === 6) continue // 0=อาทิตย์, 6=เสาร์
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue
         if (holidaySet.has(dateStr)) continue
         days.push(dateStr)
     }
     return days
 }
-
-// holidaysArr จะถูกโหลด async ใน mounted
 
 const holidaysArr = ref([])
 
@@ -744,7 +740,6 @@ const totalDays = computed(() => {
     return getWorkingDays(props.dateRange.start, props.dateRange.end, holidaysArr.value).length
 })
 
-// มาปกติ = มาและไม่สาย
 function countPresentNormal(attendances) {
     if (!attendances) return 0
     let count = 0

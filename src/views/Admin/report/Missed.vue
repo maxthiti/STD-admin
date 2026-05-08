@@ -1,5 +1,5 @@
 <template>
-    <div class="p-0 md:p-6 space-y-6 max-[570px]:pt-14">
+    <div class="space-y-6 max-[570px]:pt-14">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center text-white gap-2">
             <h1 class="text-lg md:text-3xl font-bold">ตารางขาดเรียน/ขาดงาน</h1>
             <div class="flex flex-row gap-2 items-stretch md:items-center justify-end md:justify-center">
@@ -132,6 +132,8 @@ const fetchData = async () => {
     error.value = null
 
     try {
+        const rawSearch = filters.value.search.trim()
+        const isNumeric = /^\d+$/.test(rawSearch)
         let gradeValue = filters.value.grade;
         if (gradeValue === '' || gradeValue === undefined || gradeValue === null) {
             gradeValue = '';
@@ -140,16 +142,17 @@ const fetchData = async () => {
         if (classroomValue === '' || classroomValue === undefined || classroomValue === null) {
             classroomValue = '';
         }
-        if (filters.value.role === 'teacher' && (!classroomValue || classroomValue === '' || classroomValue === '0')) {
+        if (filters.value.role === 'teacher') {
+            gradeValue = '';
             classroomValue = 0;
         }
         let params = {
             start: filters.value.start,
             end: filters.value.end,
             role: filters.value.role,
-            name: filters.value.search || "",
+            name: isNumeric ? '' : rawSearch,
             department: "",
-            userid: "",
+            userid: isNumeric ? rawSearch : '',
         };
         if (gradeValue !== '') params.grade = gradeValue;
         if (classroomValue !== '' && classroomValue !== undefined) params.classroom = classroomValue;

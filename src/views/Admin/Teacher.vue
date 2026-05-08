@@ -221,7 +221,7 @@ const fetchTeachers = async () => {
                 code: teacher.userid,
                 department: teacher.department || '-',
                 position: teacher.position || '-',
-                email: teacher.userid + '@ckk.ac.th',
+                email: teacher.userid + '@ksww.ac.th',
                 phone: teacher.phone || '-',
                 picture: teacher.picture ? imageBaseUrl + teacher.picture : '',
                 has_password: teacher.has_password,

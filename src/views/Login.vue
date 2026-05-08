@@ -109,7 +109,7 @@ onMounted(() => {
     if (savedUsername && savedPassword) {
         form.username = savedUsername
         try {
-            const bytes = CryptoJS.AES.decrypt(savedPassword, 'CKKSchool2025')
+            const bytes = CryptoJS.AES.decrypt(savedPassword, 'KSWWSchool2025')
             form.password = bytes.toString(CryptoJS.enc.Utf8)
         } catch (e) {
             form.password = ''
@@ -218,7 +218,7 @@ async function onSubmit() {
             }
             if (remember.value) {
                 localStorage.setItem('remember_username', form.username)
-                const encrypted = CryptoJS.AES.encrypt(form.password, 'CKKSchool2025').toString()
+                const encrypted = CryptoJS.AES.encrypt(form.password, 'KSWWSchool2025').toString()
                 localStorage.setItem('remember_password', encrypted)
             } else {
                 localStorage.removeItem('remember_username')
@@ -302,6 +302,7 @@ async function onSubmit() {
 .card-title {
     color: #1e3a8a;
 }
+
 
 .btn-primary.login-btn {
     background: linear-gradient(90deg, #1e3a8a 70%, #ffd600 100%);

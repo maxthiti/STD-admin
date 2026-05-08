@@ -28,7 +28,7 @@
                     <input type="file" accept="image/*" multiple @change="onImagesChange"
                         class="file-input file-input-bordered file-input-sm w-full max-w-xs" />
                     <p v-if="imageFiles.length" class="text-xs text-success mt-1">รูปภาพที่เลือก: {{ imageFiles.length
-                        }} ไฟล์</p>
+                    }} ไฟล์</p>
                     <p class="text-xs text-gray-500 mt-1">กรุณาตั้งชื่อไฟล์รูปภาพเป็นรหัสนักเรียน เช่น <b>6200.jpg</b>
                         เพื่อให้ระบบแมปข้อมูลอัตโนมัติ</p>
                 </div>
@@ -271,7 +271,15 @@ async function handleImport() {
             }
         }
 
+        function cleanLastName(val) {
+            if (val === undefined || val === null || val === '' || (typeof val === 'string' && val.trim() === '')) return '';
+            if (val === '-') return ' ';
+            if (typeof val === 'string' && val.trim() === '-') return ' ';
+            return val;
+        }
+
         const importedStudents = [];
+        const failedStudents = [];
         for (const student of previewData.value) {
             let existing = null;
             try {
@@ -280,49 +288,104 @@ async function handleImport() {
                 existing = null;
             }
 
+            const cleanedStudent = {
+                ...student,
+                last_name: cleanLastName(student.last_name)
+            };
+
             let formData = {};
             if (existing && existing.message === 'Success' && existing.data && existing.data._id) {
                 const oldData = existing.data;
                 formData = {
                     ...oldData,
-                    userid: student.userid,
+                    userid: cleanedStudent.userid,
                 };
-                if (student.pre_name) formData.pre_name = student.pre_name;
-                if (student.first_name) formData.first_name = student.first_name;
-                if (student.last_name) formData.last_name = student.last_name;
-                if (student.grade) formData.grade = student.grade;
-                if (student.classroom) formData.classroom = student.classroom;
-                if (imageMap[student.userid]) formData.picture = imageMap[student.userid];
+                if (cleanedStudent.pre_name) formData.pre_name = cleanedStudent.pre_name;
+                if (cleanedStudent.first_name) formData.first_name = cleanedStudent.first_name;
+                if (cleanedStudent.last_name) formData.last_name = cleanedStudent.last_name;
+                if (cleanedStudent.grade) formData.grade = cleanedStudent.grade;
+                if (cleanedStudent.classroom) formData.classroom = cleanedStudent.classroom;
+                if (imageMap[cleanedStudent.userid]) formData.picture = imageMap[cleanedStudent.userid];
                 try {
                     const response = await studentService.updateStudent(oldData._id, formData);
                     if (response.message === 'Success') {
                         importedStudents.push(response.data);
+                    } else {
+                        failedStudents.push({
+                            userid: cleanedStudent.userid,
+                            name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
+                            reason: response.message || 'ไม่ทราบสาเหตุ'
+                        });
                     }
                 } catch (err) {
-                    console.error(`Error updating student ${student.userid}:`, err);
+                    console.error(`Error updating student ${cleanedStudent.userid}:`, err);
+                    failedStudents.push({
+                        userid: cleanedStudent.userid,
+                        name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
+                        reason: err.response?.data?.error || err.message || 'ไม่ทราบสาเหตุ'
+                    });
                 }
             } else {
                 formData = {
-                    userid: student.userid,
-                    pre_name: student.pre_name,
-                    first_name: student.first_name,
-                    last_name: student.last_name,
-                    grade: student.grade,
-                    classroom: student.classroom,
-                    picture: imageMap[student.userid] || null
+                    userid: cleanedStudent.userid,
+                    pre_name: cleanedStudent.pre_name,
+                    first_name: cleanedStudent.first_name,
+                    last_name: cleanedStudent.last_name,
+                    grade: cleanedStudent.grade,
+                    classroom: cleanedStudent.classroom,
+                    picture: imageMap[cleanedStudent.userid] || null
                 };
                 try {
                     const response = await studentService.createStudent(formData);
                     if (response.message === 'Success') {
                         importedStudents.push(response.data);
+                    } else {
+                        failedStudents.push({
+                            userid: cleanedStudent.userid,
+                            name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
+                            reason: response.message || 'ไม่ทราบสาเหตุ'
+                        });
                     }
                 } catch (err) {
-                    console.error(`Error creating student ${student.userid}:`, err);
+                    console.error(`Error creating student ${cleanedStudent.userid}:`, err);
+                    failedStudents.push({
+                        userid: cleanedStudent.userid,
+                        name: `${cleanedStudent.pre_name}${cleanedStudent.first_name} ${cleanedStudent.last_name}`,
+                        reason: err.response?.data?.error || err.message || 'ไม่ทราบสาเหตุ'
+                    });
                 }
             }
         }
 
-        Swal.fire('สำเร็จ', `นำเข้าข้อมูลนักเรียนสำเร็จ ${importedStudents.length} รายการ`, 'success');
+        let msg = `<div style='text-align:left;'>`
+            + `บันทึกสำเร็จ <b>${importedStudents.length}</b> รายการ`
+            + `<br>บันทึกไม่สำเร็จ <b>${failedStudents.length}</b> รายการ`;
+        if (failedStudents.length > 0) {
+            msg += `<br><br><b>รายการที่บันทึกไม่สำเร็จ:</b>`;
+            msg += `<div style='max-height:220px;overflow:auto;'><table style='border-collapse:collapse;width:100%;font-size:13px;'>`;
+            msg += `<thead><tr style='background:#f3f4f6;'><th style='border:1px solid #ddd;padding:4px;'>รหัส</th><th style='border:1px solid #ddd;padding:4px;'>ชื่อ</th><th style='border:1px solid #ddd;padding:4px;'>สาเหตุ</th></tr></thead><tbody>`;
+            msg += failedStudents.map(f => {
+                let reason = f.reason;
+                if (reason === '"last_name" is not allowed to be empty' || reason === 'last_name" is not allowed to be empty') {
+                    reason = 'กรุณากรอกนามสกุล';
+                } else if (/fails to match the required pattern/.test(reason) && /last_name/.test(reason)) {
+                    reason = 'นามสกุลต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น';
+                } else if (/fails to match the required pattern/.test(reason) && /first_name/.test(reason)) {
+                    reason = 'ชื่อต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น';
+                } else if (/is required/.test(reason)) {
+                    reason = 'กรุณากรอกข้อมูลให้ครบถ้วน';
+                }
+                return `<tr><td style='border:1px solid #ddd;padding:4px;'>${f.userid}</td><td style='border:1px solid #ddd;padding:4px;'>${f.name}</td><td style='border:1px solid #ddd;padding:4px;color:#b91c1c;'>${reason}</td></tr>`;
+            }).join('');
+            msg += `</tbody></table></div>`;
+        }
+        msg += `</div>`;
+        Swal.fire({
+            title: 'สำเร็จ',
+            html: msg,
+            icon: failedStudents.length > 0 ? 'warning' : 'success',
+            width: 600
+        });
         emit('success', importedStudents);
         closeModal();
     } catch (e) {

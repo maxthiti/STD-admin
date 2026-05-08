@@ -7,7 +7,8 @@
                         <tr>
                             <th class="bg-primary text-primary-content">ชื่อวันหยุด</th>
                             <th class="bg-primary text-primary-content">วันที่</th>
-                            <th v-if="auth.user?.role !== 'viewer'" class="bg-primary text-primary-content text-center">จัดการ</th>
+                            <th v-if="auth.user?.role !== 'viewer'" class="bg-primary text-primary-content text-center">
+                                จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
