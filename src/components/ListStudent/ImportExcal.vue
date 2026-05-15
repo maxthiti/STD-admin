@@ -311,8 +311,6 @@ async function handleImport() {
             return val;
         }
 
-<<<<<<< HEAD
-=======
         function cleanGuardianPhone(val) {
             if (val === undefined || val === null) return '';
             const text = String(val).trim();
@@ -327,7 +325,6 @@ async function handleImport() {
             return text;
         }
 
->>>>>>> ref_ckk/main
         const importedStudents = [];
         const failedStudents = [];
         for (const student of previewData.value) {
@@ -340,11 +337,6 @@ async function handleImport() {
 
             const cleanedStudent = {
                 ...student,
-<<<<<<< HEAD
-                last_name: cleanLastName(student.last_name)
-            };
-
-=======
                 last_name: cleanLastName(student.last_name),
                 guardian_phone: cleanGuardianPhone(student.guardian_phone),
                 rfid: cleanRfid(student.rfid)
@@ -357,7 +349,6 @@ async function handleImport() {
 
             const resolvedImageFile = imageMap[imageNameKey] || imageMap[cleanedStudent.userid];
 
->>>>>>> ref_ckk/main
             let formData = {};
             if (existing && existing.message === 'Success' && existing.data && existing.data._id) {
                 const oldData = existing.data;
@@ -370,13 +361,9 @@ async function handleImport() {
                 if (cleanedStudent.last_name) formData.last_name = cleanedStudent.last_name;
                 if (cleanedStudent.grade) formData.grade = cleanedStudent.grade;
                 if (cleanedStudent.classroom) formData.classroom = cleanedStudent.classroom;
-<<<<<<< HEAD
-                if (imageMap[cleanedStudent.userid]) formData.picture = imageMap[cleanedStudent.userid];
-=======
                 if (cleanedStudent.guardian_phone) formData.guardian_phone = cleanedStudent.guardian_phone;
                 formData.rfid = cleanedStudent.rfid;
                 if (resolvedImageFile) formData.picture = resolvedImageFile;
->>>>>>> ref_ckk/main
                 try {
                     const response = await studentService.updateStudent(oldData._id, formData);
                     if (response.message === 'Success') {
@@ -404,13 +391,9 @@ async function handleImport() {
                     last_name: cleanedStudent.last_name,
                     grade: cleanedStudent.grade,
                     classroom: cleanedStudent.classroom,
-<<<<<<< HEAD
-                    picture: imageMap[cleanedStudent.userid] || null
-=======
                     guardian_phone: cleanedStudent.guardian_phone,
                     rfid: cleanedStudent.rfid,
                     picture: resolvedImageFile || null
->>>>>>> ref_ckk/main
                 };
                 try {
                     const response = await studentService.createStudent(formData);

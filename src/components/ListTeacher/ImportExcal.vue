@@ -309,8 +309,6 @@ async function handleImport() {
             return val;
         }
 
-<<<<<<< HEAD
-=======
         function cleanRfid(val) {
             if (val === undefined || val === null) return '';
             const text = String(val).trim();
@@ -318,16 +316,11 @@ async function handleImport() {
             return text;
         }
 
->>>>>>> ref_ckk/main
         const importedTeachers = [];
         const failedTeachers = [];
         for (const teacher of previewData.value) {
             const cleanedTeacher = {
                 ...teacher,
-<<<<<<< HEAD
-                last_name: cleanLastName(teacher.last_name)
-            };
-=======
                 last_name: cleanLastName(teacher.last_name),
                 rfid: cleanRfid(teacher.rfid)
             };
@@ -339,7 +332,6 @@ async function handleImport() {
 
             const resolvedImageFile = imageMap[imageNameKey] || imageMap[cleanedTeacher.userid];
 
->>>>>>> ref_ckk/main
             const formData = {
                 userid: cleanedTeacher.userid,
                 pre_name: cleanedTeacher.pre_name,
@@ -347,14 +339,9 @@ async function handleImport() {
                 last_name: cleanedTeacher.last_name,
                 position: cleanedTeacher.position,
                 department: cleanedTeacher.department,
-<<<<<<< HEAD
-                status: 'ปกติ',
-                picture: imageMap[cleanedTeacher.userid] || null
-=======
                 rfid: cleanedTeacher.rfid,
                 status: 'ปกติ',
                 picture: resolvedImageFile || null
->>>>>>> ref_ckk/main
             };
             try {
                 const response = await teacherService.createTeacher(formData);

@@ -99,11 +99,6 @@
                     </div>
 
                     <div class="form-control">
-<<<<<<< HEAD
-                        <label class="label"><span class="label-text">RFID (ไม่บังคับ)</span></label>
-                        <input v-model="formData.rfid" type="text" class="input input-bordered" autocomplete="off" />
-                    </div>
-=======
                         <label class="label"><span class="label-text">เลขบัตร RFID <span
                                     class="text-gray-500">(ไม่บังคับ)</span></span></label>
                         <input v-model="formData.rfid" type="text" class="input input-bordered" @input="validateRfid"
@@ -123,7 +118,6 @@
                                 }}</span></label>
                     </div>
 
->>>>>>> ref_ckk/main
                 </div>
 
                 <div class="modal-action">
@@ -171,12 +165,8 @@ const formData = ref({
     grade: '',
     classroom: '',
     picture: null,
-<<<<<<< HEAD
-    rfid: ''
-=======
     rfid: '',
     guardian_phone: ''
->>>>>>> ref_ckk/main
 })
 
 const props = defineProps({
@@ -273,14 +263,10 @@ const openModal = async (student) => {
         grade: student.grade || '',
         classroom: student.room || '',
         picture: null,
-<<<<<<< HEAD
-        rfid: student.rfid || ''
-=======
         rfid: student.rfid !== undefined && student.rfid !== null ? String(student.rfid) : '',
         guardian_phone: student.guardian_phone !== undefined && student.guardian_phone !== null
             ? String(student.guardian_phone)
             : ''
->>>>>>> ref_ckk/main
     }
     currentImage.value = getPictureUrl(student.picture) || ''
     previewImage.value = ''

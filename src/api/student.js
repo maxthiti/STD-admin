@@ -41,16 +41,10 @@ export class StudentService {
       data.append("last_name", formData.last_name);
       data.append("grade", formData.grade);
       data.append("classroom", formData.classroom);
-<<<<<<< HEAD
-      if (formData.rfid) {
-      data.append("rfid", formData.rfid);
-      }
-=======
       if (formData.rfid) data.append("rfid", formData.rfid);
       if (formData.guardian_phone)
         data.append("guardian_phone", formData.guardian_phone);
 
->>>>>>> ref_ckk/main
       if (formData.picture) {
         data.append("picture", formData.picture);
       }
@@ -84,11 +78,8 @@ export class StudentService {
       if (formData.grade) data.append("grade", formData.grade);
       if (formData.classroom) data.append("classroom", formData.classroom);
       if (formData.rfid) data.append("rfid", formData.rfid);
-<<<<<<< HEAD
-=======
       if (formData.guardian_phone)
         data.append("guardian_phone", formData.guardian_phone);
->>>>>>> ref_ckk/main
       if (formData.picture) data.append("picture", formData.picture);
 
       let config = {
