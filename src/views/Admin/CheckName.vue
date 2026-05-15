@@ -11,7 +11,6 @@
                     </div>
                 </div>
 
-                <!-- Filter Role and Search -->
                 <div class="grid grid-cols-2 gap-3 gap-y-3 items-end lg:grid-cols-4 lg:gap-4">
                     <div class="w-full">
                         <label class="block text-sm font-medium text-gray-700 mb-2">ค้นหาชื่อ/รหัส</label>
@@ -88,6 +87,7 @@ import { PositionService } from '../../api/position';
 import reportApi from '../../api/report';
 import { LeaveService } from '../../api/leave';
 import CheckNameTable from '../../components/CheckName/Table.vue';
+import featureFlags from '../../config/featureFlags';
 import Swal from 'sweetalert2';
 
 const studentService = new StudentService();
@@ -256,13 +256,28 @@ const hasAttendanceOnDate = (student, date) => {
             return false;
         }
 
-        return Array.isArray(attendance?.timeStamps) && attendance.timeStamps.length > 0;
+        if (!Array.isArray(attendance?.timeStamps) || attendance.timeStamps.length === 0) {
+            return false;
+        }
+
+        if (featureFlags.checkName.presentMode === 'any_timestamp') {
+            return attendance.timeStamps.length > 0;
+        }
+
+        return attendance.timeStamps.some(
+            (timeStamp) => timeStamp?.usecase === 'person_confirmation'
+        );
     });
 };
 
 const getLeaveStudentKeys = (leaveRequest) => {
     const user = leaveRequest?.user_id;
     return [user?._id, user?.userid, user].filter(Boolean).map((value) => String(value));
+};
+
+const isDateInLeaveRange = (date, startDate, endDate) => {
+    if (!date || !startDate || !endDate) return false;
+    return date >= startDate && date <= endDate;
 };
 
 const mapDailyStatus = async (studentList, roleType = 'student') => {
@@ -279,7 +294,6 @@ const mapDailyStatus = async (studentList, roleType = 'student') => {
     }
 
     if (roleType === 'teacher' && !selectedDepartment.value) {
-        // Load attendance for all teachers without department filter
     }
 
     const studentKeys = new Set();
@@ -346,7 +360,7 @@ const mapDailyStatus = async (studentList, roleType = 'student') => {
             return;
         }
 
-        if (leaveRequest?.start_date !== selectedDate.value) {
+        if (!isDateInLeaveRange(selectedDate.value, leaveRequest?.start_date, leaveRequest?.end_date)) {
             return;
         }
 

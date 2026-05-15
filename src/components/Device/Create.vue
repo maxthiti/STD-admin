@@ -38,8 +38,9 @@
                     <select v-model="formData.device_type" class="select select-bordered w-full" required>
                         <option value="" disabled>เลือกประเภทอุปกรณ์</option>
                         <option value="ipcam">IP Camera</option>
-                        <option value="Aifacescan">AI Face Scan</option>
+                        <option value="Aifacescan">AI Face CC</option>
                         <option value="intfacecam">Int Face Cam</option>
+                        <option value="hikfacescan">Hik Face Scan</option>
                     </select>
                 </div>
 
@@ -50,6 +51,19 @@
                     </label>
                     <input v-model="formData.device_key" type="text" placeholder="กรอก Device Key (ถ้ามี)"
                         class="input input-bordered w-full" />
+                </div>
+
+                <div v-if="featureFlags.device.enableUseCase" class="form-control">
+                    <label class="label">
+                        <span class="label-text">Use Case</span>
+                        <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                    </label>
+                    <select v-model="formData.usecase" class="select select-bordered w-full">
+                        <option value="" disabled>เลือกการใช้งาน</option>
+                        <option value="access_control">Access Control</option>
+                        <option value="attendance">Attendance</option>
+                        <option value="person_confirmation">Person Confirmation</option>
+                    </select>
                 </div>
 
                 <div class="form-control">
@@ -99,6 +113,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import featureFlags from '../../config/featureFlags.js'
 
 const createModal = ref(null)
 const emit = defineEmits(['success'])
@@ -109,6 +124,7 @@ const formData = ref({
     gate_type: '',
     device_type: '',
     device_key: '',
+    usecase: '',
     attendance_start_time: '',
     attendance_end_time: '',
     use_attendance_time: false
@@ -134,6 +150,7 @@ const resetForm = () => {
         gate_type: '',
         device_type: '',
         device_key: '',
+        usecase: '',
         attendance_start_time: '',
         attendance_end_time: '',
         use_attendance_time: false
