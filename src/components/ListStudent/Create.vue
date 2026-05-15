@@ -150,13 +150,6 @@
                         </template>
                     </div>
 
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text">RFID (ไม่บังคับ)</span>
-                        </label>
-                        <input v-model="formData.rfid" type="text" class="input input-bordered w-full"
-                            autocomplete="off" />
-                    </div>
                 </div>
 
                 <div class="modal-action">
