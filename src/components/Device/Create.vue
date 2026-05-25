@@ -44,22 +44,50 @@
                     </select>
                 </div>
 
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Device Key</span>
-                        <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
-                    </label>
-                    <input v-model="formData.device_key" type="text" placeholder="กรอก Device Key (ถ้ามี)"
-                        class="input input-bordered w-full" />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Username อุปกรณ์</span>
+                            <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        </label>
+                        <input v-model="formData.device_username" type="text" placeholder="กรอก Username"
+                            class="input input-bordered w-full" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Password อุปกรณ์</span>
+                            <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        </label>
+                        <div class="relative">
+                            <input v-model="formData.device_password" :type="showDevicePassword ? 'text' : 'password'"
+                                placeholder="กรอก Password" class="input input-bordered w-full pr-12" />
+                            <button type="button" class="btn btn-ghost btn-sm absolute right-1 top-1/2 -translate-y-1/2"
+                                @click="showDevicePassword = !showDevicePassword"
+                                :aria-label="showDevicePassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
+                                <svg v-if="showDevicePassword" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-7-10-7a18.347 18.347 0 014.176-4.772M9.88 9.88a3 3 0 104.243 4.243M6.1 6.1L3 3m0 0l18 18" />
+                                </svg>
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.27 2.943 9.542 7-1.273 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div v-if="featureFlags.device.enableUseCase" class="form-control">
                     <label class="label">
-                        <span class="label-text">Use Case</span>
-                        <span class="label-text-alt text-base-content/60">(ไม่บังคับ)</span>
+                        <span class="label-text">Use Case <span class="text-error">*</span></span>
                     </label>
-                    <select v-model="formData.usecase" class="select select-bordered w-full">
-                        <option value="" disabled>เลือกการใช้งาน</option>
+                    <select v-model="formData.usecase" class="select select-bordered w-full" required>
+                        <option value="" disabled>เลือก Use Case</option>
                         <option value="access_control">Access Control</option>
                         <option value="attendance">Attendance</option>
                         <option value="person_confirmation">Person Confirmation</option>
@@ -117,18 +145,32 @@ import featureFlags from '../../config/featureFlags.js'
 
 const createModal = ref(null)
 const emit = defineEmits(['success'])
+const showDevicePassword = ref(false)
 
 const formData = ref({
     serial_number: '',
     location: '',
     gate_type: '',
     device_type: '',
-    device_key: '',
+    device_username: '',
+    device_password: '',
     usecase: '',
     attendance_start_time: '',
     attendance_end_time: '',
     use_attendance_time: false
 })
+
+const encodeDeviceKey = (username, password) => {
+    if (!username && !password) return ''
+
+    const credential = `${username}:${password}`
+    const bytes = new TextEncoder().encode(credential)
+    let binary = ''
+    bytes.forEach((byte) => {
+        binary += String.fromCharCode(byte)
+    })
+    return btoa(binary)
+}
 
 const openModal = () => {
     if (createModal.value) {
@@ -144,12 +186,14 @@ const closeModal = () => {
 }
 
 const resetForm = () => {
+    showDevicePassword.value = false
     formData.value = {
         serial_number: '',
         location: '',
         gate_type: '',
         device_type: '',
-        device_key: '',
+        device_username: '',
+        device_password: '',
         usecase: '',
         attendance_start_time: '',
         attendance_end_time: '',
@@ -158,7 +202,11 @@ const resetForm = () => {
 }
 
 const handleSubmit = () => {
-    emit('success', { ...formData.value })
+    const { device_username, device_password, usecase, ...payload } = formData.value
+    if (usecase) payload.usecase = usecase
+    const encodedDeviceKey = encodeDeviceKey(device_username, device_password)
+    if (encodedDeviceKey) payload.device_key = encodedDeviceKey
+    emit('success', payload)
 }
 
 defineExpose({
